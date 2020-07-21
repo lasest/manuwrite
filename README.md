@@ -1,1 +1,1 @@
-# manuwrite
+# ManuWrite - a manuscript editor for scholarly writing
