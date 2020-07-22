@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icons_dark">
+        <file>icons_dark/go-previous.svg</file>
+        <file>icons_dark/go-next.svg</file>
+        <file>icons_dark/document-edit-sign.svg</file>
+        <file>icons_dark/document-papirus.svg</file>
+        <file>icons_dark/project-management.svg</file>
+        <file>icons_dark/git-branch.svg</file>
+    </qresource>
+</RCC>
