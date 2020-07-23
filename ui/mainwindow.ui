@@ -129,7 +129,7 @@
         <widget class="QWidget" name="EdtiorPage">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QTabWidget" name="EditorTabWidget">
+           <widget class="QTabWidgetCustom" name="EditorTabWidget">
             <property name="currentIndex">
              <number>0</number>
             </property>
@@ -238,6 +238,12 @@
    <class>TextEditor</class>
    <extends>QTextEdit</extends>
    <header>gui_components.text_editor.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QTabWidgetCustom</class>
+   <extends>QTabWidget</extends>
+   <header>gui_components.qtabwidget_custom</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

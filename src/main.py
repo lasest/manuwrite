@@ -8,6 +8,7 @@ from forms import mainwindow
 from resources import icons_rc
 from gui_components.text_editor import TextEditor
 from gui_components.save_changes_single_dialog import (SaveChangesSingleDialog, Result)
+from gui_components.qtabbar_custom import QTabBarCustom
 
 
 class MainWindow(QMainWindow):
@@ -20,6 +21,8 @@ class MainWindow(QMainWindow):
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
 
         self.ui.MainStackedWidget.setCurrentIndex(0)
+        #self.ui.EditorTabWidget.setTabBar(QTabBarCustom(self))
+        self.ui.EditorTabWidget.setTabsClosable(True)
         self.ui.EditorTabWidget.clear()
 
         self.show()
@@ -117,12 +120,13 @@ class MainWindow(QMainWindow):
             file_handle = open(filename[0], mode="w+")
             file_handle.write(self.get_editor(index).toPlainText())
             file_handle.close()
+            self.get_editor(index).textChanged = False
 
             self.get_editor(index).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
 
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
-            self.get_editor(index).textChanged = False
+
             result = True
 
         return result

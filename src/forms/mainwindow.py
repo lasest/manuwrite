@@ -70,13 +70,14 @@ class Ui_MainWindow(object):
         self.EdtiorPage.setObjectName("EdtiorPage")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.EdtiorPage)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.EditorTabWidget = QtWidgets.QTabWidget(self.EdtiorPage)
+        self.EditorTabWidget = QTabWidgetCustom(self.EdtiorPage)
         self.EditorTabWidget.setTabsClosable(True)
         self.EditorTabWidget.setMovable(True)
         self.EditorTabWidget.setObjectName("EditorTabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tab)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.MainEditor = TextEditor(self.tab)
         self.MainEditor.setObjectName("MainEditor")
@@ -148,4 +149,5 @@ class Ui_MainWindow(object):
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionSave_As.setText(_translate("MainWindow", "Save as..."))
 from gui_components.qlabel_clickable import QLabelClickable
+from gui_components.qtabwidget_custom import QTabWidgetCustom
 from gui_components.text_editor import TextEditor

@@ -34,7 +34,6 @@ class SaveChangesSingleDialog(QDialog):
     # Slots
     @pyqtSlot(QAbstractButton)
     def on_buttonBox_clicked(self, button):
-        print(self.ui.buttonBox.buttonRole(button))
         if self.ui.buttonBox.buttonRole(button) == self.ui.buttonBox.AcceptRole:
             self.result = Result.SAVE
         elif self.ui.buttonBox.buttonRole(button) == self.ui.buttonBox.DestructiveRole:
