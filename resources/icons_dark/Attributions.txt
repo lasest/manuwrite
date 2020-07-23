@@ -8,3 +8,4 @@ account.svg
 settings.svg
     <a href="https://iconscout.com/icons/account" target="_blank">Account Icon</a> on <a href="https://iconscout.com">Iconscout</a>
     https://dribbble.com/shots/3424376-ICON-for-Galaxy-S8-S8-FREE
+    

@@ -25,8 +25,10 @@ class TextEditor(QPlainTextEdit):
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
+        self.textChanged.connect(self.on_TextEditor_textChanged)
 
         self.updateLineNumberAreaWidth(0)
+        self.text_changed = False
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -97,3 +99,6 @@ class TextEditor(QPlainTextEdit):
             selection.cursor.clearSelection()
             extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
+
+    def on_TextEditor_textChanged(self):
+        self.text_changed = True

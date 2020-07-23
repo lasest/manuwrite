@@ -8,5 +8,6 @@
         <file>icons_dark/git-branch.svg</file>
         <file>icons_dark/account.svg</file>
         <file>icons_dark/settings.svg</file>
+        <file>icons_dark/warning.svg</file>
     </qresource>
 </RCC>

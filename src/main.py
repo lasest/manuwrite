@@ -1,12 +1,13 @@
 import sys
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QFile, QIODevice, QUrl)
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl)
 from PyQt5.QtGui import *
 
 from forms import mainwindow
 from resources import icons_rc
 from gui_components.text_editor import TextEditor
+from gui_components.save_changes_single_dialog import (SaveChangesSingleDialog, Result)
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +39,13 @@ class MainWindow(QMainWindow):
         label.setAutoFillBackground(True)
         label.setStyleSheet("QLabel { background-color : blue; }")
 
+    def get_editor(self, tab_index: int = None) -> TextEditor:
+        if tab_index is None:
+            tab_index = self.ui.EditorTabWidget.currentIndex()
+
+        return self.ui.EditorTabWidget.widget(tab_index).findChild(TextEditor)
+
+
     # Signal handling
     @pyqtSlot()
     def on_EditorTabLabel_clicked(self):
@@ -64,6 +72,7 @@ class MainWindow(QMainWindow):
         self.on_EditorTabLabel_clicked()
         index = self.ui.EditorTabWidget.addTab(new_widget, "New tab")
         self.ui.EditorTabWidget.setCurrentIndex(index)
+        self.get_editor().setFocus()
 
     @pyqtSlot()
     def on_actionOpen_triggered(self):
@@ -74,30 +83,65 @@ class MainWindow(QMainWindow):
             file_handle.close()
 
             self.on_actionNew_triggered()
-            self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).appendPlainText(text)
-            self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
+            self.get_editor().appendPlainText(text)
+            self.get_editor().document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
+
+            index = filename[0].rfind("/")
+            self.ui.EditorTabWidget.setTabText(self.ui.EditorTabWidget.currentIndex(), filename[0][index+1:])
 
     @pyqtSlot()
-    def on_actionSave_triggered(self):
-        if self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).document().baseUrl().url():
-            file_handle = open(self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).document().baseUrl().url(QUrl.PreferLocalFile), mode="w")
-            file_handle.write(self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).toPlainText())
+    def on_actionSave_triggered(self, index=None) -> bool:
+        if index is None:
+            index = self.ui.EditorTabWidget.currentIndex()
+
+        if self.get_editor(index).document().baseUrl().url():
+            file_handle = open(self.get_editor(index).document().baseUrl().url(QUrl.PreferLocalFile), mode="w")
+            file_handle.write(self.get_editor(index).toPlainText())
             file_handle.close()
+            self.get_editor(index).textChanged = False
+            result = True
         else:
-            self.on_actionSave_As_triggered()
+            result = self.on_actionSave_As_triggered(index)
+
+        return result
 
     @pyqtSlot()
-    def on_actionSave_As_triggered(self):
+    def on_actionSave_As_triggered(self, index=None) -> bool:
+        if index is None:
+            index = self.ui.EditorTabWidget.currentIndex()
+
+        result = False
+
         filename = QFileDialog.getSaveFileName()
         if filename[0]:
             file_handle = open(filename[0], mode="w+")
-            file_handle.write(self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).toPlainText())
+            file_handle.write(self.get_editor(index).toPlainText())
             file_handle.close()
 
-            self.ui.EditorTabWidget.currentWidget().findChild(TextEditor).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
+            self.get_editor(index).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
+
+            index = filename[0].rfind("/")
+            self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
+            self.get_editor(index).textChanged = False
+            result = True
+
+        return result
+
 
     @pyqtSlot(int)
     def on_EditorTabWidget_tabCloseRequested(self, index):
+        if self.get_editor(index).text_changed:
+            dialog = SaveChangesSingleDialog(self.ui.EditorTabWidget.tabBar().tabText(index))
+            dialog.show()
+            dialog.setFixedSize(dialog.size())
+            dialog.exec_()
+
+            if dialog.result == Result.CANCEL:
+                return
+            elif dialog.result == Result.SAVE:
+                if not self.on_actionSave_triggered(index):
+                    return
+
         self.ui.EditorTabWidget.removeTab(index)
 
 
