@@ -6,5 +6,7 @@
         <file>icons_dark/document-papirus.svg</file>
         <file>icons_dark/project-management.svg</file>
         <file>icons_dark/git-branch.svg</file>
+        <file>icons_dark/account.svg</file>
+        <file>icons_dark/settings.svg</file>
     </qresource>
 </RCC>

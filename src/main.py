@@ -28,6 +28,8 @@ class MainWindow(QMainWindow):
         self.ui.EditorTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/document-papirus.svg")))
         self.ui.GitTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/git-branch.svg")))
         self.ui.ProjectTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/project-management.svg")))
+        self.ui.SettingsLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/settings.svg")))
+        self.ui.UserAccounLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/account.svg")))
 
     def set_active_tab(self, label: QLabel):
         for tab in self.tabs:
@@ -83,7 +85,6 @@ class MainWindow(QMainWindow):
             file_handle.close()
         else:
             self.on_actionSave_As_triggered()
-
 
     @pyqtSlot()
     def on_actionSave_As_triggered(self):

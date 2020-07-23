@@ -41,6 +41,7 @@ class Ui_MainWindow(object):
         self.GitTabLabel.setObjectName("GitTabLabel")
         self.verticalLayout.addWidget(self.GitTabLabel)
         self.ProjectTabLabel = QLabelClickable(self.MainTabsFrame)
+        self.ProjectTabLabel.setFrameShape(QtWidgets.QFrame.Box)
         self.ProjectTabLabel.setObjectName("ProjectTabLabel")
         self.verticalLayout.addWidget(self.ProjectTabLabel)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
