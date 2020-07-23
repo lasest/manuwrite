@@ -10,11 +10,10 @@ class LineNumberArea(QWidget):
 
 
     def sizeHint(self):
-        return Qsize(self.editor.lineNumberAreaWidth(), 0)
+        return QSize(self.editor.lineNumberAreaWidth(), 0)
 
 
     def paintEvent(self, event):
-        #print('LineNumberArea.paintEvent')
         self.editor.lineNumberAreaPaintEvent(event)
 
 
@@ -23,7 +22,7 @@ class TextEditor(QPlainTextEdit):
         super().__init__(parent)
         self.lineNumberArea = LineNumberArea(self)
 
-        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
@@ -31,7 +30,7 @@ class TextEditor(QPlainTextEdit):
 
     def lineNumberAreaWidth(self):
         digits = 1
-        count = max(1, self.blockCount())
+        count = max(1, self.document().blockCount())
         while count >= 10:
             count /= 10
             digits += 1
@@ -40,20 +39,16 @@ class TextEditor(QPlainTextEdit):
 
 
     def updateLineNumberAreaWidth(self, _):
-        #print('CodeEditor.updateLineNumberAreaWidth: margin = {}'.format(self.lineNumberAreaWidth()))
         self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
 
 
     def updateLineNumberArea(self, rect, dy):
-        #print('CodeEditor.updateLineNumberArea: rect = {}, dy = {}'.format(rect, dy))
-
         if dy:
             self.lineNumberArea.scroll(0, dy)
         else:
             self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(),
                                        rect.height())
 
-        #print('CodeEditor.updateLineNumberArea: rect.contains(self.viewport().rect()) = {}'.format(rect.contains(self.viewport().rect())))
         if rect.contains(self.viewport().rect()):
             self.updateLineNumberAreaWidth(0)
 
@@ -66,7 +61,6 @@ class TextEditor(QPlainTextEdit):
                                         self.lineNumberAreaWidth(), cr.height()))
 
     def lineNumberAreaPaintEvent(self, event):
-        #print('CodeEditor.lineNumberAreaPaintEvent')
         painter = QPainter(self.lineNumberArea)
         painter.fillRect(event.rect(), Qt.lightGray)
 
@@ -75,9 +69,7 @@ class TextEditor(QPlainTextEdit):
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
         bottom = top + self.blockBoundingRect(block).height()
 
-        # Just to make sure I use the right font
         height = self.fontMetrics().height()
-        #height = QFontMetrics(self.font()).height()
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1)
