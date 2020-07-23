@@ -2,7 +2,8 @@
 
 ## How to run
 
-1. Clone the repo
-```https://github.com/lasest/manuwrite.git```
+1. Clone the repo:
+
+```git clone https://github.com/lasest/manuwrite.git```
 
 2. Run ```build.sh```.
