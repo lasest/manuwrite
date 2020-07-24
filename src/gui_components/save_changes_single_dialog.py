@@ -26,7 +26,7 @@ class SaveChangesSingleDialog(QDialog):
 
     # Utility functions
     def set_text(self, filename):
-        self.ui.MessageLabel.setText("The file {} has been modified.\nDo you want to save changes or discard them?".format(filename))
+        self.ui.MessageLabel.setText("The file \"{}\" has been modified.\nDo you want to save changes or discard them?".format(filename))
 
     def load_icons(self):
         self.ui.IconLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/warning.svg")))

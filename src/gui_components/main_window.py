@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self.on_EditorTabLabel_clicked()
         index = self.ui.EditorTabWidget.addTab(new_widget, "New tab")
         self.ui.EditorTabWidget.setCurrentIndex(index)
+        self.ui.EditorTabWidget.setTabText(index, "Untitled")
         self.get_editor().setFocus()
 
     @pyqtSlot()
