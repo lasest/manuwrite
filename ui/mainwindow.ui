@@ -15,6 +15,12 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
     <item>
      <widget class="QFrame" name="MainTabsFrame">
       <property name="sizePolicy">
@@ -107,6 +113,9 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="MainVerticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QStackedWidget" name="MainStackedWidget">
         <property name="currentIndex">
@@ -128,6 +137,12 @@
         </widget>
         <widget class="QWidget" name="EdtiorPage">
          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QTabWidgetCustom" name="EditorTabWidget">
             <property name="currentIndex">

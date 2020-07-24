@@ -69,6 +69,7 @@ class MainWindow(QMainWindow):
         new_widget.setLayout(QVBoxLayout())
         editor = TextEditor(new_widget)
         new_widget.layout().addWidget(editor)
+        new_widget.layout().setContentsMargins(0,2,0,0)
 
         self.on_EditorTabLabel_clicked()
         index = self.ui.EditorTabWidget.addTab(new_widget, "New tab")
