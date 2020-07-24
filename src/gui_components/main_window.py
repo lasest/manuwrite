@@ -130,7 +130,6 @@ class MainWindow(QMainWindow):
 
         return result
 
-
     @pyqtSlot(int)
     def on_EditorTabWidget_tabCloseRequested(self, index):
         if self.get_editor(index).text_changed:

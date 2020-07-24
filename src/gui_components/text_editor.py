@@ -18,6 +18,7 @@ class LineNumberArea(QWidget):
 
 
 class TextEditor(QPlainTextEdit):
+
     def __init__(self, parent):
         super().__init__(parent)
         self.lineNumberArea = LineNumberArea(self)
@@ -26,6 +27,7 @@ class TextEditor(QPlainTextEdit):
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.textChanged.connect(self.on_TextEditor_textChanged)
+        self.selectionChanged.connect(self.highlightCurrentLine)
 
         self.updateLineNumberAreaWidth(0)
         self.text_changed = False
@@ -36,7 +38,9 @@ class TextEditor(QPlainTextEdit):
         while count >= 10:
             count /= 10
             digits += 1
-        space = 3 + self.fontMetrics().width('9') * digits
+        if digits < 4:
+            digits = 4
+        space = 10 + self.fontMetrics().width('9') * digits
         return space
 
 
@@ -64,7 +68,8 @@ class TextEditor(QPlainTextEdit):
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
-        painter.fillRect(event.rect(), Qt.lightGray)
+        color = self.palette().color(self.palette().Dark)
+        painter.fillRect(event.rect(), color)
 
         block = self.firstVisibleBlock()
         blockNumber = block.blockNumber()
@@ -75,9 +80,10 @@ class TextEditor(QPlainTextEdit):
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1)
-                painter.setPen(Qt.black)
-                painter.drawText(0, top, self.lineNumberArea.width(), height,
-                                 Qt.AlignRight, number)
+                color = self.palette().color(self.palette().Text)
+                painter.setPen(color)
+                painter.drawText(5, top, self.lineNumberArea.width(), height,
+                                 Qt.AlignLeft, number)
 
             block = block.next()
             top = bottom
@@ -88,10 +94,22 @@ class TextEditor(QPlainTextEdit):
     def highlightCurrentLine(self):
         extraSelections = []
 
+        cursor = self.textCursor()
+        selection_start = cursor.selectionStart()
+        selection_end = cursor.selectionEnd()
+        cursor.setPosition(selection_start)
+        start_line = cursor.blockNumber()
+        cursor.setPosition(selection_end)
+        end_line = cursor.blockNumber()
+
+        if start_line != end_line:
+            self.setExtraSelections([QTextEdit.ExtraSelection()])
+            return
+
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
 
-            lineColor = QColor(Qt.lightGray).lighter(100)
+            lineColor = self.palette().color(self.palette().AlternateBase).darker(70)
 
             selection.format.setBackground(lineColor)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
