@@ -77,7 +77,9 @@ class MainWindow(QMainWindow):
         index = self.ui.EditorTabWidget.addTab(new_widget, "New tab")
         self.ui.EditorTabWidget.setCurrentIndex(index)
         self.ui.EditorTabWidget.untitled_docs_counter += 1
-        self.ui.EditorTabWidget.setTabText(index, "Untitled {}".format(self.ui.EditorTabWidget.untitled_docs_counter))
+        tabname = "Untitled {}".format(self.ui.EditorTabWidget.untitled_docs_counter)
+        self.ui.EditorTabWidget.setTabText(index, tabname)
+        self.ui.EditorTabWidget.setTabToolTip(index, tabname)
         self.get_editor().setFocus()
 
     @pyqtSlot()
@@ -92,8 +94,10 @@ class MainWindow(QMainWindow):
             self.get_editor().appendPlainText(text)
             self.get_editor().document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
 
+            self.ui.EditorTabWidget.setTabToolTip(self.ui.EditorTabWidget.currentIndex(), filename[0])
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(self.ui.EditorTabWidget.currentIndex(), filename[0][index+1:])
+            self.get_editor().text_changed = False
 
     @pyqtSlot()
     def on_actionSave_triggered(self, index=None) -> bool:
@@ -128,8 +132,10 @@ class MainWindow(QMainWindow):
 
             self.get_editor(index).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
 
+            self.ui.EditorTabWidget.setTabToolTip(index, filename[0])
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
+
 
             result = True
 
