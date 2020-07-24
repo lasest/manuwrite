@@ -2,24 +2,20 @@ from PyQt5.QtWidgets import QDialog, QAbstractButton
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import (pyqtSlot)
 
-from forms.ui_save_changes_single_dialog import Ui_SaveChangesSingleDialog
+from forms.ui_save_changes_multiple_dialog import Ui_SaveChangesMultipleDialog
 from common import Result
 
 
-class SaveChangesSingleDialog(QDialog):
+class SaveChangesMultipleDialog(QDialog):
 
-    def __init__(self, filename: str):
+    def __init__(self, filenames: [str]):
         super().__init__()
-        self.ui = Ui_SaveChangesSingleDialog()
+        self.ui = Ui_SaveChangesMultipleDialog()
         self.ui.setupUi(self)
-        self.set_text(filename)
         self.load_icons()
         self.result = Result.CANCEL
 
-
-    # Utility functions
-    def set_text(self, filename):
-        self.ui.MessageLabel.setText("The file \"{}\" has been modified.\nDo you want to save changes or discard them?".format(filename))
+        self.ui.listWidget.addItems(filenames)
 
     def load_icons(self):
         self.ui.IconLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/warning.svg")))

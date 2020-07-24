@@ -5,8 +5,10 @@ from PyQt5.QtGui import *
 from forms.ui_main_window import Ui_MainWindow
 from resources import icons_rc
 from gui_components.text_editor import TextEditor
-from gui_components.save_changes_single_dialog import (SaveChangesSingleDialog, Result)
+from gui_components.save_changes_single_dialog import SaveChangesSingleDialog
 from gui_components.qtabbar_custom import QTabBarCustom
+from gui_components.save_changes_multiple_dialog import SaveChangesMultipleDialog
+from common import Result
 
 
 class MainWindow(QMainWindow):
@@ -146,3 +148,32 @@ class MainWindow(QMainWindow):
                     return
 
         self.ui.EditorTabWidget.removeTab(index)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        unsaved_editors = []
+
+        for index in range(self.ui.EditorTabWidget.count()):
+            editor = self.get_editor(index)
+            if editor.text_changed:
+                unsaved_editors.append((index, self.ui.EditorTabWidget.tabBar().tabText(index)))
+
+        if len(unsaved_editors) == 0:
+            return
+        elif len(unsaved_editors) == 1:
+            index = unsaved_editors[0][0]
+            dialog = SaveChangesSingleDialog(self.ui.EditorTabWidget.tabBar().tabText(index))
+        else:
+            dialog = SaveChangesMultipleDialog([item[1] for item in unsaved_editors])
+
+        dialog.show()
+        dialog.setFixedSize(dialog.size())
+        dialog.exec_()
+
+        if dialog.result == Result.CANCEL:
+            event.ignore()
+            return
+        elif dialog.result == Result.SAVE:
+            for item in unsaved_editors:
+                if not self.on_actionSave_triggered(item[0]):
+                    event.ignore()
+                    return

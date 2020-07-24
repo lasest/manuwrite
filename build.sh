@@ -6,6 +6,7 @@ pyrcc5 resources/icons.qrc -o src/resources/icons_rc.py
 # Process ui files
 pyuic5 ui/mainwindow.ui -o src/forms/ui_main_window.py
 pyuic5 ui/save_changes_single_dialog.ui -o src/forms/ui_save_changes_single_dialog.py
+pyuic5 ui/save_changes_multiple_dialog.ui -o src/forms/ui_save_changes_multiple_dialog.py
 
 # Activate python venv
 if [ ! -d "./venv" ]
