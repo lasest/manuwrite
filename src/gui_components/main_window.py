@@ -76,7 +76,8 @@ class MainWindow(QMainWindow):
         self.on_EditorTabLabel_clicked()
         index = self.ui.EditorTabWidget.addTab(new_widget, "New tab")
         self.ui.EditorTabWidget.setCurrentIndex(index)
-        self.ui.EditorTabWidget.setTabText(index, "Untitled")
+        self.ui.EditorTabWidget.untitled_docs_counter += 1
+        self.ui.EditorTabWidget.setTabText(index, "Untitled {}".format(self.ui.EditorTabWidget.untitled_docs_counter))
         self.get_editor().setFocus()
 
     @pyqtSlot()
@@ -117,7 +118,8 @@ class MainWindow(QMainWindow):
 
         result = False
 
-        filename = QFileDialog.getSaveFileName()
+        tabname = self.ui.EditorTabWidget.tabText(index)
+        filename = QFileDialog.getSaveFileName(directory=tabname)
         if filename[0]:
             file_handle = open(filename[0], mode="w+")
             file_handle.write(self.get_editor(index).toPlainText())
