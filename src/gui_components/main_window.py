@@ -34,10 +34,12 @@ class MainWindow(QMainWindow):
 
     def set_active_tab(self, label: QLabel):
         for tab in self.tabs:
-            tab.setStyleSheet("QLabel { background-color: black}")
+            background_color = self.palette().color(self.palette().Background)
+            tab.setStyleSheet("QLabel {{ background-color : {}; }}".format(background_color.name()))
 
         label.setAutoFillBackground(True)
-        label.setStyleSheet("QLabel { background-color : blue; }")
+        background_color = self.palette().color(self.palette().Highlight)
+        label.setStyleSheet("QLabel {{ background-color : {}; }}".format(background_color.name()))
 
     def get_editor(self, tab_index: int = None) -> TextEditor:
         if tab_index is None:
