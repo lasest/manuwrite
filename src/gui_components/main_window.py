@@ -81,6 +81,9 @@ class MainWindow(QMainWindow):
         tabname = "Untitled {}".format(self.ui.EditorTabWidget.untitled_docs_counter)
         self.ui.EditorTabWidget.setTabText(index, tabname)
         self.ui.EditorTabWidget.setTabToolTip(index, tabname)
+        font = self.get_editor().font()
+        font.setPointSize(14)
+        self.get_editor().setFont(font)
         self.get_editor().setFocus()
 
     @pyqtSlot()

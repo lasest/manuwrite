@@ -36,6 +36,9 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -53,18 +56,36 @@
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>1</number>
+         </property>
          <property name="text">
           <string>one</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
          </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLabelClickable" name="GitTabLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
          <property name="text">
           <string>two</string>
@@ -75,6 +96,9 @@
         <widget class="QLabelClickable" name="ProjectTabLabel">
          <property name="frameShape">
           <enum>QFrame::Box</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
          <property name="text">
           <string>proj</string>

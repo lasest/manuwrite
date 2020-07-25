@@ -35,9 +35,15 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "heading-6": r"^######.*",
         "line-break": r"\s\s$",
         "horizontal-rule": r"^\*\*\*\**$|^----*$|^____*$",
-        "italic": r"[*_]..*[*_]",
-        "bold": r"[*_][*_]..*[*_][*_]",
-        "bold-and-italic": r"[*_][*_][*_]..*[*_][*_][*_]",
+        "italic": r"()(^[*_][^*][^*]*[*_]$)()|" +
+                  r"([^*_])([*_][^*][^*]*[*_]$)()|" +
+                  r"()(^[*_][^*][^*]*[*_])([^*_])|" +
+                  r"([^*_])([*_][^*][^*]*[*_])([^*_])",
+        "bold": r"()(^[*_][*_][^*][^*]*[*_][*_]$)()|" +
+                r"([^*_])([*_][*_][^*][^*]*[*_][*_]$)()|" +
+                r"()(^[*_][*_][^*][^*]*[*_][*_])([^*_])|" +
+                r"([^*_])([*_][*_][^*][^*]*[*_][*_])([^*_])",
+        "bold-and-italic": r"[*_][*_][*_][^*][^*]*[*_][*_][*_]",
         "blockquote-1": r"^>$|^>[^>].*",
         "blockquote-2": r"^>>$|^>>[^>].*",
         "blockquote-3": r"^>>>$|^>>>[^>].*",
@@ -45,7 +51,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "ordered-list": r"^\d\.",
         "unordered-list": r"^[-+*]\s",
         "code": r"`..*`",
-        "link": r"\[..*\]\(..*\)",
+        "link": r"()(^\[..*\]\(..*\))|" +
+                r"([^!])(\[..*\]\(..*\))",
         "image": r"!\[..*\]\(..*\)"
     })
 
@@ -87,6 +94,25 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for rule in self.rules:
             index = rule.expression.indexIn(text)
             while index >= 0:
-                length = rule.expression.matchedLength()
-                self.setFormat(index, length, rule.format)
-                index = rule.expression.indexIn(text, index + length)
+                loffset = 0
+                roffset = 0
+
+                if rule.name in ("italic", "bold"):
+                    group_n = 0
+                    for i in (2, 5, 8, 11):
+                        if rule.expression.cap(i):
+                            group_n = i
+                            break
+                    loffset = len(rule.expression.cap(group_n - 1))
+                    roffset = len(rule.expression.cap(group_n + 1))
+                elif rule.name == "link":
+                    group_n = 0
+                    for i in (2, 4):
+                        if rule.expression.cap(i):
+                            group_n = i
+                            break
+                    loffset = len(rule.expression.cap(group_n - 1))
+
+                length = rule.expression.matchedLength() - loffset - roffset
+                self.setFormat(index + loffset, length, rule.format)
+                index = rule.expression.indexIn(text, index + length + roffset)
