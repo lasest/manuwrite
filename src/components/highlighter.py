@@ -27,12 +27,12 @@ class MarkdownHighlighter(QSyntaxHighlighter):
     # TODO: implement recognizing titles and other elements when they are not at the beginning of the line but are tabbed
 
     patterns = OrderedDict({
-        "heading-1": r"^#$|^#[^#].*",
-        "heading-2": r"^##$|^##[^#].*",
-        "heading-3": r"^###$|^###[^#].*",
-        "heading-4": r"^####$|^####[^#].*",
-        "heading-5": r"^#####$|^#####[^#].*",
-        "heading-6": r"^######.*",
+        "heading-1": r"^\s*#$|^\s*#[^#].*",
+        "heading-2": r"^\s*##$|^\s*##[^#].*",
+        "heading-3": r"^\s*###$|^\s*###[^#].*",
+        "heading-4": r"^\s*####$|^\s*####[^#].*",
+        "heading-5": r"^\s*#####$|^\s*#####[^#].*",
+        "heading-6": r"^\s*######.*",
         "line-break": r"\s\s$",
         "horizontal-rule": r"^\*\*\*\**$|^----*$|^____*$",
         "italic": r"()(^[*_][^*][^*]*[*_]$)()|" +
@@ -44,12 +44,12 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 r"()(^[*_][*_][^*][^*]*[*_][*_])([^*_])|" +
                 r"([^*_])([*_][*_][^*][^*]*[*_][*_])([^*_])",
         "bold-and-italic": r"[*_][*_][*_][^*][^*]*[*_][*_][*_]",
-        "blockquote-1": r"^>$|^>[^>].*",
-        "blockquote-2": r"^>>$|^>>[^>].*",
-        "blockquote-3": r"^>>>$|^>>>[^>].*",
-        "blockquote-n": r"^>>>>$|^>>>>[^>].*",
-        "ordered-list": r"^\d\.",
-        "unordered-list": r"^[-+*]\s",
+        "blockquote-1": r"^\s*>$|^\s*>[^>].*",
+        "blockquote-2": r"^\s*>>$|^\s*>>[^>].*",
+        "blockquote-3": r"^\s*>>>$|^\s*>>>[^>].*",
+        "blockquote-n": r"^\s*>>>>$|^\s*>>>>[^>].*",
+        "ordered-list": r"^\s*\d\.",
+        "unordered-list": r"^\s*[-+*]\s",
         "code": r"`..*`",
         "link": r"()(^\[..*\]\(..*\))|" +
                 r"([^!])(\[..*\]\(..*\))",
@@ -94,6 +94,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for rule in self.rules:
             index = rule.expression.indexIn(text)
             while index >= 0:
+                print(rule.name)
                 loffset = 0
                 roffset = 0
 
