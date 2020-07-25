@@ -9,6 +9,7 @@ from gui_components.save_changes_single_dialog import SaveChangesSingleDialog
 from gui_components.qtabbar_custom import QTabBarCustom
 from gui_components.save_changes_multiple_dialog import SaveChangesMultipleDialog
 from common import Result
+from components.highlighter import MarkdownHighlighter
 
 
 class MainWindow(QMainWindow):

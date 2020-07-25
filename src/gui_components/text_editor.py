@@ -2,6 +2,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+from components.highlighter import MarkdownHighlighter
+
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -29,6 +31,7 @@ class TextEditor(QPlainTextEdit):
         self.textChanged.connect(self.on_TextEditor_textChanged)
         self.selectionChanged.connect(self.highlightCurrentLine)
 
+        self.highlighter = MarkdownHighlighter(self.document())
         self.updateLineNumberAreaWidth(0)
         self.text_changed = False
 
