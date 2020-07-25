@@ -94,7 +94,6 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for rule in self.rules:
             index = rule.expression.indexIn(text)
             while index >= 0:
-                print(rule.name)
                 loffset = 0
                 roffset = 0
 

@@ -146,7 +146,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ManuWrite"))
         self.EditorTabLabel.setText(_translate("MainWindow", "one"))
         self.GitTabLabel.setText(_translate("MainWindow", "two"))
         self.ProjectTabLabel.setText(_translate("MainWindow", "proj"))
