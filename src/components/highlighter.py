@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat
 from PyQt5.QtCore import QRegExp, Qt
 
@@ -23,10 +25,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
     # TODO: implement alternate heading 1 and heading 2 syntax (requires working with previous line)
     # TODO: implement recognizing titles and other elements when they are not at the beginning of the line but are tabbed
-    # TODO: make it so that the inner asterikses are not considered part of another construct, e.g. in ***text*** 2 inner \
-    # are recognized as part of a bold statement
 
-    patterns = {
+    patterns = OrderedDict({
         "heading-1": r"^#$|^#[^#].*",
         "heading-2": r"^##$|^##[^#].*",
         "heading-3": r"^###$|^###[^#].*",
@@ -35,8 +35,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "heading-6": r"^######.*",
         "line-break": r"\s\s$",
         "horizontal-rule": r"^\*\*\*\**$|^----*$|^____*$",
+        "italic": r"[*_]..*[*_]",
         "bold": r"[*_][*_]..*[*_][*_]",
-        "italic": r"[^*_][^*_][*_]..*[*_][^*_][^*_]",
         "bold-and-italic": r"[*_][*_][*_]..*[*_][*_][*_]",
         "blockquote-1": r"^>$|^>[^>].*",
         "blockquote-2": r"^>>$|^>>[^>].*",
@@ -45,9 +45,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "ordered-list": r"^\d\.",
         "unordered-list": r"^[-+*]\s",
         "code": r"`..*`",
-        "link": r"^\[..*\]\(..*\)|[^!]\[..*\]\(..*\)",
+        "link": r"\[..*\]\(..*\)",
         "image": r"!\[..*\]\(..*\)"
-    }
+    })
 
     def __init__(self, document):
         super().__init__(document)
