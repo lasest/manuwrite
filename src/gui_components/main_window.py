@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl)
 from PyQt5.QtGui import *
 
@@ -25,15 +25,35 @@ class MainWindow(QMainWindow):
         self.ui.EditorTabWidget.setTabsClosable(True)
         self.ui.EditorTabWidget.clear()
 
+        self.set_toolbar_actions()
+
         self.show()
 
     # Utility functions
+    def set_toolbar_actions(self):
+        self.ui.ItalicToolButton.setDefaultAction(self.ui.actionItalic)
+        self.ui.BoldToolButton.setDefaultAction(self.ui.actionBold)
+        self.ui.BoldItalicToolButton.setDefaultAction(self.ui.actionBoldItalic)
+        self.ui.HorizontalRuleToolButton.setDefaultAction(self.ui.actionHorizontalRule)
+        self.ui.OrdListToolButton.setDefaultAction(self.ui.actionOrdList)
+        self.ui.UnordListToolButton.setDefaultAction(self.ui.actionUnordList)
+        self.ui.LinkToolButton.setDefaultAction(self.ui.actionLink)
+        self.ui.ImageToolButton.setDefaultAction(self.ui.actionImage)
+        self.ui.CodeToolButton.setDefaultAction(self.ui.actionCode)
+
+        self.ui.HeadingToolButton.addActions([self.ui.actionHeading1, self.ui.actionHeading2, self.ui.actionHeading3,
+                                              self.ui.actionHeading4, self.ui.actionHeading5, self.ui.actionHeading6])
+        self.ui.HeadingToolButton.setDefaultAction(self.ui.actionHeading1)
+
+        self.ui.BlockquoteToolButton.setDefaultAction(self.ui.actionBlockquote)
+
     def set_icons(self):
-        self.ui.EditorTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/document-papirus.svg")))
-        self.ui.GitTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/git-branch.svg")))
-        self.ui.ProjectTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/project-management.svg")))
-        self.ui.SettingsLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/settings.svg")))
-        self.ui.UserAccounLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_dark/icons_dark/account.svg")))
+        # load common icons
+        self.ui.EditorTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/document-papirus.svg")))
+        self.ui.GitTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/git-branch.svg")))
+        self.ui.ProjectTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/project-management.svg")))
+        self.ui.SettingsLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/settings.svg")))
+        self.ui.UserAccounLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/account.svg")))
 
     def set_active_tab(self, label: QLabel):
         for tab in self.tabs:
@@ -189,3 +209,68 @@ class MainWindow(QMainWindow):
                 if not self.on_actionSave_triggered(item[0]):
                     event.ignore()
                     return
+
+    # TOOLBAR ACTIONS
+    @pyqtSlot()
+    def on_actionItalic_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionBold_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionBoldItalic_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading1_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading2_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading3_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading4_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading5_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHeading6_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionHorizontalRule_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionBlockquote_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionOrdList_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionUnordList_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionLink_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionImage_triggered(self):
+        print("Action")
+
+    @pyqtSlot()
+    def on_actionCode_triggered(self):
+        print("Action")
