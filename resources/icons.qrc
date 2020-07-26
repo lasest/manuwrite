@@ -4,6 +4,28 @@
         <file>icons_light/go-next.svg</file>
     </qresource>
 
+    <qresource prefix="/icons_dark">
+        <file>icons_dark/go-previous.svg</file>
+        <file>icons_dark/go-next.svg</file>
+        <file>icons_dark/format-text-italic.svg</file>
+        <file>icons_dark/format-text-bold.svg</file>
+        <file>icons_dark/format-text-bold-italic.svg</file>
+        <file>icons_dark/heading1.svg</file>
+        <file>icons_dark/heading2.svg</file>
+        <file>icons_dark/heading3.svg</file>
+        <file>icons_dark/heading4.svg</file>
+        <file>icons_dark/heading5.svg</file>
+        <file>icons_dark/heading6.svg</file>
+        <file>icons_dark/horizontal-rule.svg</file>
+        <file>icons_dark/format-text-blockquote.svg</file>
+        <file>icons_dark/format-list-ordered.svg</file>
+        <file>icons_dark/ord-list.svg</file>
+        <file>icons_dark/unord-list.svg</file>
+        <file>icons_dark/link.svg</file>
+        <file>icons_dark/insert-image.svg</file>
+        <file>icons_dark/format-text-code.svg</file>
+    </qresource>
+
     <qresource prefix="/icons_common">
         <file>icons_common/document-edit-sign.svg</file>
         <file>icons_common/document-papirus.svg</file>
