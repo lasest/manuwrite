@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl)
 from PyQt5.QtGui import *
@@ -6,10 +8,10 @@ from forms.ui_main_window import Ui_MainWindow
 from resources import icons_rc
 from gui_components.text_editor import TextEditor
 from gui_components.save_changes_single_dialog import SaveChangesSingleDialog
-from gui_components.qtabbar_custom import QTabBarCustom
 from gui_components.save_changes_multiple_dialog import SaveChangesMultipleDialog
+from gui_components.add_link_dialog import AddLinkDialog
+from gui_components.add_image_dialog import AddImageDialog
 from common import Result
-from components.highlighter import MarkdownHighlighter
 
 
 class MainWindow(QMainWindow):
@@ -89,6 +91,46 @@ class MainWindow(QMainWindow):
             tab_index = self.ui.EditorTabWidget.currentIndex()
 
         return self.ui.EditorTabWidget.widget(tab_index).findChild(TextEditor)
+
+    def get_cursor(self) -> QTextCursor:
+        return self.get_editor().textCursor()
+
+    def insert_text(self, text: Tuple[int, str], move_center: bool = False) -> None:
+        cursor = self.get_cursor()
+        init_pos = cursor.position()
+        cursor.setPosition(text[0])
+        self.get_editor().setTextCursor(cursor)
+        cursor.insertText(text[1])
+
+        if move_center:
+            cursor = self.get_cursor()
+            cursor.setPosition(init_pos + int(len(text[1]) / 2))
+            self.get_editor().setTextCursor(cursor)
+
+    def insert_texts(self, texts: Tuple[Tuple[int, str]], move_center: bool = False, clear_selection: bool = True) -> None:
+        if clear_selection:
+            self.get_cursor().clearSelection()
+
+        init_pos = self.get_cursor().position()
+        total_len = 0
+        for text in sorted(texts, reverse=True):
+            self.insert_text(text)
+            total_len += len(text[1])
+
+        if move_center:
+            cursor = self.get_cursor()
+            cursor.setPosition(init_pos + int(total_len / 2))
+            self.get_editor().setTextCursor(cursor)
+
+    def insert_heading(self, level: int) -> None:
+        text = "#" * level + " "
+        cursor = self.get_cursor()
+        init_pos = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        self.get_editor().setTextCursor(cursor)
+        cursor.insertText(text)
+        cursor.setPosition(init_pos + len(text))
+        self.get_editor().setTextCursor(cursor)
 
     # Signal handling
     @pyqtSlot()
@@ -180,7 +222,6 @@ class MainWindow(QMainWindow):
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
 
-
             result = True
 
         return result
@@ -233,64 +274,121 @@ class MainWindow(QMainWindow):
     # TOOLBAR ACTIONS
     @pyqtSlot()
     def on_actionItalic_triggered(self):
-        print("Action")
+        if len(self.get_cursor().selection().toPlainText()) == 0:
+            pos = self.get_cursor().position()
+            self.insert_text((pos, "**"), move_center=True)
+        else:
+            start = self.get_cursor().selectionStart()
+            end = self.get_cursor().selectionEnd()
+            self.insert_texts(((start, "*"), (end, "*")))
 
     @pyqtSlot()
     def on_actionBold_triggered(self):
-        print("Action")
+        if len(self.get_cursor().selection().toPlainText()) == 0:
+            pos = self.get_cursor().position()
+            self.insert_text((pos, "****"), move_center=True)
+        else:
+            start = self.get_cursor().selectionStart()
+            end = self.get_cursor().selectionEnd()
+            self.insert_texts(((start, "**"), (end, "**")))
 
     @pyqtSlot()
     def on_actionBoldItalic_triggered(self):
-        print("Action")
+        if len(self.get_cursor().selection().toPlainText()) == 0:
+            pos = self.get_cursor().position()
+            self.insert_text((pos, "******"), move_center=True)
+        else:
+            start = self.get_cursor().selectionStart()
+            end = self.get_cursor().selectionEnd()
+            self.insert_texts(((start, "***"), (end, "***")))
 
     @pyqtSlot()
     def on_actionHeading1_triggered(self):
-        print("Action")
+        self.insert_heading(1)
 
     @pyqtSlot()
     def on_actionHeading2_triggered(self):
-        print("Action")
+        self.insert_heading(2)
 
     @pyqtSlot()
     def on_actionHeading3_triggered(self):
-        print("Action")
+        self.insert_heading(3)
 
     @pyqtSlot()
     def on_actionHeading4_triggered(self):
-        print("Action")
+        self.insert_heading(4)
 
     @pyqtSlot()
     def on_actionHeading5_triggered(self):
-        print("Action")
+        self.insert_heading(5)
 
     @pyqtSlot()
     def on_actionHeading6_triggered(self):
-        print("Action")
+        self.insert_heading(6)
 
     @pyqtSlot()
     def on_actionHorizontalRule_triggered(self):
-        print("Action")
+        if self.get_cursor().block().text() == "":
+            self.insert_text((self.get_cursor().position(), "---"))
+        else:
+            cursor = self.get_cursor()
+            cursor.movePosition(QTextCursor.EndOfLine)
+            self.get_editor().setTextCursor(cursor)
+            self.insert_text((self.get_cursor().position(), "\n---"))
 
     @pyqtSlot()
     def on_actionBlockquote_triggered(self):
-        print("Action")
+        text = "> "
+        cursor = self.get_cursor()
+        init_pos = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        self.get_editor().setTextCursor(cursor)
+        cursor.insertText(text)
+        cursor.setPosition(init_pos + len(text))
+        self.get_editor().setTextCursor(cursor)
 
     @pyqtSlot()
     def on_actionOrdList_triggered(self):
-        print("Action")
+        text = "1. "
+        cursor = self.get_cursor()
+        init_pos = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        self.get_editor().setTextCursor(cursor)
+        cursor.insertText(text)
+        cursor.setPosition(init_pos + len(text))
+        self.get_editor().setTextCursor(cursor)
 
     @pyqtSlot()
     def on_actionUnordList_triggered(self):
-        print("Action")
+        text = "- "
+        cursor = self.get_cursor()
+        init_pos = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        self.get_editor().setTextCursor(cursor)
+        cursor.insertText(text)
+        cursor.setPosition(init_pos + len(text))
+        self.get_editor().setTextCursor(cursor)
 
     @pyqtSlot()
     def on_actionLink_triggered(self):
-        print("Action")
+        dialog = AddLinkDialog()
+        dialog.show()
+        if dialog.exec_():
+            self.insert_text((self.get_cursor().position(), "[{}]({})".format(dialog.link_text, dialog.link_address)))
 
     @pyqtSlot()
     def on_actionImage_triggered(self):
-        print("Action")
+        dialog = AddImageDialog()
+        dialog.show()
+        if dialog.exec_():
+            self.insert_text((self.get_cursor().position(), "![{}]({})".format(dialog.image_text, dialog.image_path)))
 
     @pyqtSlot()
     def on_actionCode_triggered(self):
-        print("Action")
+        if len(self.get_cursor().selection().toPlainText()) == 0:
+            pos = self.get_cursor().position()
+            self.insert_text((pos, "``"), move_center=True)
+        else:
+            start = self.get_cursor().selectionStart()
+            end = self.get_cursor().selectionEnd()
+            self.insert_texts(((start, "`"), (end, "`")))

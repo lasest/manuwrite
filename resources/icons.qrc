@@ -24,6 +24,7 @@
         <file>icons_dark/link.svg</file>
         <file>icons_dark/insert-image.svg</file>
         <file>icons_dark/format-text-code.svg</file>
+        <file>icons_dark/document-open.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">
