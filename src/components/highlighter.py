@@ -90,6 +90,14 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.formats["image"].setFontStrikeOut(True)
 
     def highlightBlock(self, text):
+        tags = self.get_tags(text)
+
+        for tag in tags:
+            self.setFormat(tag[0], tag[1], self.formats[tag[2]])
+
+    def get_tags(self, text):
+
+        tags = []
 
         for rule in self.rules:
             index = rule.expression.indexIn(text)
@@ -114,5 +122,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                     loffset = len(rule.expression.cap(group_n - 1))
 
                 length = rule.expression.matchedLength() - loffset - roffset
-                self.setFormat(index + loffset, length, rule.format)
+                tags.append((index + loffset, length, rule.name))
                 index = rule.expression.indexIn(text, index + length + roffset)
+
+        return tags

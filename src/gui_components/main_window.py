@@ -92,9 +92,6 @@ class MainWindow(QMainWindow):
 
         return self.ui.EditorTabWidget.widget(tab_index).findChild(TextEditor)
 
-    def get_cursor(self) -> QTextCursor:
-        return self.get_editor().textCursor()
-
     # Signal handling
     @pyqtSlot()
     def on_EditorTabLabel_clicked(self):

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PyQt5.QtCore import QSize, QRect, Qt
+from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal
 from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor
 
 from components.highlighter import MarkdownHighlighter
@@ -34,6 +34,7 @@ class TextEditor(QPlainTextEdit):
         self.highlighter = MarkdownHighlighter(self.document())
         self.updateLineNumberAreaWidth(0)
         self.text_changed = False
+
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -171,3 +172,4 @@ class TextEditor(QPlainTextEdit):
             self.insert_text_at_cursor(tag * 2, move_center=True)
         else:
             self.insert_text_at_selection_bound(tag)
+
