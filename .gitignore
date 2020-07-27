@@ -2,3 +2,4 @@ venv
 .idea
 __*
 src/resources/icons_rc.py
+pycharm_tasks.sh

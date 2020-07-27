@@ -9,6 +9,7 @@ pyuic5 ui/save_changes_single_dialog.ui -o src/forms/ui_save_changes_single_dial
 pyuic5 ui/save_changes_multiple_dialog.ui -o src/forms/ui_save_changes_multiple_dialog.py
 pyuic5 ui/add_link_dialog.ui -o src/forms/ui_add_link_dialog.py
 pyuic5 ui/add_image_dialog.ui -o src/forms/ui_add_image_dialog.py
+pyuic5 ui/add_citation_dialog.ui -o src/forms/ui_add_citation_dialog.py
 
 # Activate python venv
 if [ ! -d "./venv" ]

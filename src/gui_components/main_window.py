@@ -5,12 +5,13 @@ from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl)
 from PyQt5.QtGui import *
 
 from forms.ui_main_window import Ui_MainWindow
-from resources import icons_rc
 from gui_components.text_editor import TextEditor
 from gui_components.save_changes_single_dialog import SaveChangesSingleDialog
 from gui_components.save_changes_multiple_dialog import SaveChangesMultipleDialog
 from gui_components.add_link_dialog import AddLinkDialog
 from gui_components.add_image_dialog import AddImageDialog
+from gui_components.add_citation_dialog import AddCitationDialog
+from resources import icons_rc
 from common import Result
 
 
@@ -48,6 +49,7 @@ class MainWindow(QMainWindow):
         self.ui.HeadingToolButton.setDefaultAction(self.ui.actionHeading1)
 
         self.ui.BlockquoteToolButton.setDefaultAction(self.ui.actionBlockquote)
+        self.ui.AddCitationToolButton.setDefaultAction(self.ui.actionAddCitation)
 
     def set_icons(self):
         # load common icons
@@ -301,3 +303,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_actionCode_triggered(self):
         self.get_editor().insert_double_tag("`")
+
+    @pyqtSlot()
+    def on_actionAddCitation_triggered(self):
+        dialog = AddCitationDialog()
+        dialog.show()
+        if dialog.exec_():
+            self.get_editor().insert_text_at_cursor("[@{}]".format(dialog.citation_identifier))

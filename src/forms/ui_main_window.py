@@ -136,6 +136,9 @@ class Ui_MainWindow(object):
         self.CodeToolButton.setIconSize(QtCore.QSize(22, 22))
         self.CodeToolButton.setObjectName("CodeToolButton")
         self.horizontalLayout_5.addWidget(self.CodeToolButton)
+        self.AddCitationToolButton = QtWidgets.QToolButton(self.frame)
+        self.AddCitationToolButton.setObjectName("AddCitationToolButton")
+        self.horizontalLayout_5.addWidget(self.AddCitationToolButton)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem1)
         self.verticalLayout_2.addWidget(self.frame)
@@ -221,6 +224,8 @@ class Ui_MainWindow(object):
         self.actionImage.setObjectName("actionImage")
         self.actionCode = QtWidgets.QAction(MainWindow)
         self.actionCode.setObjectName("actionCode")
+        self.actionAddCitation = QtWidgets.QAction(MainWindow)
+        self.actionAddCitation.setObjectName("actionAddCitation")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
@@ -252,6 +257,7 @@ class Ui_MainWindow(object):
         self.LinkToolButton.setText(_translate("MainWindow", "..."))
         self.ImageToolButton.setText(_translate("MainWindow", "..."))
         self.CodeToolButton.setText(_translate("MainWindow", "..."))
+        self.AddCitationToolButton.setText(_translate("MainWindow", "..."))
         self.EditorTabWidget.setTabText(self.EditorTabWidget.indexOf(self.tab), _translate("MainWindow", "Tab 1"))
         self.label.setText(_translate("MainWindow", "Git tab"))
         self.label_2.setText(_translate("MainWindow", "Project tab"))
@@ -276,6 +282,7 @@ class Ui_MainWindow(object):
         self.actionLink.setText(_translate("MainWindow", "Link"))
         self.actionImage.setText(_translate("MainWindow", "Image"))
         self.actionCode.setText(_translate("MainWindow", "Code"))
+        self.actionAddCitation.setText(_translate("MainWindow", "Add Citation"))
 from gui_components.qlabel_clickable import QLabelClickable
 from gui_components.qtabwidget_custom import QTabWidgetCustom
 from gui_components.text_editor import TextEditor
