@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
+from PyQt5.QtCore import QSize, QRect, Qt
+from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor
 
 from components.highlighter import MarkdownHighlighter
 
@@ -121,5 +121,53 @@ class TextEditor(QPlainTextEdit):
             extraSelections.append(selection)
         self.setExtraSelections(extraSelections)
 
-    def on_TextEditor_textChanged(self):
+    def on_TextEditor_textChanged(self) -> None:
         self.text_changed = True
+
+    def insert_text_at_cursor(self, text: str, move_center=False) -> None:
+        initial_pos = self.textCursor().position()
+        self.textCursor().insertText(text)
+
+        if move_center:
+            cursor = self.textCursor()
+            cursor.setPosition(initial_pos + int(len(text) / 2))
+            self.setTextCursor(cursor)
+
+    def insert_text_at_line_beginning(self, text: str) -> None:
+        init_pos = self.textCursor().position()
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        self.setTextCursor(cursor)
+        cursor.insertText(text)
+
+        cursor.setPosition(init_pos + len(text))
+        self.setTextCursor(cursor)
+
+    def insert_text_at_selection_bound(self, text: str) -> None:
+        start = self.textCursor().selectionStart()
+        end = self.textCursor().selectionEnd()
+        self.textCursor().clearSelection()
+
+        cursor = self.textCursor()
+        cursor.setPosition(end)
+        self.setTextCursor(cursor)
+        cursor.insertText(text)
+
+        cursor = self.textCursor()
+        cursor.setPosition(start)
+        self.setTextCursor(cursor)
+        cursor.insertText(text)
+
+    def insert_text_at_empty_line(self, text: str) -> None:
+        if self.textCursor().block().text() == "":
+            self.textCursor().insertText(text)
+        else:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.insertText("\n{}".format(text))
+
+    def insert_double_tag(self, tag: str) -> None:
+        if len(self.textCursor().selection().toPlainText()) == 0:
+            self.insert_text_at_cursor(tag * 2, move_center=True)
+        else:
+            self.insert_text_at_selection_bound(tag)
