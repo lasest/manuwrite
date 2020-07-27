@@ -53,7 +53,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "code": r"`..*`",
         "link": r"()(^\[..*\]\(..*\))|" +
                 r"([^!])(\[..*\]\(..*\))",
-        "image": r"!\[..*\]\(..*\)"
+        "image": r"!\[..*\]\(..*\)",
+        "citation": r"\[@[\S][\S]*:[\S][\S]*\]"
     })
 
     def __init__(self, document):
@@ -88,6 +89,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.formats["code"].setFontFamily("fantasy")
         self.formats["link"].setFontUnderline(True)
         self.formats["image"].setFontStrikeOut(True)
+        self.formats["citation"].setForeground(Qt.red)
 
     def highlightBlock(self, text):
         tags = self.get_tags(text)
