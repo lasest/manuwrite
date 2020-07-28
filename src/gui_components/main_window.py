@@ -198,7 +198,6 @@ class MainWindow(QMainWindow):
         if index is None:
             index = self.ui.EditorTabWidget.currentIndex()
 
-
         result = False
 
         tabname = self.ui.EditorTabWidget.tabText(index)
@@ -398,7 +397,7 @@ class MainWindow(QMainWindow):
         clicked_item = self.ui.ProjectTreeView.indexAt(point)
 
         if clicked_item.data() is None:
-            return
+            self.ui.actionCreateFolder.setEnabled(True)
 
         if not self.ProjectManager.FsModel.isDir(clicked_item):
             self.ui.actionCreateFolder.setEnabled(False)
@@ -419,6 +418,8 @@ class MainWindow(QMainWindow):
     def on_actionCreateFolder_triggered(self):
         point = self.ui.actionCreateFolder.data()
         clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        if clicked_item.data() is None:
+            clicked_item = self.ui.ProjectTreeView.rootIndex()
         path = self.ProjectManager.FsModel.filePath(clicked_item)
         name = QInputDialog.getText(self, "Create folder", "Folder name:")
         if name:
@@ -428,6 +429,8 @@ class MainWindow(QMainWindow):
     def on_actionCreateFile_triggered(self):
         point = self.ui.actionCreateFolder.data()
         clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        if clicked_item.data() is None:
+            clicked_item = self.ui.ProjectTreeView.rootIndex()
         path = self.ProjectManager.FsModel.filePath(clicked_item)
 
         name = QInputDialog.getText(self, "Create file", "File name:")
@@ -438,12 +441,16 @@ class MainWindow(QMainWindow):
     def on_actionDelete_triggered(self):
         point = self.ui.actionCreateFolder.data()
         clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        if clicked_item.data() is None:
+            clicked_item = self.ui.ProjectTreeView.rootIndex()
         self.ProjectManager.delete_file(clicked_item)
 
     @pyqtSlot()
     def on_actionRename_triggered(self):
         point = self.ui.actionCreateFolder.data()
         clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        if clicked_item.data() is None:
+            return
         name = QInputDialog.getText(self, "Rename", "New name:")
         if name:
             self.ProjectManager.rename(clicked_item, name[0])
