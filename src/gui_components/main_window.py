@@ -1,7 +1,8 @@
 from typing import Tuple
 
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl)
+from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction, QSplitter, QSizePolicy, QMessageBox,
+                            QMenu, QInputDialog)
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject)
 from PyQt5.QtGui import *
 
 from forms.ui_main_window import Ui_MainWindow
@@ -12,7 +13,8 @@ from gui_components.add_link_dialog import AddLinkDialog
 from gui_components.add_image_dialog import AddImageDialog
 from gui_components.add_citation_dialog import AddCitationDialog
 from resources import icons_rc
-from common import Result
+from common import Result, ProjectError
+from components.project_manager import ProjectManager
 
 
 class MainWindow(QMainWindow):
@@ -29,6 +31,12 @@ class MainWindow(QMainWindow):
         self.ui.EditorTabWidget.clear()
 
         self.set_toolbar_actions()
+        self.ProjectManager = None
+        self.ui.splitter.setSizes((150, 450))
+        self.ui.splitter.setStretchFactor(0, 0)
+        self.ui.splitter.setStretchFactor(1, 1)
+        self.ui.ProjectLabel.setAutoFillBackground(True)
+        self.ui.ProjectLabel.setStyleSheet("QLabel {background-color: SlateGrey; }")
 
         self.show()
 
@@ -89,10 +97,27 @@ class MainWindow(QMainWindow):
         label.setStyleSheet("QLabel {{ background-color : {}; }}".format(background_color.name()))
 
     def get_editor(self, tab_index: int = None) -> TextEditor:
+        if self.ui.EditorTabWidget.count() == 0:
+            return None
+
         if tab_index is None:
             tab_index = self.ui.EditorTabWidget.currentIndex()
 
         return self.ui.EditorTabWidget.widget(tab_index).findChild(TextEditor)
+
+    def load_project(self, path: str) -> None:
+        self.ProjectManager = ProjectManager(path)
+        self.ui.ProjectTreeView.setModel(self.ProjectManager.FsModel)
+        self.ui.ProjectTreeView.setRootIndex(self.ProjectManager.FsModel.index(path))
+        self.ui.ProjectTreeView.hideColumn(1)
+        self.ui.ProjectTreeView.hideColumn(2)
+        self.ui.ProjectTreeView.hideColumn(3)
+        self.ui.ProjectTreeView.header().setVisible(False)
+        self.ui.ProjectLabel.setAutoFillBackground(True)
+        self.on_EditorTabLabel_clicked()
+        self.ProjectManager.FsModel.directoryLoaded.connect(self.on_ProjectManager_ProjectDirectoryLoaded)
+        #self.ui.ProjectTreeView.setWindowTitle(QObject.tr(self, "Project view"))
+
 
     # Signal handling
     @pyqtSlot()
@@ -149,6 +174,8 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionSave_triggered(self, index=None) -> bool:
+        if self.ui.EditorTabWidget.count() == 0:
+            return
         if index is None:
             index = self.ui.EditorTabWidget.currentIndex()
 
@@ -165,8 +192,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionSave_As_triggered(self, index=None) -> bool:
+        if self.ui.EditorTabWidget.count() == 0:
+            return
+
         if index is None:
             index = self.ui.EditorTabWidget.currentIndex()
+
 
         result = False
 
@@ -236,58 +267,73 @@ class MainWindow(QMainWindow):
     # TOOLBAR ACTIONS
     @pyqtSlot()
     def on_actionItalic_triggered(self):
-        self.get_editor().insert_double_tag("*")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_double_tag("*")
 
     @pyqtSlot()
     def on_actionBold_triggered(self):
-        self.get_editor().insert_double_tag("**")
+        if self.ui.EditorTabWidget.count() == 0:
+            self.get_editor().insert_double_tag("**")
 
     @pyqtSlot()
     def on_actionBoldItalic_triggered(self):
-        self.get_editor().insert_double_tag("***")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_double_tag("***")
 
     @pyqtSlot()
     def on_actionHeading1_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("# ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("# ")
 
     @pyqtSlot()
     def on_actionHeading2_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("## ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("## ")
 
     @pyqtSlot()
     def on_actionHeading3_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("### ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("### ")
 
     @pyqtSlot()
     def on_actionHeading4_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("#### ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("#### ")
 
     @pyqtSlot()
     def on_actionHeading5_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("##### ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("##### ")
 
     @pyqtSlot()
     def on_actionHeading6_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("###### ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("###### ")
 
     @pyqtSlot()
     def on_actionHorizontalRule_triggered(self):
-        self.get_editor().insert_text_at_empty_line("---")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_empty_line("---")
 
     @pyqtSlot()
     def on_actionBlockquote_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("> ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("> ")
 
     @pyqtSlot()
     def on_actionOrdList_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("1. ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("1. ")
 
     @pyqtSlot()
     def on_actionUnordList_triggered(self):
-        self.get_editor().insert_text_at_line_beginning("- ")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_text_at_line_beginning("- ")
 
     @pyqtSlot()
     def on_actionLink_triggered(self):
+        if self.ui.EditorTabWidget.count() == 0:
+            return
         dialog = AddLinkDialog()
         dialog.show()
         if dialog.exec_():
@@ -295,6 +341,8 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionImage_triggered(self):
+        if self.ui.EditorTabWidget.count() == 0:
+            return
         dialog = AddImageDialog()
         dialog.show()
         if dialog.exec_():
@@ -302,11 +350,104 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionCode_triggered(self):
-        self.get_editor().insert_double_tag("`")
+        if self.ui.EditorTabWidget.count() != 0:
+            self.get_editor().insert_double_tag("`")
 
     @pyqtSlot()
     def on_actionAddCitation_triggered(self):
+        if self.ui.EditorTabWidget.count() == 0:
+            return
         dialog = AddCitationDialog()
         dialog.show()
         if dialog.exec_():
             self.get_editor().insert_text_at_cursor("[@{}]".format(dialog.citation_identifier))
+
+    @pyqtSlot(bool)
+    def on_actionProjectTab_triggered(self, checked):
+        if checked:
+            self.ui.splitter.setSizes([1, 5])
+        else:
+            self.ui.splitter.setSizes([0, 1])
+
+    @pyqtSlot()
+    def on_actionOpenProject_triggered(self):
+        path = QFileDialog.getExistingDirectory()
+        if path:
+            try:
+                self.load_project(path)
+            except ProjectError as e:
+                self.ProjectManager = None
+                message = QMessageBox()
+                message.setText("Failed to load project: " + e.message.lower())
+                message.setWindowTitle("Error")
+                message.exec_()
+
+    @pyqtSlot()
+    def on_actionNewProject_triggered(self):
+        path = QFileDialog.getExistingDirectory()
+        if path:
+            ProjectManager.create_project(path)
+            self.load_project(path)
+
+    @pyqtSlot(QPoint)
+    def on_ProjectTreeView_customContextMenuRequested(self, point: QPoint):
+        if self.ProjectManager is None:
+            return
+
+        menu = QMenu()
+        clicked_item = self.ui.ProjectTreeView.indexAt(point)
+
+        if clicked_item.data() is None:
+            return
+
+        if not self.ProjectManager.FsModel.isDir(clicked_item):
+            self.ui.actionCreateFolder.setEnabled(False)
+        else:
+            self.ui.actionCreateFolder.setEnabled(True)
+
+        menu.addActions([self.ui.actionCreateFile, self.ui.actionCreateFolder, self.ui.actionDelete,
+                         self.ui.actionRename])
+
+        self.ui.actionCreateFolder.setData(QVariant(point))
+        self.ui.actionDelete.setData(QVariant(point))
+        self.ui.actionCreateFile.setData(QVariant(point))
+        self.ui.actionRename.setData(QVariant(point))
+
+        menu.exec_(self.ui.ProjectTreeView.mapToGlobal(point))
+
+    @pyqtSlot()
+    def on_actionCreateFolder_triggered(self):
+        point = self.ui.actionCreateFolder.data()
+        clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        path = self.ProjectManager.FsModel.filePath(clicked_item)
+        name = QInputDialog.getText(self, "Create folder", "Folder name:")
+        if name:
+            self.ProjectManager.create_folder(path + "/" + name[0])
+
+    @pyqtSlot()
+    def on_actionCreateFile_triggered(self):
+        point = self.ui.actionCreateFolder.data()
+        clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        path = self.ProjectManager.FsModel.filePath(clicked_item)
+
+        name = QInputDialog.getText(self, "Create file", "File name:")
+        if name:
+            self.ProjectManager.create_file(path + "/" + name[0])
+
+    @pyqtSlot()
+    def on_actionDelete_triggered(self):
+        point = self.ui.actionCreateFolder.data()
+        clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        self.ProjectManager.delete_file(clicked_item)
+
+    @pyqtSlot()
+    def on_actionRename_triggered(self):
+        point = self.ui.actionCreateFolder.data()
+        clicked_item = self.ui.ProjectTreeView.indexAt(point)
+        name = QInputDialog.getText(self, "Rename", "New name:")
+        if name:
+            self.ProjectManager.rename(clicked_item, name[0])
+
+    @pyqtSlot(str)
+    def on_ProjectManager_ProjectDirectoryLoaded(self, path: str):
+        self.ui.ProjectTreeView.expandToDepth(4)
