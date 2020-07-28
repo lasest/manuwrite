@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionBold_triggered(self):
-        if self.ui.EditorTabWidget.count() == 0:
+        if self.ui.EditorTabWidget.count() != 0:
             self.get_editor().insert_double_tag("**")
 
     @pyqtSlot()
