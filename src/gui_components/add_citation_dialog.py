@@ -5,18 +5,7 @@ from PyQt5.QtCore import pyqtSlot, QRegExp, Qt, QThread
 from manubot.cite.handlers import prefix_to_handler
 
 from forms.ui_add_citation_dialog import Ui_AddCitationDialog
-
-class ManubotThread(QThread):
-
-    def __init__(self, parent, citekey: str):
-        super().__init__(parent)
-        self.citekey = citekey
-        self.citation = ""
-
-    def run(self):
-        manubot = subprocess.run(["manubot", "cite", "--render", self.citekey], capture_output=True)
-        manubot.check_returncode()
-        self.citation = manubot.stdout.decode()
+from components.thread_manager import ThreadManager
 
 
 class AddCitationDialog(QDialog):
@@ -34,6 +23,8 @@ class AddCitationDialog(QDialog):
         self.prefixes = tuple(self.prefixes_with_colon)
         self.citation_identifier = ""
         self.allow_close = True
+        self.ThreadManager = ThreadManager()
+        self.ThreadManager.manubotCiteThreadFinished.connect(self.on_thread_finished)
         self.common_prefixes = {
             "doi": r"10.\d{4,9}/[-._;()/:A-Z0-9]+",
             "short-doi": r"^10/\w{5}$",
@@ -60,9 +51,7 @@ class AddCitationDialog(QDialog):
             self.log("Type: {}".format(data[0]))
             self.log("Identifier: {}".format(data[1]))
             self.log("Retrieving info...\n")
-            self.thread = ManubotThread(self, data[1])
-            self.thread.finished.connect(self.on_thread_finished)
-            self.thread.start()
+            self.ThreadManager.get_citation(data[1])
 
 
     def accept(self) -> None:
@@ -94,6 +83,6 @@ class AddCitationDialog(QDialog):
 
         return (ident_type, identifier)
 
-
-    def on_thread_finished(self):
-        self.ui.InfoTextEdit.appendPlainText(self.thread.citation)
+    @pyqtSlot(str, str)
+    def on_thread_finished(self, citekey: str, citation: str):
+        self.ui.InfoTextEdit.appendPlainText(citation)

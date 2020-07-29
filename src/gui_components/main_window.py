@@ -313,7 +313,6 @@ class MainWindow(QMainWindow):
     # TOOLBAR ACTIONS
     @pyqtSlot()
     def on_actionItalic_triggered(self):
-        print(self.OpenedEditors)
         if self.ui.EditorTabWidget.count() != 0:
             self.get_editor().insert_double_tag("*")
 
@@ -512,7 +511,6 @@ class MainWindow(QMainWindow):
         if self.loading_project:
             pass
         else:
-            print("Cell changed")
             key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
             value = self.ui.ProjectSettingsTableWidget.item(row, 1).text()
             self.ProjectManager.uptade_project_info((key, value))

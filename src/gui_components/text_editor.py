@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
+from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot
 from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor
 
 from components.highlighter import MarkdownHighlighter
+from components.thread_manager import ThreadManager
 
 
 class LineNumberArea(QWidget):
@@ -34,6 +35,9 @@ class TextEditor(QPlainTextEdit):
         self.highlighter = MarkdownHighlighter(self.document())
         self.updateLineNumberAreaWidth(0)
         self.text_changed = False
+        self.citations = dict()
+        self.ThreadManager = ThreadManager(max_threads=4)
+        self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
 
 
     def lineNumberAreaWidth(self):
@@ -96,9 +100,28 @@ class TextEditor(QPlainTextEdit):
 
 
     def highlightCurrentLine(self):
-        extraSelections = []
+        point = self.viewport().mapToGlobal(self.cursorRect().topLeft())
+        QToolTip.showText(point, "")
 
         cursor = self.textCursor()
+
+        current_line_text = cursor.block().text()
+        current_line_tags = self.highlighter.get_tags(current_line_text)
+        for tag in current_line_tags:
+            tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
+            tag_text = tag_text[2:-1]
+            if tag[2] == "citation":
+                if tag_text not in self.citations:
+                    self.citations[tag_text] = ""
+                    self.ThreadManager.get_citation(tag_text)
+                    QToolTip.showText(point, "Fetching citation info...")
+                elif self.citations[tag_text] == "" and cursor.position() >= tag[0] and cursor.position() <= (tag[1] + tag[0]):
+                    QToolTip.showText(point, "Fetching citation info...")
+                else:
+                    QToolTip.showText(point, self.citations[tag_text])
+
+        extraSelections = []
+
         selection_start = cursor.selectionStart()
         selection_end = cursor.selectionEnd()
         cursor.setPosition(selection_start)
@@ -173,3 +196,13 @@ class TextEditor(QPlainTextEdit):
         else:
             self.insert_text_at_selection_bound(tag)
 
+    def get_citation_for_key(self, citekey: str):
+        thread = ManubotThread(self, citekey)
+        self.manubot_threads.append(thread)
+        thread.finished.connect(self.on_manubot_thread_finished)
+        print("Starting thread")
+        thread.start()
+
+    @pyqtSlot(str, str)
+    def on_manubot_thread_finished(self, citekey: str, citation: str):
+        self.citations[citekey] = citation

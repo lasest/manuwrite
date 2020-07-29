@@ -1,4 +1,6 @@
 from enum import Enum
+from PyQt5.QtCore import QThread
+import subprocess
 
 
 class Result(Enum):

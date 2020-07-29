@@ -67,6 +67,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for pattern in self.patterns.items():
             self.rules.append(Rule(pattern[0], pattern[1], self.formats[pattern[0]]))
 
+        #self.pending_citations = []
+
     def set_formats(self):
         self.formats["heading-1"].setForeground(Qt.yellow)
         self.formats["heading-2"].setForeground(Qt.magenta)
@@ -90,12 +92,18 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.formats["link"].setFontUnderline(True)
         self.formats["image"].setFontStrikeOut(True)
         self.formats["citation"].setForeground(Qt.red)
+        self.formats["citation"].setToolTip("Some random text")
 
     def highlightBlock(self, text):
         tags = self.get_tags(text)
 
         for tag in tags:
             self.setFormat(tag[0], tag[1], self.formats[tag[2]])
+            #if tag[2] == "citation":
+            #    citekey = text[tag[0]:tag[0] + tag[1]]
+            #    self.pending_citations.append(citekey)
+
+        #print(self.citations)
 
     def get_tags(self, text):
 
