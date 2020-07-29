@@ -114,11 +114,15 @@ class TextEditor(QPlainTextEdit):
                 if tag_text not in self.citations:
                     self.citations[tag_text] = ""
                     self.ThreadManager.get_citation(tag_text)
-                    QToolTip.showText(point, "Fetching citation info...")
+                    QToolTip.showText(point, "Fetching citation info...", self, QRect(), 5000)
                 elif self.citations[tag_text] == "" and cursor.position() >= tag[0] and cursor.position() <= (tag[1] + tag[0]):
-                    QToolTip.showText(point, "Fetching citation info...")
+                    QToolTip.showText(point, "Fetching citation info...", self, QRect(), 5000)
                 else:
-                    QToolTip.showText(point, self.citations[tag_text])
+                    QToolTip.showText(point, self.citations[tag_text], self, QRect(), 5000)
+            elif tag[2] == "image" and cursor.position() >= tag[0] and cursor.position() <= (tag[1] + tag[0]):
+                path = tag_text[tag_text.find("(") + 1:]
+                QToolTip.showText(point, "<img src='{}' width='250' height='250'>".format(path), self, QRect(), 5000)
+
 
         extraSelections = []
 

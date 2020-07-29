@@ -99,11 +99,6 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         for tag in tags:
             self.setFormat(tag[0], tag[1], self.formats[tag[2]])
-            #if tag[2] == "citation":
-            #    citekey = text[tag[0]:tag[0] + tag[1]]
-            #    self.pending_citations.append(citekey)
-
-        #print(self.citations)
 
     def get_tags(self, text):
 
