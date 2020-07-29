@@ -1,4 +1,6 @@
 import json
+from collections import OrderedDict
+import toml
 
 from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QModelIndex, QDir, QFile
@@ -12,30 +14,31 @@ class ProjectManager():
 
         self.root_path = directory_path
         self.FsModel = QFileSystemModel()
-        #self.FsModel.setReadOnly(True)
         self.FsModel.setRootPath(directory_path)
         self.project_info = dict()
         self.ModelIndex = self.FsModel.index(directory_path)
         self.read_project_info()
 
     def read_project_info(self):
-        print("Reading Project info")
         if QFile.exists(self.root_path + "/.manuwrite/project.json"):
             file = QFile()
             file.setFileName(self.root_path + "/.manuwrite/project.json")
             file.open(QFile.ReadOnly)
-            data = json.loads(file.readAll().data().decode())
+            data = OrderedDict(json.loads(file.readAll().data().decode()))
             self.project_info = data
         else:
             print("Cannot read project info. File \"{}\" doesn't exist.".format(self.root_path + "/.manuwrite/project.json"))
             raise ProjectError("Project file doesn't exits")
 
     def uptade_project_info(self, info: dict):
-        pass
-
+        self.project_info[info[0]]["value"] = info[1]
 
     def save_project_data(self) -> bool:
-        pass
+        file = QFile()
+        file.setFileName(self.root_path + "/.manuwrite/project.json")
+        file.open(QFile.ReadWrite)
+        file.write(json.dumps(self.project_info, indent=4).encode())
+        file.close()
 
     @staticmethod
     def create_project(directory_path):
@@ -51,13 +54,13 @@ class ProjectManager():
         file.setFileName(directory_path + "/.manuwrite/project.json")
         file.open(QFile.ReadWrite)
 
-        project_info = {
-            "title": "Untitled",
-            "date_created:": "2020-07-28",
-            "author": "Sergey Lazarev",
-            "project_type": "notes",
-            "absolute_path": directory_path
-        }
+        project_info = OrderedDict({
+            "Title": {"type": "str", "value": "Untitled"},
+            "Date created:": {"type": "str", "value": "2020-07-28"},
+            "Author": {"type": "str", "value": "Sergey Lazarev"},
+            "Project type": {"type": "enum", "value": "Notes", "allowed values": ["Notes", "Article", "Book"]},
+            "Absolute path": {"type": "str", "value": "directory_path"}
+        })
 
         file.write(json.dumps(project_info, indent=4).encode())
         file.close()

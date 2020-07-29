@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction, QSplitter, QSizePolicy, QMessageBox,
-                            QMenu, QInputDialog)
+                            QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox)
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject)
 from PyQt5.QtGui import *
 
@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         self.ui.splitter.setStretchFactor(1, 1)
         self.ui.ProjectLabel.setAutoFillBackground(True)
         self.ui.ProjectLabel.setStyleSheet("QLabel {background-color: SlateGrey; }")
+        self.loading_project = False
 
         self.show()
 
@@ -106,6 +107,7 @@ class MainWindow(QMainWindow):
         return self.ui.EditorTabWidget.widget(tab_index).findChild(TextEditor)
 
     def load_project(self, path: str) -> None:
+        self.loading_project = True
         self.ProjectManager = ProjectManager(path)
         self.ui.ProjectTreeView.setModel(self.ProjectManager.FsModel)
         self.ui.ProjectTreeView.setRootIndex(self.ProjectManager.FsModel.index(path))
@@ -116,8 +118,40 @@ class MainWindow(QMainWindow):
         self.ui.ProjectLabel.setAutoFillBackground(True)
         self.on_EditorTabLabel_clicked()
         self.ProjectManager.FsModel.directoryLoaded.connect(self.on_ProjectManager_ProjectDirectoryLoaded)
-        #self.ui.ProjectTreeView.setWindowTitle(QObject.tr(self, "Project view"))
 
+        # Populate project settings
+        rows = len(self.ProjectManager.project_info)
+        self.ui.ProjectSettingsTableWidget.setRowCount(rows)
+        self.ui.ProjectSettingsTableWidget.setColumnCount(2)
+
+        info = []
+        for item in self.ProjectManager.project_info.items():
+            info.append(item)
+
+        for i in range(len(info)):
+            key = info[i][0]
+            table_item = QTableWidgetItem(key)
+            table_item.setFlags(table_item.flags() ^ Qt.ItemIsEditable)
+            self.ui.ProjectSettingsTableWidget.setItem(i, 0, table_item)
+
+            setting_type = info[i][1]["type"]
+            if setting_type != "enum":
+                table_item = QTableWidgetItem(info[i][1]["value"])
+                self.ui.ProjectSettingsTableWidget.setItem(i, 1, table_item)
+            else:
+                value = info[i][1]["value"]
+                variants = info[i][1]["allowed values"]
+                table_item = QComboBox(self.ui.ProjectSettingsTableWidget)
+                table_item.addItems(variants)
+                index = table_item.findText(value)
+                table_item.setCurrentIndex(index)
+                table_item.currentIndexChanged.connect(self.on_SettingComboBox_valueChanged)
+                table_item.row = i
+                self.ui.ProjectSettingsTableWidget.setCellWidget(i, 1, table_item)
+
+        self.ui.ProjectSettingsTableWidget.horizontalHeader().setStretchLastSection(True)
+        self.ui.ProjectSettingsTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.loading_project = False
 
     # Signal handling
     @pyqtSlot()
@@ -458,3 +492,26 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def on_ProjectManager_ProjectDirectoryLoaded(self, path: str):
         self.ui.ProjectTreeView.expandToDepth(4)
+
+    @pyqtSlot(int, int)
+    def on_ProjectSettingsTableWidget_cellChanged(self, row: int, column: int):
+        if self.loading_project:
+            pass
+        else:
+            print("Cell changed")
+            key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
+            value = self.ui.ProjectSettingsTableWidget.item(row, 1).text()
+            self.ProjectManager.uptade_project_info((key, value))
+
+    @pyqtSlot()
+    def on_SaveProjectSettingsButton_clicked(self):
+        if self.ProjectManager is not None:
+            self.ProjectManager.save_project_data()
+
+    @pyqtSlot(int)
+    def on_SettingComboBox_valueChanged(self, current_index: int):
+        sender = QObject.sender(self)
+        row = sender.row
+        key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
+        value = sender.itemText(current_index)
+        self.ProjectManager.uptade_project_info((key, value))
