@@ -196,8 +196,10 @@ class TextEditor(QPlainTextEdit):
     def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint):
         current_line_text = cursor.block().text()
         current_line_tags = self.highlighter.get_tags(current_line_text)
+
         hide_tooltip = True
         for tag in current_line_tags:
+            cursor_pos = cursor.positionInBlock()
             tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
             tag_text = tag_text[2:-1]
             if tag[2] == "citation":
@@ -206,30 +208,25 @@ class TextEditor(QPlainTextEdit):
                     self.ThreadManager.get_citation(tag_text)
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
-                elif self.citations[tag_text] == "" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+
+                elif self.citations[tag_text] == "" and cursor_pos >= tag[0] and cursor_pos < (tag[1] + tag[0]):
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
-                elif self.citations[tag_text] != "" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+                elif self.citations[tag_text] != "" and cursor_pos >= tag[0] and cursor_pos < (tag[1] + tag[0]):
                     QToolTip.showText(display_point, self.citations[tag_text], self, QRect(), 5000)
                     hide_tooltip = False
-                    print("Displaying tooltip somewhere...")
-            elif tag[2] == "image" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+            elif tag[2] == "image" and cursor_pos >= tag[0] and (cursor_pos < (tag[1] + tag[0])):
                 path = tag_text[tag_text.find("(") + 1:]
                 QToolTip.showText(display_point, "<img src='{}' width='250' height='250'>".format(path), self, QRect(), 5000)
                 hide_tooltip = False
 
         if hide_tooltip:
             QToolTip.hideText()
-        else:
-            print("Detected tag")
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        #pos = QPoint(int(event.localPos().x()), int(event.localPos().y()))
         pos = event.pos()
-        print("1: ", pos)
-        #pos.setX(pos.x() - self.viewportMargins().left())
-        #pos.setY(pos.y() - self.viewportMargins().top())
+        pos.setX(pos.x() - self.viewportMargins().left())
+        pos.setY(pos.y() - self.viewportMargins().top())
         cursor = self.cursorForPosition(pos)
-        #print("2:", pos)
 
         self.display_tooltips_for_cursor(cursor, event.globalPos())
