@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
-from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot
-from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor
+from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent
+from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QHelpEvent, QMouseEvent
 
 from components.highlighter import MarkdownHighlighter
 from components.thread_manager import ThreadManager
@@ -38,6 +38,7 @@ class TextEditor(QPlainTextEdit):
         self.citations = dict()
         self.ThreadManager = ThreadManager(max_threads=4)
         self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
+        self.setMouseTracking(True)
 
 
     def lineNumberAreaWidth(self):
@@ -101,28 +102,9 @@ class TextEditor(QPlainTextEdit):
 
     def highlightCurrentLine(self):
         point = self.viewport().mapToGlobal(self.cursorRect().topLeft())
-        QToolTip.showText(point, "")
-
+        QToolTip.showText(point, "", self, QRect(), 1)
         cursor = self.textCursor()
-
-        current_line_text = cursor.block().text()
-        current_line_tags = self.highlighter.get_tags(current_line_text)
-        for tag in current_line_tags:
-            tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
-            tag_text = tag_text[2:-1]
-            if tag[2] == "citation":
-                if tag_text not in self.citations:
-                    self.citations[tag_text] = ""
-                    self.ThreadManager.get_citation(tag_text)
-                    QToolTip.showText(point, "Fetching citation info...", self, QRect(), 5000)
-                elif self.citations[tag_text] == "" and cursor.position() >= tag[0] and cursor.position() <= (tag[1] + tag[0]):
-                    QToolTip.showText(point, "Fetching citation info...", self, QRect(), 5000)
-                else:
-                    QToolTip.showText(point, self.citations[tag_text], self, QRect(), 5000)
-            elif tag[2] == "image" and cursor.position() >= tag[0] and cursor.position() <= (tag[1] + tag[0]):
-                path = tag_text[tag_text.find("(") + 1:]
-                QToolTip.showText(point, "<img src='{}' width='250' height='250'>".format(path), self, QRect(), 5000)
-
+        self.display_tooltips_for_cursor(cursor, point)
 
         extraSelections = []
 
@@ -210,3 +192,44 @@ class TextEditor(QPlainTextEdit):
     @pyqtSlot(str, str)
     def on_manubot_thread_finished(self, citekey: str, citation: str):
         self.citations[citekey] = citation
+
+    def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint):
+        current_line_text = cursor.block().text()
+        current_line_tags = self.highlighter.get_tags(current_line_text)
+        hide_tooltip = True
+        for tag in current_line_tags:
+            tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
+            tag_text = tag_text[2:-1]
+            if tag[2] == "citation":
+                if tag_text not in self.citations:
+                    self.citations[tag_text] = ""
+                    self.ThreadManager.get_citation(tag_text)
+                    QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
+                    hide_tooltip = False
+                elif self.citations[tag_text] == "" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+                    QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
+                    hide_tooltip = False
+                elif self.citations[tag_text] != "" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+                    QToolTip.showText(display_point, self.citations[tag_text], self, QRect(), 5000)
+                    hide_tooltip = False
+                    print("Displaying tooltip somewhere...")
+            elif tag[2] == "image" and cursor.position() >= tag[0] and cursor.position() < (tag[1] + tag[0]):
+                path = tag_text[tag_text.find("(") + 1:]
+                QToolTip.showText(display_point, "<img src='{}' width='250' height='250'>".format(path), self, QRect(), 5000)
+                hide_tooltip = False
+
+        if hide_tooltip:
+            QToolTip.hideText()
+        else:
+            print("Detected tag")
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        #pos = QPoint(int(event.localPos().x()), int(event.localPos().y()))
+        pos = event.pos()
+        print("1: ", pos)
+        #pos.setX(pos.x() - self.viewportMargins().left())
+        #pos.setY(pos.y() - self.viewportMargins().top())
+        cursor = self.cursorForPosition(pos)
+        #print("2:", pos)
+
+        self.display_tooltips_for_cursor(cursor, event.globalPos())
