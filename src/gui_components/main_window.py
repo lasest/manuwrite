@@ -1,8 +1,9 @@
 from typing import Tuple
+from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction, QSplitter, QSizePolicy, QMessageBox,
                             QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox)
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject)
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex)
 from PyQt5.QtGui import *
 
 from forms.ui_main_window import Ui_MainWindow
@@ -18,6 +19,8 @@ from components.project_manager import ProjectManager
 
 
 class MainWindow(QMainWindow):
+
+    OpenedEditor = namedtuple("OpenedEditor", ["filepath", "in_current_project"])
 
     def __init__(self):
         super().__init__()
@@ -38,6 +41,8 @@ class MainWindow(QMainWindow):
         self.ui.ProjectLabel.setAutoFillBackground(True)
         self.ui.ProjectLabel.setStyleSheet("QLabel {background-color: SlateGrey; }")
         self.loading_project = False
+
+        self.OpenedEditors = []
 
         self.show()
 
@@ -189,9 +194,14 @@ class MainWindow(QMainWindow):
         self.get_editor().setFont(font)
         self.get_editor().setFocus()
 
+        self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False))
+
     @pyqtSlot()
-    def on_actionOpen_triggered(self):
-        filename = QFileDialog.getOpenFileName()
+    def on_actionOpen_triggered(self, filename: str = None):
+        if filename is None:
+            filename = QFileDialog.getOpenFileName()
+        else:
+            filename = (filename, "")
         if filename[0]:
             file_handle = open(filename[0], mode="r")
             text = file_handle.read()
@@ -200,6 +210,7 @@ class MainWindow(QMainWindow):
             self.on_actionNew_triggered()
             self.get_editor().appendPlainText(text)
             self.get_editor().document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
+            self.OpenedEditors[self.ui.EditorTabWidget.currentIndex()] = self.OpenedEditor(filepath=filename[0], in_current_project=False)
 
             self.ui.EditorTabWidget.setTabToolTip(self.ui.EditorTabWidget.currentIndex(), filename[0])
             index = filename[0].rfind("/")
@@ -247,6 +258,7 @@ class MainWindow(QMainWindow):
             self.ui.EditorTabWidget.setTabToolTip(index, filename[0])
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
+            self.OpenedEditors[index] = self.OpenedEditor(filepath=filename[0], in_current_project=False)
 
             result = True
 
@@ -267,6 +279,7 @@ class MainWindow(QMainWindow):
                     return
 
         self.ui.EditorTabWidget.removeTab(index)
+        del self.OpenedEditors[index]
 
     def closeEvent(self, event: QCloseEvent) -> None:
         unsaved_editors = []
@@ -300,6 +313,7 @@ class MainWindow(QMainWindow):
     # TOOLBAR ACTIONS
     @pyqtSlot()
     def on_actionItalic_triggered(self):
+        print(self.OpenedEditors)
         if self.ui.EditorTabWidget.count() != 0:
             self.get_editor().insert_double_tag("*")
 
@@ -515,3 +529,14 @@ class MainWindow(QMainWindow):
         key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
         value = sender.itemText(current_index)
         self.ProjectManager.uptade_project_info((key, value))
+
+    @pyqtSlot(QModelIndex)
+    def on_ProjectTreeView_clicked(self, index: QModelIndex):
+        if not self.ProjectManager.FsModel.isDir(index):
+            filepath = self.ProjectManager.FsModel.filePath(index)
+            for i in range(len(self.OpenedEditors)):
+                if filepath == self.OpenedEditors[i].filepath:
+                    self.ui.EditorTabWidget.setCurrentIndex(i)
+                    return
+            self.on_actionOpen_triggered(filepath)
+
