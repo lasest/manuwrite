@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip, QTextBrowser
-from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent, QTimer
+from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent, QTimer, QUrl
 from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QHelpEvent, QMouseEvent
 
 from components.highlighter import MarkdownHighlighter
@@ -187,12 +187,11 @@ class TextEditor(QPlainTextEdit):
         else:
             self.insert_text_at_selection_bound(tag)
 
-    def get_citation_for_key(self, citekey: str):
-        thread = ManubotThread(self, citekey)
-        self.manubot_threads.append(thread)
-        thread.finished.connect(self.on_manubot_thread_finished)
-        print("Starting thread")
-        thread.start()
+    #def get_citation_for_key(self, citekey: str):
+    #    thread = ManubotCiteThread(self, citekey)
+    #    self.manubot_threads.append(thread)
+    #    thread.finished.connect(self.on_manubot_thread_finished)
+    #    thread.start()
 
     @pyqtSlot(str, str)
     def on_manubot_thread_finished(self, citekey: str, citation: str):
@@ -241,7 +240,7 @@ class TextEditor(QPlainTextEdit):
 
     @pyqtSlot(str)
     def on_pandoc_thread_finished(self, html: str):
-        self.display_widget.setHtml(html)
+        self.display_widget.setHtml(html, QUrl("file:///home/lasest/Working folder/manuwrite/style.css"))
 
     @pyqtSlot()
     def on_InputTimer_timeout(self):

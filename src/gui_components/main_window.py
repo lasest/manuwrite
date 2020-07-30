@@ -180,7 +180,7 @@ class MainWindow(QMainWindow):
     def on_actionNew_triggered(self):
         new_widget = QWidget()
         new_widget.setLayout(QVBoxLayout())
-        editor = TextEditor(new_widget, self.ui.textBrowser)
+        editor = TextEditor(new_widget, self.ui.webEngineView)
         new_widget.layout().addWidget(editor)
         new_widget.layout().setContentsMargins(0,2,0,0)
 
@@ -548,7 +548,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(bool)
     def on_actionShowPreview_triggered(self, checked: bool):
-        print(self.ui.splitter.sizes())
         sp_width = self.ui.splitter.width()
         pr_width = self.ui.splitter.sizes()[0]
 

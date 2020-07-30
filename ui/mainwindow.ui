@@ -430,12 +430,11 @@
               <widget class="QWidget" name="verticalLayoutWidget">
                <layout class="QVBoxLayout" name="verticalLayout_3">
                 <item>
-                 <widget class="QTextBrowser" name="textBrowser">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
+                 <widget class="QWebEngineView" name="webEngineView">
+                  <property name="url">
+                   <url>
+                    <string>about:blank</string>
+                   </url>
                   </property>
                  </widget>
                 </item>
@@ -704,7 +703,7 @@
     <string>Project tab</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+P</string>
+    <string>Ctrl+Shift+P</string>
    </property>
   </action>
   <action name="actionOpenProject">
@@ -758,9 +757,17 @@
    <property name="text">
     <string>Show Preview</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
   </action>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
   <customwidget>
    <class>QLabelClickable</class>
    <extends>QLabel</extends>
