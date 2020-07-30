@@ -13,6 +13,7 @@ from gui_components.save_changes_multiple_dialog import SaveChangesMultipleDialo
 from gui_components.add_link_dialog import AddLinkDialog
 from gui_components.add_image_dialog import AddImageDialog
 from gui_components.add_citation_dialog import AddCitationDialog
+from gui_components.create_project_dialog import CreateProjectDialog
 from resources import icons_rc
 from common import Result, ProjectError
 from components.project_manager import ProjectManager
@@ -441,10 +442,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionNewProject_triggered(self):
-        path = QFileDialog.getExistingDirectory()
-        if path:
-            ProjectManager.create_project(path)
-            self.load_project(path)
+        dialog = CreateProjectDialog(["Article", "Book", "Notes"], self.SettingsManager.get_setting_value("Application/Project folder"))
+        dialog.show()
+        if dialog.exec_():
+            ProjectManager.create_project(dialog.path)
+            self.load_project(dialog.path)
+            self.ProjectManager.uptade_project_info(("Title", dialog.title))
+            self.ProjectManager.uptade_project_info(("Author", dialog.authors))
+            self.ProjectManager.uptade_project_info(("Project type", dialog.project_type))
+            self.ProjectManager.save_project_data()
 
     @pyqtSlot(QPoint)
     def on_ProjectTreeView_customContextMenuRequested(self, point: QPoint):
@@ -575,7 +581,10 @@ class MainWindow(QMainWindow):
 
         self.ui.splitter.setSizes(sizes)
         if self.SettingsManager.get_setting_value("MainWindow/last_project"):
-            self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
+            try:
+                self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
+            except ProjectError:
+                self.ProjectManager = None
 
     def write_settings(self):
         self.SettingsManager.set_setting_value("MainWindow/size", self.size())
