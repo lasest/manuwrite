@@ -65,6 +65,8 @@ class MainWindow(QMainWindow):
         self.ui.BlockquoteToolButton.setDefaultAction(self.ui.actionBlockquote)
         self.ui.AddCitationToolButton.setDefaultAction(self.ui.actionAddCitation)
 
+        self.ui.RenderFileToolButton.setDefaultAction(self.ui.actionRenderFile)
+
     def set_icons(self):
         # load common icons
         self.ui.EditorTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/document-papirus.svg")))
@@ -178,7 +180,7 @@ class MainWindow(QMainWindow):
     def on_actionNew_triggered(self):
         new_widget = QWidget()
         new_widget.setLayout(QVBoxLayout())
-        editor = TextEditor(new_widget)
+        editor = TextEditor(new_widget, self.ui.textBrowser)
         new_widget.layout().addWidget(editor)
         new_widget.layout().setContentsMargins(0,2,0,0)
 
@@ -254,11 +256,11 @@ class MainWindow(QMainWindow):
             self.get_editor(index).textChanged = False
 
             self.get_editor(index).document().setBaseUrl(QUrl.fromLocalFile(filename[0]))
-
+            self.OpenedEditors[index] = self.OpenedEditor(filepath=filename[0], in_current_project=False)
             self.ui.EditorTabWidget.setTabToolTip(index, filename[0])
+
             index = filename[0].rfind("/")
             self.ui.EditorTabWidget.setTabText(index, filename[0][index + 1:])
-            self.OpenedEditors[index] = self.OpenedEditor(filepath=filename[0], in_current_project=False)
 
             result = True
 
@@ -315,6 +317,8 @@ class MainWindow(QMainWindow):
     def on_actionItalic_triggered(self):
         if self.ui.EditorTabWidget.count() != 0:
             self.get_editor().insert_double_tag("*")
+        self.ui.textBrowser.setStyleSheet("QTextBrowser { background-color: white; color: black; }")
+        self.ui.textBrowser.setMarkdown(self.get_editor().toPlainText())
 
     @pyqtSlot()
     def on_actionBold_triggered(self):
@@ -538,3 +542,19 @@ class MainWindow(QMainWindow):
                     return
             self.on_actionOpen_triggered(filepath)
 
+    @pyqtSlot()
+    def on_actionRenderFile_triggered(self):
+        self.get_editor().render_to_html()
+
+    @pyqtSlot(bool)
+    def on_actionShowPreview_triggered(self, checked: bool):
+        print(self.ui.splitter.sizes())
+        sp_width = self.ui.splitter.width()
+        pr_width = self.ui.splitter.sizes()[0]
+
+        available_width = sp_width - pr_width
+
+        if checked:
+            self.ui.splitter.setSizes([pr_width, int(0.6 * available_width), int(0.4 * available_width)])
+        else:
+            self.ui.splitter.setSizes([pr_width, available_width, 0])

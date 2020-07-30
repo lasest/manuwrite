@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
-from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip, QTextBrowser
+from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent, QTimer
 from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QHelpEvent, QMouseEvent
 
 from components.highlighter import MarkdownHighlighter
@@ -22,9 +22,10 @@ class LineNumberArea(QWidget):
 
 class TextEditor(QPlainTextEdit):
 
-    def __init__(self, parent):
+    def __init__(self, parent, display_widget: QTextBrowser):
         super().__init__(parent)
         self.lineNumberArea = LineNumberArea(self)
+        self.display_widget = display_widget
 
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
         self.updateRequest.connect(self.updateLineNumberArea)
@@ -38,8 +39,12 @@ class TextEditor(QPlainTextEdit):
         self.citations = dict()
         self.ThreadManager = ThreadManager(max_threads=4)
         self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
+        self.ThreadManager.pandocThreadFinished.connect(self.on_pandoc_thread_finished)
         self.setMouseTracking(True)
 
+        self.InputTimer = QTimer(self)
+        self.InputTimer.setSingleShot(True)
+        self.InputTimer.timeout.connect(self.on_InputTimer_timeout)
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -99,7 +104,6 @@ class TextEditor(QPlainTextEdit):
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
 
-
     def highlightCurrentLine(self):
         point = self.viewport().mapToGlobal(self.cursorRect().topLeft())
         QToolTip.showText(point, "", self, QRect(), 1)
@@ -133,6 +137,7 @@ class TextEditor(QPlainTextEdit):
 
     def on_TextEditor_textChanged(self) -> None:
         self.text_changed = True
+        self.InputTimer.start(1000)
 
     def insert_text_at_cursor(self, text: str, move_center=False) -> None:
         initial_pos = self.textCursor().position()
@@ -230,3 +235,14 @@ class TextEditor(QPlainTextEdit):
         cursor = self.cursorForPosition(pos)
 
         self.display_tooltips_for_cursor(cursor, event.globalPos())
+
+    def render_to_html(self):
+        self.ThreadManager.markdown_to_html(self.toPlainText())
+
+    @pyqtSlot(str)
+    def on_pandoc_thread_finished(self, html: str):
+        self.display_widget.setHtml(html)
+
+    @pyqtSlot()
+    def on_InputTimer_timeout(self):
+        self.render_to_html()
