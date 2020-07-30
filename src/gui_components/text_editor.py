@@ -11,7 +11,6 @@ class LineNumberArea(QWidget):
         super().__init__(editor)
         self.editor = editor
 
-
     def sizeHint(self):
         return QSize(self.editor.lineNumberAreaWidth(), 0)
 

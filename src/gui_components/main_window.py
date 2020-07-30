@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QAction, QSplitter, QSizePolicy, QMessageBox,
                             QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox)
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex)
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex, QSettings, QSize, QStandardPaths)
 from PyQt5.QtGui import *
 
 from forms.ui_main_window import Ui_MainWindow
@@ -16,6 +16,7 @@ from gui_components.add_citation_dialog import AddCitationDialog
 from resources import icons_rc
 from common import Result, ProjectError
 from components.project_manager import ProjectManager
+from components.settings_manager import SettingsManager
 
 
 class MainWindow(QMainWindow):
@@ -43,6 +44,8 @@ class MainWindow(QMainWindow):
         self.loading_project = False
 
         self.OpenedEditors = []
+        self.SettingsManager = SettingsManager(self)
+        self.read_settings()
 
         self.show()
 
@@ -292,6 +295,7 @@ class MainWindow(QMainWindow):
                 unsaved_editors.append((index, self.ui.EditorTabWidget.tabBar().tabText(index)))
 
         if len(unsaved_editors) == 0:
+            self.write_settings()
             return
         elif len(unsaved_editors) == 1:
             index = unsaved_editors[0][0]
@@ -311,6 +315,9 @@ class MainWindow(QMainWindow):
                 if not self.on_actionSave_triggered(item[0]):
                     event.ignore()
                     return
+            self.write_settings()
+            return
+        self.write_settings()
 
     # TOOLBAR ACTIONS
     @pyqtSlot()
@@ -421,7 +428,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionOpenProject_triggered(self):
-        path = QFileDialog.getExistingDirectory()
+        path = QFileDialog.getExistingDirectory(caption="Open project", directory=self.SettingsManager.get_setting_value("Application/Project folder"))
         if path:
             try:
                 self.load_project(path)
@@ -557,3 +564,21 @@ class MainWindow(QMainWindow):
             self.ui.splitter.setSizes([pr_width, int(0.6 * available_width), int(0.4 * available_width)])
         else:
             self.ui.splitter.setSizes([pr_width, available_width, 0])
+
+    def read_settings(self):
+        self.resize(self.SettingsManager.get_setting_value("MainWindow/size"))
+        self.move(self.SettingsManager.get_setting_value("MainWindow/pos"))
+
+        sizes = self.SettingsManager.get_setting_value("MainWindow/splitter_sizes")
+        for i in range(len(sizes)):
+            sizes[i] = int(sizes[i])
+
+        self.ui.splitter.setSizes(sizes)
+        if self.SettingsManager.get_setting_value("MainWindow/last_project"):
+            self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
+
+    def write_settings(self):
+        self.SettingsManager.set_setting_value("MainWindow/size", self.size())
+        self.SettingsManager.set_setting_value("MainWindow/pos", self.pos())
+        self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", self.ui.splitter.sizes())
+        self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
