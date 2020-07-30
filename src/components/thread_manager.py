@@ -23,7 +23,7 @@ class PandocThread(QThread):
         self.html = ""
 
     def run(self):
-        pandoc = subprocess.run(["pandoc", "--to", "html"], input=self.markdown.encode(), capture_output=True)
+        pandoc = subprocess.run(["pandoc", "--to", "html", "--filter", "pandoc-manubot-cite", "--filter", "pandoc-citeproc"], input=self.markdown.encode(), capture_output=True)
         pandoc.check_returncode()
         self.html = pandoc.stdout.decode()
 
@@ -43,21 +43,17 @@ class ThreadManager(QObject):
         self.max_threads = max_threads
 
     def get_citation(self, citekey: str):
-        print("Received request to start thread")
         thread = ManubotCiteThread(self, citekey)
         thread.finished.connect(self.on_manubot_cite_thread_finished)
 
         if self.running_thread_count < self.max_threads:
-            print("Starting thread")
             self.running_threads.append(thread)
             self.running_thread_count += 1
             thread.start()
         else:
-            print("Putting thread to pending")
             self.pending_threads.append(thread)
 
     def markdown_to_html(self, markdown: str):
-        print("Asked to start pandoc thread")
         thread = PandocThread(self, markdown)
         thread.finished.connect(self.on_pandoc_thread_finished)
 
@@ -78,22 +74,14 @@ class ThreadManager(QObject):
         citekey = sender.citekey
         citation = sender.citation
 
-        print("Finished thread. Obtained citation: ", citation, " for citekey ", citekey)
-
         self.manubotCiteThreadFinished.emit(citekey, citation)
 
     def run_next_thread(self):
-        print("Looking for next thread to run")
         if self.pending_threads:
-            print("Starting thread from pending")
-            print("Thread count: ", self.running_thread_count)
-            print("Pending thread count: ", len(self.pending_threads))
             self.running_threads.append(self.pending_threads[-1])
             self.running_thread_count += 1
             self.pending_threads[-1].start()
             self.pending_threads.remove(self.pending_threads[-1])
-        else:
-            print("No new thread to run")
 
     def on_pandoc_thread_finished(self):
         sender = QObject.sender(self)
