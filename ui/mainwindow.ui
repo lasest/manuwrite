@@ -53,6 +53,9 @@
        </property>
        <item>
         <widget class="QLabelClickable" name="EditorTabLabel">
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
@@ -81,6 +84,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
@@ -94,6 +100,9 @@
        </item>
        <item>
         <widget class="QLabelClickable" name="ProjectTabLabel">
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
@@ -378,6 +387,12 @@
                 </property>
                 <item>
                  <widget class="QLabel" name="ProjectLabel">
+                  <property name="autoFillBackground">
+                   <bool>true</bool>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true"/>
+                  </property>
                   <property name="text">
                    <string>Project</string>
                   </property>
@@ -431,6 +446,12 @@
                <layout class="QVBoxLayout" name="verticalLayout_3">
                 <item>
                  <widget class="QWebEngineView" name="webEngineView">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
                   <property name="url">
                    <url>
                     <string>about:blank</string>
@@ -753,6 +774,9 @@
   </action>
   <action name="actionShowPreview">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">

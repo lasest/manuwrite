@@ -11,8 +11,26 @@ class SettingsManager(QObject):
             "MainWindow/size/value": QSize(640, 480),
             "MainWindow/pos/value": QPoint(100, 100),
             "MainWindow/splitter_sizes/value": [150, 294, 196],
+            "MainWindow/splitter_sizes/type": "map/int",
+            "MainWindow/project_widget_width/value": 150,
+            "MainWindow/project_widget_width/type": "int",
+            "MainWindow/preview_width/value": 196,
+            "MainWindow/preview_width/type": "int",
             "MainWindow/last_project/value": "",
-            "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
+            "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
+            "Editor/Font name/value": "Hack",
+            "Editor/Font size/value": 14,
+            "Editor/Font size/type": "int",
+            "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
+            "Projects/Project types/type": "list"
+        }
+
+        self.datatypes = {
+            "int": int,
+            "str": str,
+            "None": None,
+            "list": list,
+            "map/int": "map/int"
         }
 
         for key, value in self.defaults.items():
@@ -20,11 +38,22 @@ class SettingsManager(QObject):
                 self.set_setting(key, value)
 
     def get_setting_value(self, setting: str, force_types=None):
-        setting = setting + "/value"
-        if setting not in self.defaults:
+
+        if setting + "/value" not in self.defaults:
             raise KeyError
 
-        return self.settings.value(setting, self.defaults[setting])
+        value = self.settings.value(setting + "/value", self.defaults[setting + "/value"])
+        type = self.datatypes[self.settings.value(setting + "/type", "None")]
+
+        if type is not None:
+            if type.startswith("map"):
+                mapping_type = type[type.find("/") + 1:]
+                mapping_type = self.datatypes[mapping_type]
+                value = map(mapping_type, value)
+            else:
+                value = type(value)
+
+        return value
 
     def set_setting_value(self, setting: str, value):
         setting = setting + "/value"
