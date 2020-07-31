@@ -6,7 +6,7 @@ class SettingsManager(QObject):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.settings = QSettings("Manuwrite", "Manuwrite Editor")
+        self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
         self.defaults = {
             "MainWindow/size/value": QSize(640, 480),
             "MainWindow/pos/value": QPoint(100, 100),
@@ -14,6 +14,10 @@ class SettingsManager(QObject):
             "MainWindow/last_project/value": "",
             "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)
         }
+
+        for key, value in self.defaults.items():
+            if key not in self.settings.allKeys():
+                self.set_setting(key, value)
 
     def get_setting_value(self, setting: str, force_types=None):
         setting = setting + "/value"
@@ -28,3 +32,9 @@ class SettingsManager(QObject):
             raise KeyError
 
         self.settings.setValue(setting, value)
+
+    def set_setting(self, setting: str, value):
+        self.settings.setValue(setting, value)
+
+    def get_setting(self, setting: str):
+        return self.settings.value(setting)

@@ -519,6 +519,7 @@
     <addaction name="actionOpenProject"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
+    <addaction name="actionSettings"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -759,6 +760,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>

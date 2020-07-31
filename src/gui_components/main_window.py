@@ -14,6 +14,7 @@ from gui_components.add_link_dialog import AddLinkDialog
 from gui_components.add_image_dialog import AddImageDialog
 from gui_components.add_citation_dialog import AddCitationDialog
 from gui_components.create_project_dialog import CreateProjectDialog
+from gui_components.settings_dialog import SettingsDialog
 from resources import icons_rc
 from common import Result, ProjectError
 from components.project_manager import ProjectManager
@@ -590,4 +591,13 @@ class MainWindow(QMainWindow):
         self.SettingsManager.set_setting_value("MainWindow/size", self.size())
         self.SettingsManager.set_setting_value("MainWindow/pos", self.pos())
         self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", self.ui.splitter.sizes())
-        self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
+        if self.ProjectManager is not None:
+            self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
+        else:
+            self.SettingsManager.set_setting_value("MainWindow/last_project", "")
+
+    @pyqtSlot()
+    def on_actionSettings_triggered(self):
+        dialog = SettingsDialog(self.SettingsManager)
+        dialog.show()
+        dialog.exec_()

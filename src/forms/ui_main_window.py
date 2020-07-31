@@ -315,12 +315,15 @@ class Ui_MainWindow(object):
         self.actionShowPreview = QtWidgets.QAction(MainWindow)
         self.actionShowPreview.setCheckable(True)
         self.actionShowPreview.setObjectName("actionShowPreview")
+        self.actionSettings = QtWidgets.QAction(MainWindow)
+        self.actionSettings.setObjectName("actionSettings")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionNewProject)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionOpenProject)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionSave_As)
+        self.menuFile.addAction(self.actionSettings)
         self.menuView.addAction(self.actionProjectTab)
         self.menuView.addAction(self.actionShowPreview)
         self.menuBar.addAction(self.menuFile.menuAction())
@@ -414,6 +417,7 @@ class Ui_MainWindow(object):
         self.actionRenderFile.setShortcut(_translate("MainWindow", "F5"))
         self.actionShowPreview.setText(_translate("MainWindow", "Show Preview"))
         self.actionShowPreview.setShortcut(_translate("MainWindow", "Ctrl+P"))
+        self.actionSettings.setText(_translate("MainWindow", "Settings"))
 from PyQt5 import QtWebEngineWidgets
 from gui_components.qlabel_clickable import QLabelClickable
 from gui_components.qtabwidget_custom import QTabWidgetCustom
