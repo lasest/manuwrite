@@ -42,7 +42,10 @@ class ThreadManager(QObject):
         self.running_thread_count = 0
         self.max_threads = max_threads
 
-    def get_citation(self, citekey: str):
+    def get_citation(self, citekey: str) -> None:
+        """Starts manubot thread to get citation info for a given citekey. When thread is finished
+        manubotCiteThreadFinished signal is emitted and should be caught by the caller"""
+
         thread = ManubotCiteThread(self, citekey)
         thread.finished.connect(self.on_manubot_cite_thread_finished)
 
@@ -53,7 +56,10 @@ class ThreadManager(QObject):
         else:
             self.pending_threads.append(thread)
 
-    def markdown_to_html(self, markdown: str):
+    def markdown_to_html(self, markdown: str) -> None:
+        """Starts pandoc thread to convert given string from markdown to html. When the thread is finished
+        pandocThreadFinished signal is emitted and should be caught by the caller"""
+
         thread = PandocThread(self, markdown)
         thread.finished.connect(self.on_pandoc_thread_finished)
 
@@ -64,7 +70,8 @@ class ThreadManager(QObject):
         else:
             self.pending_threads.append(thread)
 
-    def on_manubot_cite_thread_finished(self):
+    def on_manubot_cite_thread_finished(self) -> None:
+        """Performes thread management and emits manubotCiteThreadFinished to inform that the thread has finished"""
 
         sender = QObject.sender(self)
         self.running_threads.remove(sender)
@@ -76,14 +83,18 @@ class ThreadManager(QObject):
 
         self.manubotCiteThreadFinished.emit(citekey, citation)
 
-    def run_next_thread(self):
+    def run_next_thread(self) -> None:
+        """Runs the next thread from the pending_threads list. Last come first served logic is used here to receive the
+        results quicker when the user is typing"""
+
         if self.pending_threads:
             self.running_threads.append(self.pending_threads[-1])
             self.running_thread_count += 1
             self.pending_threads[-1].start()
             self.pending_threads.remove(self.pending_threads[-1])
 
-    def on_pandoc_thread_finished(self):
+    def on_pandoc_thread_finished(self) -> None:
+        """Performes thread management and emits pandocThreadFinished to inform that the thread has finished"""
         sender = QObject.sender(self)
 
         self.running_threads.remove(sender)

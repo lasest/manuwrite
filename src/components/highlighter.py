@@ -1,6 +1,7 @@
 from collections import OrderedDict
+from typing import Tuple, Dict, List
 
-from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat
+from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextDocument
 from PyQt5.QtCore import QRegExp, Qt
 
 
@@ -14,18 +15,9 @@ class Rule():
 
 class MarkdownHighlighter(QSyntaxHighlighter):
 
-    structures = (
-        "heading-1", "heading-1-alt", "heading-2-alt", "heading-2", "heading-3", "heading-4", "heading-5", "heading-6",
-        "line-break", "horizontal-rule",
-        "bold", "bold-alt", "italic", "italic-alt", "bold-and-italic",
-        "blockquote-1", "blockquote-2", "blockquote-3", "blockquote-n",
-        "ordered-list", "unordered-list",
-        "code", "link", "image"
-    )
-
     # TODO: implement alternate heading 1 and heading 2 syntax (requires working with previous line)
-    # TODO: implement recognizing titles and other elements when they are not at the beginning of the line but are tabbed
 
+    # Patterns to be detected
     patterns = OrderedDict({
         "heading-1": r"^\s*#$|^\s*#[^#].*",
         "heading-2": r"^\s*##$|^\s*##[^#].*",
@@ -53,23 +45,25 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "code": r"`..*`",
         "link": r"()(^\[..*\]\(..*\))|" +
                 r"([^!])(\[..*\]\(..*\))",
-        "image": r"!\[..*\]\(..*\)",
+        "image": r"!\[.*\]\(..*\)",
         "citation": r"\[@[\S][\S]*:[\S][\S]*\]"
     })
 
-    def __init__(self, document):
+    def __init__(self, document: QTextDocument):
         super().__init__(document)
 
-        self.formats = {key: QTextCharFormat() for key in self.patterns.keys()}
+        # Create formats
+        self.formats: Dict[str, QTextCharFormat] = {key: QTextCharFormat() for key in self.patterns.keys()}
         self.set_formats()
 
-        self.rules = []
+        # Create rules
+        self.rules: List[Rule] = []
         for pattern in self.patterns.items():
             self.rules.append(Rule(pattern[0], pattern[1], self.formats[pattern[0]]))
 
-        #self.pending_citations = []
+    def set_formats(self) -> None:
+        """Sets formats which will be applied to the text by highlighter"""
 
-    def set_formats(self):
         self.formats["heading-1"].setForeground(Qt.yellow)
         self.formats["heading-2"].setForeground(Qt.magenta)
         self.formats["heading-3"].setForeground(Qt.green)
@@ -94,19 +88,24 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.formats["citation"].setForeground(Qt.red)
         self.formats["citation"].setToolTip("Some random text")
 
-    def highlightBlock(self, text):
+    def highlightBlock(self, text: str) -> None:
+        """Finds and highlights tags in the text. Automatically called when document changes"""
         tags = self.get_tags(text)
 
         for tag in tags:
             self.setFormat(tag[0], tag[1], self.formats[tag[2]])
 
-    def get_tags(self, text):
+    def get_tags(self, text: str) -> List[Tuple[int, int, str]]:
+        """Returns a list of tags, which were found in given text. Information about each tag is in format
+        [first symbol of tag, length of tag, name of tag]"""
 
         tags = []
 
         for rule in self.rules:
             index = rule.expression.indexIn(text)
             while index >= 0:
+                # Have to use offset for certain tags because some perl features are not available in qt (i. e.
+                # lookahead and lookbehind
                 loffset = 0
                 roffset = 0
 

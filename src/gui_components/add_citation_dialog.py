@@ -1,7 +1,7 @@
-import subprocess
+from typing import Tuple
 
-from PyQt5.QtWidgets import QDialog, QAbstractButton
-from PyQt5.QtCore import pyqtSlot, QRegExp, Qt, QThread
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtCore import pyqtSlot, QRegExp, Qt
 from manubot.cite.handlers import prefix_to_handler
 
 from forms.ui_add_citation_dialog import Ui_AddCitationDialog
@@ -16,15 +16,18 @@ class AddCitationDialog(QDialog):
         self.ui = Ui_AddCitationDialog()
         self.ui.setupUi(self)
 
-        self.prefixes = tuple(prefix_to_handler.keys())
-        self.prefixes_with_colon = []
-        for prefix in self.prefixes:
-            self.prefixes_with_colon.append(prefix + ":")
-        self.prefixes = tuple(self.prefixes_with_colon)
+        # Set attributes
         self.citation_identifier = ""
         self.allow_close = True
         self.ThreadManager = ThreadManager()
         self.ThreadManager.manubotCiteThreadFinished.connect(self.on_thread_finished)
+
+        # Get a list of prefixes, supported by manubot
+        self.prefixes = list(prefix_to_handler.keys())
+        for i in range(len(self.prefixes)):
+            self.prefixes[i] += ":"
+
+        # The prefixes that the program will attempt to recognize if no prefix if provided by the user
         self.common_prefixes = {
             "doi": r"10.\d{4,9}/[-._;()/:A-Z0-9]+",
             "short-doi": r"^10/\w{5}$",
@@ -39,32 +42,41 @@ class AddCitationDialog(QDialog):
         }
 
     def log(self, text: str) -> None:
+        """Logs the message to the ui element"""
         self.ui.InfoTextEdit.appendPlainText(text)
 
     @pyqtSlot()
-    def on_ShowInfoPushButton_clicked(self) -> bool:
-        text = ""
+    def on_ShowInfoPushButton_clicked(self) -> None:
+
         # Determine identifier type
         self.log("Checking identifier...")
-        data = self.check_identifier(self.ui.IdentifierLineEdit.text().strip())
-        if data[0]:
-            self.log("Type: {}".format(data[0]))
-            self.log("Identifier: {}".format(data[1]))
-            self.log("Retrieving info...\n")
-            self.ThreadManager.get_citation(data[1])
+        identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text().strip())
 
+        if identifier_type:
+            self.log(f"Type: {identifier_type}")
+            self.log(f"Identifier: {identifier}")
+            self.log("Retrieving info...\n")
+            self.ThreadManager.get_citation(identifier)
 
     def accept(self) -> None:
+        """If check identifier checkbox is checked, make sure that the provided identifier can be identifier by manubot.
+        Only checks the format of the identifier (i.e. @doi:10..*), not whether the citation data will be available"""
+
         if self.ui.CheckIdentifierCheckbox.isChecked():
-            data = self.check_identifier(self.ui.IdentifierLineEdit.text())
-            if data[0]:
-                self.citation_identifier = data[1]
+
+            identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text())
+            if identifier_type:
+                self.citation_identifier = identifier
                 super().accept()
         else:
             self.citation_identifier = self.ui.IdentifierLineEdit.text()
             super().accept()
 
-    def check_identifier(self, identifier: str):
+    def check_identifier(self, identifier: str) -> Tuple[str, str]:
+        """Tries to determine the identifier type from given citekey. Adds manubot-compatible citation prefix to the
+        identifier if no prefix is present and the identifier type can be guessed.
+        Returns (identifier type, identifier) -> str, str"""
+
         ident_type = None
 
         for tag in self.prefixes:
@@ -72,17 +84,19 @@ class AddCitationDialog(QDialog):
                 ident_type = tag[:-1]
 
         if not ident_type:
-            for item in self.common_prefixes.items():
-                exp = QRegExp(item[1], Qt.CaseInsensitive)
+            for prefix, regexp in self.common_prefixes.items():
+                exp = QRegExp(regexp, Qt.CaseInsensitive)
                 index = exp.indexIn(identifier)
                 if index >= 0:
-                    identifier = item[0] + ":" + identifier
-                    ident_type = item[0]
+                    identifier = prefix + ":" + identifier
+                    ident_type = prefix
         if not ident_type:
-            self.log("Identifier type cannot be determined. Please check the identifier or add the type manually as in \"doi:identifier\"")
+            self.log("Identifier type cannot be determined. Please check the identifier or add the type manually as" +
+                     "in \"doi:identifier\"")
 
-        return (ident_type, identifier)
+        return ident_type, identifier
 
     @pyqtSlot(str, str)
-    def on_thread_finished(self, citekey: str, citation: str):
-        self.ui.InfoTextEdit.appendPlainText(citation)
+    def on_thread_finished(self, citekey: str, citation: str) -> None:
+        """Prints citation info received from pandoc thread to the ui"""
+        self.log(citation)

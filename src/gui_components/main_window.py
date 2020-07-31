@@ -189,7 +189,14 @@ class MainWindow(QMainWindow):
         self.ui.splitter.setSizes(self.SettingsManager.get_setting_value("MainWindow/splitter_sizes"))
 
         if self.SettingsManager.get_setting_value("MainWindow/last_project"):
-            self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
+            # Catching all exceptions here, because if any unhandled exception at this point would prevent the program
+            # from starting again ever
+            try:
+                self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
+            except Exception as e:
+                QMessageBox.critical(self, "Error", "An error occured while attempting to open project. " +
+                                     f"Error: {str(type(e)) + ' ' + str(e)}")
+                self.ProjectManager = None
 
     def write_settings(self) -> None:
         """Write settings to permanent storage"""
@@ -555,7 +562,10 @@ class MainWindow(QMainWindow):
             self.ProjectManager.uptade_project_info(("Title", dialog.title))
             self.ProjectManager.uptade_project_info(("Author", dialog.authors))
             self.ProjectManager.uptade_project_info(("Project type", dialog.project_type))
-            self.ProjectManager.save_project_data()
+            try:
+                self.ProjectManager.save_project_data()
+            except ProjectError as e:
+                QMessageBox.critical(self, "Error", f"Failed to create project: {e.message}")
 
     @pyqtSlot(QPoint)
     def on_ProjectTreeView_customContextMenuRequested(self, point: QPoint) -> None:
@@ -619,7 +629,10 @@ class MainWindow(QMainWindow):
         name = QInputDialog.getText(self, "Create file", "File name:")
 
         if name:
-            self.ProjectManager.create_file(path + "/" + name[0])
+            try:
+                self.ProjectManager.create_file(path + "/" + name[0])
+            except ProjectError as e:
+                QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot()
     def on_actionDelete_triggered(self) -> None:
@@ -631,8 +644,10 @@ class MainWindow(QMainWindow):
 
         if clicked_item.data() is None:
             clicked_item = self.ui.ProjectTreeView.rootIndex()
-
-        self.ProjectManager.delete_file(clicked_item)
+        try:
+            self.ProjectManager.delete_file(clicked_item)
+        except ProjectError as e:
+            QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot()
     def on_actionRename_triggered(self) -> None:
@@ -648,7 +663,10 @@ class MainWindow(QMainWindow):
         name = QInputDialog.getText(self, "Rename", "New name:")
 
         if name:
-            self.ProjectManager.rename(clicked_item, name[0])
+            try:
+                self.ProjectManager.rename(clicked_item, name[0])
+            except ProjectError as e:
+                QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot(str)
     def on_ProjectManager_ProjectDirectoryLoaded(self) -> None:
@@ -672,7 +690,10 @@ class MainWindow(QMainWindow):
         """Attempt to save project settings which are currently in memory to permanent storage"""
 
         if self.ProjectManager is not None:
-            self.ProjectManager.save_project_data()
+            try:
+                self.ProjectManager.save_project_data()
+            except ProjectError as e:
+                QMessageBox.critical(self, "Error", f"Failed to create project: {e.message}")
 
     @pyqtSlot(int)
     def on_SettingComboBox_valueChanged(self, current_index: int):

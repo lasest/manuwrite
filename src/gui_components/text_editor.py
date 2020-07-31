@@ -233,6 +233,7 @@ class TextEditor(QPlainTextEdit):
         cursor = self.cursorForPosition(pos)
 
         self.display_tooltips_for_cursor(cursor, event.globalPos())
+        super(TextEditor, self).mouseMoveEvent(event)
 
     def render_to_html(self):
         self.ThreadManager.markdown_to_html(self.toPlainText())
