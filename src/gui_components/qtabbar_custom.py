@@ -9,6 +9,8 @@ class QTabBarCustom(QTabBar):
         super().__init__(parent)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        """Closes the tab is the user clicks it with middle mouse button"""
+
         if event.button() == Qt.MidButton:
             self.tabCloseRequested.emit(self.tabAt(event.pos()))
 

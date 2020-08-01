@@ -1,67 +1,79 @@
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip, QTextBrowser
-from PyQt5.QtCore import QSize, QRect, Qt, QObject, pyqtSignal, QPoint, pyqtSlot, QEvent, QTimer, QUrl
-from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QHelpEvent, QMouseEvent
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
+from PyQt5.QtCore import QSize, QRect, Qt, pyqtSignal, QPoint, pyqtSlot, QTimer, QUrl
+from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from components.highlighter import MarkdownHighlighter
 from components.thread_manager import ThreadManager
 
 
 class LineNumberArea(QWidget):
+
     def __init__(self, editor):
         super().__init__(editor)
         self.editor = editor
 
-    def sizeHint(self):
+    def sizeHint(self) -> QSize:
         return QSize(self.editor.lineNumberAreaWidth(), 0)
 
-
-    def paintEvent(self, event):
+    def paintEvent(self, event) -> None:
+        """Calls editor to draw line number area"""
         self.editor.lineNumberAreaPaintEvent(event)
 
 
 class TextEditor(QPlainTextEdit):
 
-    def __init__(self, parent, display_widget: QTextBrowser):
+    def __init__(self, parent, display_widget: QWebEngineView, settings_manager):
+
         super().__init__(parent)
+
+        # Set attributes
         self.lineNumberArea = LineNumberArea(self)
         self.display_widget = display_widget
-
-        self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
-        self.updateRequest.connect(self.updateLineNumberArea)
-        self.cursorPositionChanged.connect(self.highlightCurrentLine)
-        self.textChanged.connect(self.on_TextEditor_textChanged)
-        self.selectionChanged.connect(self.highlightCurrentLine)
-
         self.highlighter = MarkdownHighlighter(self.document())
-        self.updateLineNumberAreaWidth(0)
         self.text_changed = False
         self.citations = dict()
         self.ThreadManager = ThreadManager(max_threads=4)
+        self.setMouseTracking(True)
+        self.InputTimer = QTimer(self)
+        self.SettingsManager = settings_manager
+
+        # Connect signals to slots
+        self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        self.cursorPositionChanged.connect(self.on_TextEditor_CursorMoved)
+        self.textChanged.connect(self.on_TextEditor_textChanged)
+        self.selectionChanged.connect(self.on_TextEditor_CursorMoved)
         self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
         self.ThreadManager.pandocThreadFinished.connect(self.on_pandoc_thread_finished)
-        self.setMouseTracking(True)
-
-        self.InputTimer = QTimer(self)
-        self.InputTimer.setSingleShot(True)
         self.InputTimer.timeout.connect(self.on_InputTimer_timeout)
 
-    def lineNumberAreaWidth(self):
+        self.updateLineNumberAreaWidth(0)
+        self.InputTimer.setSingleShot(True)
+        self.read_settings()
+
+    def lineNumberAreaWidth(self) -> int:
+        """Returns the width of the line number area depending on the number of digits that need to be displayed"""
+
         digits = 1
-        count = max(1, self.document().blockCount())
-        while count >= 10:
-            count /= 10
+        line_count = max(1, self.document().blockCount())
+        while line_count >= 10:
+            line_count /= 10
             digits += 1
+
         if digits < 4:
             digits = 4
+
         space = 10 + self.fontMetrics().width('9') * digits
         return space
 
-
-    def updateLineNumberAreaWidth(self, _):
+    def updateLineNumberAreaWidth(self, _) -> None:
+        """Updates the width of line number area when the number of lines in the document changes"""
         self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
 
+    def updateLineNumberArea(self, rect, dy) -> None:
+        """Updates line number are when the user scrolls or something else happens (not sure how it works)"""
 
-    def updateLineNumberArea(self, rect, dy):
         if dy:
             self.lineNumberArea.scroll(0, dy)
         else:
@@ -71,15 +83,18 @@ class TextEditor(QPlainTextEdit):
         if rect.contains(self.viewport().rect()):
             self.updateLineNumberAreaWidth(0)
 
+    def resizeEvent(self, event) -> None:
+        """Updates line numbers area when the editor is resized"""
 
-    def resizeEvent(self, event):
         super().resizeEvent(event)
 
-        cr = self.contentsRect();
+        cr = self.contentsRect()
         self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(),
                                         self.lineNumberAreaWidth(), cr.height()))
 
-    def lineNumberAreaPaintEvent(self, event):
+    def lineNumberAreaPaintEvent(self, event) -> None:
+        """Paints the line number area of the editor"""
+
         painter = QPainter(self.lineNumberArea)
         color = self.palette().color(self.palette().Dark)
         painter.fillRect(event.rect(), color)
@@ -103,42 +118,53 @@ class TextEditor(QPlainTextEdit):
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
 
-    def highlightCurrentLine(self):
+    def on_TextEditor_CursorMoved(self) -> None:
+        """Highlights the current line and shows a tooltip if a citation or an image is under text cursor"""
+
+        # Display tool tip for image or citation
         point = self.viewport().mapToGlobal(self.cursorRect().topLeft())
-        QToolTip.showText(point, "", self, QRect(), 1)
         cursor = self.textCursor()
         self.display_tooltips_for_cursor(cursor, point)
 
+        # Don't highlight if multiple lines are selected
         extraSelections = []
 
         selection_start = cursor.selectionStart()
         selection_end = cursor.selectionEnd()
         cursor.setPosition(selection_start)
-        start_line = cursor.blockNumber()
+        start_line_number = cursor.blockNumber()
         cursor.setPosition(selection_end)
-        end_line = cursor.blockNumber()
+        end_line_number = cursor.blockNumber()
 
-        if start_line != end_line:
+        if start_line_number != end_line_number:
             self.setExtraSelections([QTextEdit.ExtraSelection()])
             return
 
-        if not self.isReadOnly():
-            selection = QTextEdit.ExtraSelection()
+        # Highlight current line
+        selection = QTextEdit.ExtraSelection()
 
-            lineColor = self.palette().color(self.palette().AlternateBase).darker(70)
+        lineColor = self.palette().color(self.palette().AlternateBase).darker(70)
 
-            selection.format.setBackground(lineColor)
-            selection.format.setProperty(QTextFormat.FullWidthSelection, True)
-            selection.cursor = self.textCursor()
-            selection.cursor.clearSelection()
-            extraSelections.append(selection)
+        selection.format.setBackground(lineColor)
+        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()
+        extraSelections.append(selection)
+
         self.setExtraSelections(extraSelections)
 
     def on_TextEditor_textChanged(self) -> None:
+        """Set text_changed property to True and start InputTimer. When the timer finishes, the document will be
+        rendered, if the settings do not say otherwise (disable autorender)"""
+
         self.text_changed = True
-        self.InputTimer.start(1000)
+        if self.SettingsManager.get_setting_value("Editor/Autorender to html"):
+            self.InputTimer.start(self.SettingsManager.get_setting_value("Editor/Autorender timeout (ms)"))
 
     def insert_text_at_cursor(self, text: str, move_center=False) -> None:
+        """Inserts text at current cursor position. If move_center is set to True, moves cursor to the center of
+        inserted string after insertion"""
+
         initial_pos = self.textCursor().position()
         self.textCursor().insertText(text)
 
@@ -148,6 +174,9 @@ class TextEditor(QPlainTextEdit):
             self.setTextCursor(cursor)
 
     def insert_text_at_line_beginning(self, text: str) -> None:
+        """Inserts text at the beginning of the current line. Tries to keep the cursor position in the string the
+        same"""
+
         init_pos = self.textCursor().position()
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.StartOfLine)
@@ -158,6 +187,8 @@ class TextEditor(QPlainTextEdit):
         self.setTextCursor(cursor)
 
     def insert_text_at_selection_bound(self, text: str) -> None:
+        """Inserts given text at the beginning and at the end of the current selection"""
+
         start = self.textCursor().selectionStart()
         end = self.textCursor().selectionEnd()
         self.textCursor().clearSelection()
@@ -173,6 +204,9 @@ class TextEditor(QPlainTextEdit):
         cursor.insertText(text)
 
     def insert_text_at_empty_line(self, text: str) -> None:
+        """Inserts text at current line, if it is empty, or creates a new line after the current line and inserts the
+        text on that new line"""
+
         if self.textCursor().block().text() == "":
             self.textCursor().insertText(text)
         else:
@@ -181,52 +215,66 @@ class TextEditor(QPlainTextEdit):
             cursor.insertText("\n{}".format(text))
 
     def insert_double_tag(self, tag: str) -> None:
+        """Inserts a double tag in the text (i.e. italic, bold, etc). Inserts at cursor if no text is selected, or at
+        the selection boundaries if there is a selection"""
+
         if len(self.textCursor().selection().toPlainText()) == 0:
             self.insert_text_at_cursor(tag * 2, move_center=True)
         else:
             self.insert_text_at_selection_bound(tag)
 
-    #def get_citation_for_key(self, citekey: str):
-    #    thread = ManubotCiteThread(self, citekey)
-    #    self.manubot_threads.append(thread)
-    #    thread.finished.connect(self.on_manubot_thread_finished)
-    #    thread.start()
-
-    @pyqtSlot(str, str)
-    def on_manubot_thread_finished(self, citekey: str, citation: str):
-        self.citations[citekey] = citation
-
-    def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint):
-        current_line_text = cursor.block().text()
-        current_line_tags = self.highlighter.get_tags(current_line_text)
+    def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint) -> None:
+        """Displays a tooltip at current cursor position if a citation tag or an image tag is under cursor. Hides
+        the tooltip if no tags are under cursor"""
 
         hide_tooltip = True
+        current_line_text = cursor.block().text()
+        current_line_tags = self.highlighter.get_tags(current_line_text)
+        cursor_pos = cursor.positionInBlock()
+
         for tag in current_line_tags:
-            cursor_pos = cursor.positionInBlock()
             tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
-            tag_text = tag_text[2:-1]
+
             if tag[2] == "citation":
+                # Remove brackets and @ symbol from the tag text
+                tag_text = tag_text[2:-1]
+
+                # If the citekey is not in self.citations start manubot thread to retrieve citation info
                 if tag_text not in self.citations:
+
                     self.citations[tag_text] = ""
                     self.ThreadManager.get_citation(tag_text)
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
-                elif self.citations[tag_text] == "" and cursor_pos >= tag[0] and cursor_pos < (tag[1] + tag[0]):
+                # If the citekey is in self.citations but the citation info has not yet been retrieved show filler
+                elif self.citations[tag_text] == "" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
-                elif self.citations[tag_text] != "" and cursor_pos >= tag[0] and cursor_pos < (tag[1] + tag[0]):
+
+                # If the citekey is in self.citations and the citation info is available show it
+                elif self.citations[tag_text] != "" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+
                     QToolTip.showText(display_point, self.citations[tag_text], self, QRect(), 5000)
                     hide_tooltip = False
-            elif tag[2] == "image" and cursor_pos >= tag[0] and (cursor_pos < (tag[1] + tag[0])):
-                path = tag_text[tag_text.find("(") + 1:]
-                QToolTip.showText(display_point, "<img src='{}' width='250' height='250'>".format(path), self, QRect(), 5000)
+
+            elif tag[2] == "image" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+
+                path = tag_text[tag_text.find("(") + 1:tag_text.find(")")]
+                width = self.SettingsManager.get_setting_value("Editor/Image tooltip width")
+                height = self.SettingsManager.get_setting_value("Editor/Image tooltip height")
+                QToolTip.showText(display_point, f"<img src='{path}' width='{width}' height='{height}'>",
+                                  self, QRect(), 5000)
                 hide_tooltip = False
 
+        # Hide tooltip if no image or citation is under cursor
         if hide_tooltip:
             QToolTip.hideText()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        """Displays tooltips if citation or image tags are under mouse cursor"""
+
         pos = event.pos()
         pos.setX(pos.x() - self.viewportMargins().left())
         pos.setY(pos.y() - self.viewportMargins().top())
@@ -235,13 +283,33 @@ class TextEditor(QPlainTextEdit):
         self.display_tooltips_for_cursor(cursor, event.globalPos())
         super(TextEditor, self).mouseMoveEvent(event)
 
-    def render_to_html(self):
+    def render_to_html(self) -> None:
+        """Asks thread manager to render document contents to html"""
+
         self.ThreadManager.markdown_to_html(self.toPlainText())
 
+    def read_settings(self) -> None:
+        """Read settings and apply them"""
+
+        font = self.font()
+        font.setPointSize(self.SettingsManager.get_setting_value("Editor/Font size"))
+        font.setRawName(self.SettingsManager.get_setting_value("Editor/Font name"))
+        self.setFont(font)
+
     @pyqtSlot(str)
-    def on_pandoc_thread_finished(self, html: str):
+    def on_pandoc_thread_finished(self, html: str) -> None:
+        """Updates document preview when pandoc thread finishes"""
+        # TODO: Change to use value from settings
         self.display_widget.setHtml(html, QUrl("file:///home/lasest/Working folder/manuwrite/style.css"))
 
     @pyqtSlot()
-    def on_InputTimer_timeout(self):
+    def on_InputTimer_timeout(self) -> None:
+        """Renders document to html when the user stops typing if settings allow this"""
+
         self.render_to_html()
+
+    @pyqtSlot(str, str)
+    def on_manubot_thread_finished(self, citekey: str, citation: str) -> None:
+        """Adds the citation returned by manubot thread to the self.citations dictionary when the thread is finished"""
+
+        self.citations[citekey] = citation

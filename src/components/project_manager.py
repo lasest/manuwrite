@@ -45,7 +45,7 @@ class ProjectManager():
         try:
             file = QFile()
             file.setFileName(self.root_path + "/.manuwrite/project.json")
-            file.open(QFile.Write)
+            file.open(QFile.WriteOnly)
             file.write(json.dumps(self.project_info, indent=4).encode())
         except OSError:
             raise ProjectError("Failed to write project configuration data")

@@ -45,33 +45,6 @@ class AddCitationDialog(QDialog):
         """Logs the message to the ui element"""
         self.ui.InfoTextEdit.appendPlainText(text)
 
-    @pyqtSlot()
-    def on_ShowInfoPushButton_clicked(self) -> None:
-
-        # Determine identifier type
-        self.log("Checking identifier...")
-        identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text().strip())
-
-        if identifier_type:
-            self.log(f"Type: {identifier_type}")
-            self.log(f"Identifier: {identifier}")
-            self.log("Retrieving info...\n")
-            self.ThreadManager.get_citation(identifier)
-
-    def accept(self) -> None:
-        """If check identifier checkbox is checked, make sure that the provided identifier can be identifier by manubot.
-        Only checks the format of the identifier (i.e. @doi:10..*), not whether the citation data will be available"""
-
-        if self.ui.CheckIdentifierCheckbox.isChecked():
-
-            identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text())
-            if identifier_type:
-                self.citation_identifier = identifier
-                super().accept()
-        else:
-            self.citation_identifier = self.ui.IdentifierLineEdit.text()
-            super().accept()
-
     def check_identifier(self, identifier: str) -> Tuple[str, str]:
         """Tries to determine the identifier type from given citekey. Adds manubot-compatible citation prefix to the
         identifier if no prefix is present and the identifier type can be guessed.
@@ -96,7 +69,35 @@ class AddCitationDialog(QDialog):
 
         return ident_type, identifier
 
+    def accept(self) -> None:
+        """If check identifier checkbox is checked, make sure that the provided identifier can be identifier by manubot.
+        Only checks the format of the identifier (i.e. @doi:10..*), not whether the citation data will be available"""
+
+        if self.ui.CheckIdentifierCheckbox.isChecked():
+
+            identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text())
+            if identifier_type:
+                self.citation_identifier = identifier
+                super().accept()
+        else:
+            self.citation_identifier = self.ui.IdentifierLineEdit.text()
+            super().accept()
+
     @pyqtSlot(str, str)
     def on_thread_finished(self, citekey: str, citation: str) -> None:
         """Prints citation info received from pandoc thread to the ui"""
+
         self.log(citation)
+
+    @pyqtSlot()
+    def on_ShowInfoPushButton_clicked(self) -> None:
+
+        # Determine identifier type
+        self.log("Checking identifier...")
+        identifier_type, identifier = self.check_identifier(self.ui.IdentifierLineEdit.text().strip())
+
+        if identifier_type:
+            self.log(f"Type: {identifier_type}")
+            self.log(f"Identifier: {identifier}")
+            self.log("Retrieving info...\n")
+            self.ThreadManager.get_citation(identifier)

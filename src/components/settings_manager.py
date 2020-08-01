@@ -36,6 +36,24 @@ class SettingsManager(QObject):
             "Editor/Font size/value": 14,
             "Editor/Font size/type": "int",
 
+            "Editor/Default image width/value": 500,
+            "Editor/Default image width/type": "int",
+
+            "Editor/Default image height/value": 500,
+            "Editor/Default image height/type": "int",
+
+            "Editor/Image tooltip height/value": 250,
+            "Editor/Image tooltip height/type": "int",
+
+            "Editor/Image tooltip width/value": 250,
+            "Editor/Image tooltip width/type": "int",
+
+            "Editor/Autorender to html/value": True,
+            "Editor/Autorender to html/type": "bool",
+
+            "Editor/Autorender timeout (ms)/value": 1000,
+            "Editor/Autorender timeout (ms)/type": "int",
+
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
             "Projects/Project types/type": "list"
         }
@@ -44,6 +62,7 @@ class SettingsManager(QObject):
         self.datatypes = {
             "int": int,
             "str": str,
+            "bool": bool,
             "None": None,
             "list": list,
             "map/int": "mapping"
@@ -82,5 +101,11 @@ class SettingsManager(QObject):
         setting = setting + "/value"
         if setting not in self.defaults:
             raise KeyError
+
+        self.settings.setValue(setting, value)
+
+    def set_setting(self, setting: str, value) -> None:
+        """Sets the value of the setting. This method performs no safe checks and should not be used outside the
+        SettingsManager class"""
 
         self.settings.setValue(setting, value)

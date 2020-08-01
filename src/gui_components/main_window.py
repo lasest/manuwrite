@@ -2,7 +2,7 @@ from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
                             QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox)
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex)
+from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex, QSize)
 from PyQt5.QtGui import *
 
 from forms.ui_main_window import Ui_MainWindow
@@ -245,6 +245,8 @@ class MainWindow(QMainWindow):
                 self.write_settings()
             elif answer == QMessageBox.Cancel:
                 event.ignore()
+            else:
+                self.write_settings()
         else:
             self.write_settings()
 
@@ -277,13 +279,8 @@ class MainWindow(QMainWindow):
         widget.setLayout(QVBoxLayout())
         widget.layout().setContentsMargins(0, 2, 0, 0)
 
-        # Create editor and set its settings
-        editor = TextEditor(widget, self.ui.webEngineView)
-
-        font = editor.font()
-        font.setPointSize(self.SettingsManager.get_setting_value("Editor/Font size"))
-        font.setRawName(self.SettingsManager.get_setting_value("Editor/Font name"))
-        editor.setFont(font)
+        # Create editor
+        editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager)
 
         self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False))
         widget.layout().addWidget(editor)
@@ -496,17 +493,20 @@ class MainWindow(QMainWindow):
         dialog = AddLinkDialog()
         dialog.show()
         if dialog.exec_():
-            self.get_editor().insert_text_at_cursor("[{}]({})".format(dialog.link_text, dialog.link_address))
+            self.get_editor().insert_text_at_cursor(dialog.link)
 
     @pyqtSlot()
     def on_actionImage_triggered(self) -> None:
         if self.ui.EditorTabWidget.count() == 0:
             return
-
-        dialog = AddImageDialog()
+        # TODO: change default application/project folder to the folder of the current project
+        dialog = AddImageDialog(self.SettingsManager.get_setting_value("Editor/Default image width"),
+                                self.SettingsManager.get_setting_value("Editor/Default image height"),
+                                self.SettingsManager.get_setting_value("Application/Project folder"))
         dialog.show()
         if dialog.exec_():
-            self.get_editor().insert_text_at_cursor("![{}]({})".format(dialog.image_text, dialog.image_path))
+            self.get_editor().insert_text_at_cursor("![{}]({}){{width={} height={}}}".format(dialog.image_text,
+                                                    dialog.image_path, dialog.image_width, dialog.image_height))
 
     @pyqtSlot()
     def on_actionCode_triggered(self) -> None:
