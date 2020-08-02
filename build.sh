@@ -10,6 +10,7 @@ pyuic5 ui/add_image_dialog.ui -o src/forms/ui_add_image_dialog.py
 pyuic5 ui/add_citation_dialog.ui -o src/forms/ui_add_citation_dialog.py
 pyuic5 ui/create_project_dialog.ui -o src/forms/ui_create_project_dialog.py
 pyuic5 ui/settings_dialog.ui -o src/forms/ui_settings_dialog.py
+pyuic5 ui/project_settings_dialog.ui -o src/forms/ui_project_settings_dialog.py
 
 # Activate python venv
 if [ ! -d "./venv" ]

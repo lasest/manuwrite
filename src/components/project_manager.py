@@ -2,12 +2,28 @@ import json
 from collections import OrderedDict
 
 from PyQt5.QtWidgets import QFileSystemModel
-from PyQt5.QtCore import QModelIndex, QDir, QFile
+from PyQt5.QtCore import QModelIndex, QDir, QFile, QDate
 
 from common import ProjectError
 
 
 class ProjectManager():
+
+    defaults = OrderedDict({
+        "Title": {"type": "str", "value": ""},
+        "Date created": {"type": "mapping/int", "value": [QDate.currentDate().year(), QDate.currentDate().month(),
+                                                          QDate.currentDate().day()]},
+        "Authors": {"type": "str", "value": ""},
+        "Project type": {"type": "enum", "value": "Notes", "allowed values": ["Notes", "Article", "Book"]},
+        "Absolute path": {"type": "str", "value": ""},
+        "Description": {"type": "str", "value": ""},
+        "Additional meta information": {"type": "str", "value": ""},
+        "Files to render": {"type": "mapping/str", "value": []},
+        "Style": {"type": "str", "value": "Manubot classic"},
+        "Render to": {"type": "str", "value": "Html"},
+        "Pandoc command (auto)": {"type": "str", "value": ""},
+        "Pandoc command (manual)": {"type": "str", "value": ""}
+    })
 
     def __init__(self, directory_path: str):
 
@@ -32,6 +48,11 @@ class ProjectManager():
             finally:
                 file.close()
             self.project_info = data
+
+            for key in self.defaults.keys():
+                if key not in self.project_info:
+                    self.project_info[key] = self.defaults[key]
+
         else:
             raise ProjectError("Project file doesn't exits")
 
@@ -56,14 +77,6 @@ class ProjectManager():
     def create_project(directory_path: str) -> None:
         """Creates a new project at given path"""
 
-        project_info = OrderedDict({
-            "Title": {"type": "str", "value": "Untitled"},
-            "Date created:": {"type": "str", "value": "2020-07-28"},
-            "Author": {"type": "str", "value": "Sergey Lazarev"},
-            "Project type": {"type": "enum", "value": "Notes", "allowed values": ["Notes", "Article", "Book"]},
-            "Absolute path": {"type": "str", "value": "directory_path"}
-        })
-
         try:
             directory = QDir(directory_path)
 
@@ -77,7 +90,10 @@ class ProjectManager():
             file.setFileName(directory_path + "/.manuwrite/project.json")
             file.open(QFile.ReadWrite)
 
-            file.write(json.dumps(project_info, indent=4).encode())
+            project_settings = ProjectManager.defaults
+            project_settings["Absolute path"] = directory_path
+
+            file.write(json.dumps(project_settings, indent=4).encode())
             file.close()
         except OSError:
             raise ProjectError("Error creating project files")
@@ -125,7 +141,7 @@ class ProjectManager():
         finally:
             file.close()
 
-    def get_setting_value(self, setting: str) -> None:
+    def get_setting_value(self, setting: str):
         """Return the value of a given setting"""
 
         return self.project_info[setting]["value"]

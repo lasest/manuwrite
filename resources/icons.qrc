@@ -25,6 +25,12 @@
         <file>icons_dark/insert-image.svg</file>
         <file>icons_dark/format-text-code.svg</file>
         <file>icons_dark/document-open.svg</file>
+        <file>icons_dark/go-up.svg</file>
+        <file>icons_dark/go-up-skip.svg</file>
+        <file>icons_dark/go-down.svg</file>
+        <file>icons_dark/go-down-skip.svg</file>
+        <file>icons_dark/go-previous.svg</file>
+        <file>icons_dark/go-next.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">

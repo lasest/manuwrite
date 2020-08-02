@@ -12,6 +12,7 @@ from gui_components.add_image_dialog import AddImageDialog
 from gui_components.add_citation_dialog import AddCitationDialog
 from gui_components.create_project_dialog import CreateProjectDialog
 from gui_components.settings_dialog import SettingsDialog
+from gui_components.project_settings_dialog import ProjectSettingsDialog
 from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager
@@ -144,39 +145,6 @@ class MainWindow(QMainWindow):
         self.ui.ProjectTreeView.header().setVisible(False)
         self.on_EditorTabLabel_clicked()
         self.ProjectManager.FsModel.directoryLoaded.connect(self.on_ProjectManager_ProjectDirectoryLoaded)
-        self.ui.ProjectSettingsTableWidget.horizontalHeader().setStretchLastSection(True)
-        self.ui.ProjectSettingsTableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        # Populate project settings
-        # TODO: remove this section and create proper widgets for project settings
-        rows = len(self.ProjectManager.project_info)
-        self.ui.ProjectSettingsTableWidget.setRowCount(rows)
-        self.ui.ProjectSettingsTableWidget.setColumnCount(2)
-
-        info = []
-        for item in self.ProjectManager.project_info.items():
-            info.append(item)
-
-        for i in range(len(info)):
-            key = info[i][0]
-            table_item = QTableWidgetItem(key)
-            table_item.setFlags(table_item.flags() ^ Qt.ItemIsEditable)
-            self.ui.ProjectSettingsTableWidget.setItem(i, 0, table_item)
-
-            setting_type = info[i][1]["type"]
-            if setting_type != "enum":
-                table_item = QTableWidgetItem(info[i][1]["value"])
-                self.ui.ProjectSettingsTableWidget.setItem(i, 1, table_item)
-            else:
-                value = info[i][1]["value"]
-                variants = info[i][1]["allowed values"]
-                table_item = QComboBox(self.ui.ProjectSettingsTableWidget)
-                table_item.addItems(variants)
-                index = table_item.findText(value)
-                table_item.setCurrentIndex(index)
-                table_item.currentIndexChanged.connect(self.on_SettingComboBox_valueChanged)
-                table_item.row = i
-                self.ui.ProjectSettingsTableWidget.setCellWidget(i, 1, table_item)
 
         self.loading_project = False
 
@@ -265,9 +233,11 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_ProjectTabLabel_clicked(self) -> None:
-        """Switch to project tab"""
-        self.set_active_tab(self.ui.ProjectTabLabel)
-        self.ui.MainStackedWidget.setCurrentIndex(3)
+        """Opens project settings dialog"""
+        if self.ProjectManager is not None:
+            dialog = ProjectSettingsDialog(self, self.ProjectManager, self.SettingsManager)
+            dialog.show()
+            dialog.exec_()
 
     @pyqtSlot()
     def on_actionNew_triggered(self) -> None:
@@ -560,7 +530,7 @@ class MainWindow(QMainWindow):
             ProjectManager.create_project(dialog.path)
             self.load_project(dialog.path)
             self.ProjectManager.uptade_project_info(("Title", dialog.title))
-            self.ProjectManager.uptade_project_info(("Author", dialog.authors))
+            self.ProjectManager.uptade_project_info(("Authors", dialog.authors))
             self.ProjectManager.uptade_project_info(("Project type", dialog.project_type))
             try:
                 self.ProjectManager.save_project_data()

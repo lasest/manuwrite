@@ -27,6 +27,12 @@ class SettingsManager(QObject):
             "MainWindow/last_project/value": "",
             "MainWindow/last_project/type": "str",
 
+            "SettingsDialog/size/value": QSize(400, 600),
+            "SettingsDialog/size/type": "None",
+
+            "SettingsDialog/pos/value": QPoint(100, 100),
+            "SettingsDialog/pos/type": "None",
+
             "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
             "Application/Project folder/type": "str",
 
@@ -55,7 +61,17 @@ class SettingsManager(QObject):
             "Editor/Autorender timeout (ms)/type": "int",
 
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
-            "Projects/Project types/type": "list"
+            "Projects/Project types/type": "list",
+
+            "Render/Formats/value": [{"name": "Html", "pandoc name": "html", "file extension": "html"},
+                                     {"name": "Pdf", "pandoc name": "pdf", "file extension": "pdf"},
+                                     {"name": "Doc", "pandoc name": "doc", "file extension": "doc"}],
+            "Render/Formats/type": "list",
+
+            "Render/Styles/value": [{"name": "Manuwrite strict", "folder": "manuwrite_classic"},
+                                    {"name": "Manuwrite modern", "folder": "manuwrite_modern"},
+                                    {"name": "Manubot classic", "folder": "manubot_classic"}],
+            "Render/Styles/type": "list"
         }
 
         # Maps datatype names read from config to functions
