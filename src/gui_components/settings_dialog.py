@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QPushButton, QHeaderView
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QPushButton, QHeaderView, QMessageBox
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QCloseEvent, QFont, QColor
 
@@ -46,20 +46,34 @@ class SettingsDialog(QDialog):
                 self.ui.ColorsTable.setItem(offset + i + 1, 0, table_item)
 
                 table_item = QTableWidgetItem(item[1]['name'])
+                table_item.setFlags(table_item.flags() ^ Qt.ItemIsEditable)
                 self.ui.ColorsTable.setItem(offset + i + 1, 1, table_item)
 
                 button = ColorButton(self, QColor(item[1]["color"]))
                 button.setMaximumWidth(50)
                 self.ui.ColorsTable.setCellWidget(offset + i + 1, 2, button)
 
-        if self.ui.ColorSchemaComboBox.currentText() == "System colors":
-            return
-
-        schemas = self.SettingsManager.get_color_schemas()
-        schema = schemas[self.ui.ColorSchemaComboBox.currentText()]
-
+        allow_editing = True
         self.ui.ColorsTable.clear()
         self.ui.ColorsTable.setRowCount(0)
+
+        schemas = self.SettingsManager.get_color_schemas()
+        schema_name = self.ui.ColorSchemaComboBox.currentText()
+
+        if schema_name == "System colors":
+            schema = self.SettingsManager.get_default_color_schema()
+            allow_editing = False
+        elif schema_name in schemas:
+            schema = schemas[schema_name]
+        else:
+            QMessageBox.warning(self, "Error", f'Color schema "{schema_name}" was not found!')
+            return
+
+        if allow_editing:
+            self.ui.ColorsTable.setEnabled(True)
+        else:
+            self.ui.ColorsTable.setEnabled(False)
+
         load_section("Editor_colors", "Editor colors", schema)
         load_section("Markdown_colors", "Markdown colors", schema)
 
