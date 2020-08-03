@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import Tuple, Dict, List
 
-from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextDocument
+from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextDocument, QColor
 from PyQt5.QtCore import QRegExp, Qt
 
 
@@ -49,8 +49,10 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "citation": r"\[@[\S][\S]*:[\S][\S]*\]"
     })
 
-    def __init__(self, document: QTextDocument):
+    def __init__(self, document: QTextDocument, settings_manager):
         super().__init__(document)
+
+        self.SettingsManager = settings_manager
 
         # Create formats
         self.formats: Dict[str, QTextCharFormat] = {key: QTextCharFormat() for key in self.patterns.keys()}
@@ -64,29 +66,18 @@ class MarkdownHighlighter(QSyntaxHighlighter):
     def set_formats(self) -> None:
         """Sets formats which will be applied to the text by highlighter"""
 
-        self.formats["heading-1"].setForeground(Qt.yellow)
-        self.formats["heading-2"].setForeground(Qt.magenta)
-        self.formats["heading-3"].setForeground(Qt.green)
-        self.formats["heading-4"].setForeground(Qt.cyan)
-        self.formats["heading-5"].setForeground(Qt.red)
-        self.formats["heading-6"].setForeground(Qt.blue)
-        self.formats["line-break"].setBackground(Qt.red)
-        self.formats["horizontal-rule"].setBackground(Qt.white)
-        self.formats["bold"].setFontWeight(75)
-        self.formats["italic"].setFontItalic(True)
-        self.formats["bold-and-italic"].setFontItalic(True)
-        self.formats["bold-and-italic"].setFontWeight(75)
-        self.formats["blockquote-1"].setForeground(Qt.darkGreen)
-        self.formats["blockquote-2"].setForeground(Qt.darkMagenta)
-        self.formats["blockquote-3"].setForeground(Qt.darkYellow)
-        self.formats["blockquote-n"].setForeground(Qt.darkCyan)
-        self.formats["ordered-list"].setForeground(Qt.darkBlue)
-        self.formats["unordered-list"].setForeground(Qt.darkRed)
-        self.formats["code"].setFontFamily("fantasy")
-        self.formats["link"].setFontUnderline(True)
-        self.formats["image"].setFontStrikeOut(True)
-        self.formats["citation"].setForeground(Qt.red)
-        self.formats["citation"].setToolTip("Some random text")
+        color_schema = self.SettingsManager.get_current_color_schema()
+
+        for key in self.formats.keys():
+            self.formats[key].setForeground(QColor(color_schema["Markdown_colors"][key]["color"]))
+
+        for s in "link", "image", "citation":
+            self.formats[s].setFontUnderline(True)
+
+        for s in "line-break",  "horizontal-rule":
+            self.formats[s].setBackground(QColor(color_schema["Markdown_colors"][s]["color"]))
+
+        self.formats["code"].setFontFamily("Monospace")
 
     def highlightBlock(self, text: str) -> None:
         """Finds and highlights tags in the text. Automatically called when document changes"""

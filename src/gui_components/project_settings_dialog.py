@@ -45,8 +45,10 @@ class ProjectSettingsDialog(QDialog):
 
     def read_window_settings(self) -> None:
         """Read window settings (i.e. position, size, etc)"""
-        self.resize(self.SettingsManager.get_setting_value("SettingsDialog/size"))
-        self.move(self.SettingsManager.get_setting_value("SettingsDialog/pos"))
+        self.resize(self.SettingsManager.get_setting_value("ProjectSettingsDialog/size"))
+        self.move(self.SettingsManager.get_setting_value("ProjectSettingsDialog/pos"))
+        tab_index = self.SettingsManager.get_setting_value("ProjectSettingsDialog/current tab index")
+        self.ui.MainTabWidget.setCurrentIndex(tab_index)
 
     def read_meta_information_settings(self) -> None:
         """Read meta information settings and update gui elements on Meta information tab"""
@@ -110,6 +112,12 @@ class ProjectSettingsDialog(QDialog):
         # Populate PandocCommandLineEdit
         self.ui.PandocCommandLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (auto)"))
         self.ui.PandocCommandManualLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (manual)"))
+
+    def update_window_settings(self) -> None:
+        self.SettingsManager.set_setting_value("ProjectSettingsDialog/size", self.size())
+        self.SettingsManager.set_setting_value("ProjectSettingsDialog/pos", self.pos())
+        tab_index = self.ui.MainTabWidget.currentIndex()
+        self.SettingsManager.set_setting_value("ProjectSettingsDialog/current tab index", tab_index)
 
     def update_meta_information_settings(self) -> None:
         """Update meta information settings in Project manager with info from gui"""
@@ -175,16 +183,20 @@ class ProjectSettingsDialog(QDialog):
     def accept(self) -> None:
         """Update project settings in Project manager and save them if the dialog is accepted"""
 
+        self.update_window_settings()
         self.update_meta_information_settings()
         self.update_render_settings()
         self.ProjectManager.save_project_data()
 
         super().accept()
 
+    def reject(self) -> None:
+        self.update_window_settings()
+        super().reject()
+
     def closeEvent(self, event: QCloseEvent) -> None:
         """Save window related settings before closing"""
-        self.SettingsManager.set_setting_value("SettingsDialog/size", self.size())
-        self.SettingsManager.set_setting_value("SettingsDialog/pos", self.pos())
+        self.update_window_settings()
 
     @pyqtSlot(QListWidgetItem)
     def on_FilesToRenderListWidget_itemClicked(self, item: QListWidgetItem) -> None:

@@ -128,7 +128,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="SettingsLabel">
+        <widget class="QLabelClickable" name="SettingsLabel">
          <property name="text">
           <string>accou</string>
          </property>
@@ -152,7 +152,7 @@
       <item>
        <widget class="QStackedWidget" name="MainStackedWidget">
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="WelcomePage">
          <layout class="QHBoxLayout" name="horizontalLayout_4">

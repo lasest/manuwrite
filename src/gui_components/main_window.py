@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
         self.ui.EditorTabWidget.clear()
         self.ui.splitter.setStretchFactor(0, 0)
         self.ui.splitter.setStretchFactor(1, 1)
+        self.ui.splitter.setStretchFactor(2, 1)
 
         # Call convenience functions to setup Ui
         self.set_icons()
@@ -238,6 +239,10 @@ class MainWindow(QMainWindow):
             dialog = ProjectSettingsDialog(self, self.ProjectManager, self.SettingsManager)
             dialog.show()
             dialog.exec_()
+
+    @pyqtSlot()
+    def on_SettingsLabel_clicked(self) -> None:
+        self.on_actionSettings_triggered()
 
     @pyqtSlot()
     def on_actionNew_triggered(self) -> None:
@@ -495,9 +500,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionRenderFile_triggered(self) -> None:
-        """Render the contents of the editor at the currently active tab to markdown"""
-
-        self.get_editor().render_to_html()
+        """Render the contents of the editor at the currently active tab to html"""
+        if self.get_editor():
+            self.get_editor().render_to_html()
 
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)
@@ -644,35 +649,6 @@ class MainWindow(QMainWindow):
         is loaded (i.e. in load_project()"""
 
         self.ui.ProjectTreeView.expandToDepth(4)
-
-    @pyqtSlot(int, int)
-    def on_ProjectSettingsTableWidget_cellChanged(self, row: int, column: int):
-        # TODO: remove this function and create a proper project configuration screen
-        if self.loading_project:
-            pass
-        else:
-            key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
-            value = self.ui.ProjectSettingsTableWidget.item(row, 1).text()
-            self.ProjectManager.uptade_project_info((key, value))
-
-    @pyqtSlot()
-    def on_SaveProjectSettingsButton_clicked(self) -> None:
-        """Attempt to save project settings which are currently in memory to permanent storage"""
-
-        if self.ProjectManager is not None:
-            try:
-                self.ProjectManager.save_project_data()
-            except ProjectError as e:
-                QMessageBox.critical(self, "Error", f"Failed to create project: {e.message}")
-
-    @pyqtSlot(int)
-    def on_SettingComboBox_valueChanged(self, current_index: int):
-        # TODO: Remove this fuction
-        sender = QObject.sender(self)
-        row = sender.row
-        key = self.ui.ProjectSettingsTableWidget.item(row, 0).text()
-        value = sender.itemText(current_index)
-        self.ProjectManager.uptade_project_info((key, value))
 
     @pyqtSlot(QModelIndex)
     def on_ProjectTreeView_clicked(self, index: QModelIndex) -> None:

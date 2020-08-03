@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
         self.ProjectTabLabel.setFrameShadow(QtWidgets.QFrame.Raised)
         self.ProjectTabLabel.setObjectName("ProjectTabLabel")
         self.verticalLayout.addWidget(self.ProjectTabLabel)
-        self.SettingsLabel = QtWidgets.QLabel(self.MainTabsFrame)
+        self.SettingsLabel = QLabelClickable(self.MainTabsFrame)
         self.SettingsLabel.setObjectName("SettingsLabel")
         self.verticalLayout.addWidget(self.SettingsLabel)
         self.UserAccounLabel = QtWidgets.QLabel(self.MainTabsFrame)
@@ -313,7 +313,7 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuView.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.MainStackedWidget.setCurrentIndex(2)
+        self.MainStackedWidget.setCurrentIndex(1)
         self.EditorTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 

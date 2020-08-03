@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
 from PyQt5.QtCore import QSize, QRect, Qt, pyqtSignal, QPoint, pyqtSlot, QTimer, QUrl
-from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent
+from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent, QFont, QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from components.highlighter import MarkdownHighlighter
@@ -30,13 +30,15 @@ class TextEditor(QPlainTextEdit):
         # Set attributes
         self.lineNumberArea = LineNumberArea(self)
         self.display_widget = display_widget
-        self.highlighter = MarkdownHighlighter(self.document())
+        self.highlighter = MarkdownHighlighter(self.document(), settings_manager)
         self.text_changed = False
         self.citations = dict()
         self.ThreadManager = ThreadManager(max_threads=4)
         self.setMouseTracking(True)
         self.InputTimer = QTimer(self)
         self.SettingsManager = settings_manager
+
+        self.ColorSchema = self.SettingsManager.get_current_color_schema()
 
         # Connect signals to slots
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)
@@ -96,7 +98,7 @@ class TextEditor(QPlainTextEdit):
         """Paints the line number area of the editor"""
 
         painter = QPainter(self.lineNumberArea)
-        color = self.palette().color(self.palette().Dark)
+        color = QColor(self.ColorSchema["Editor_colors"]["linenumber_area"]["color"])
         painter.fillRect(event.rect(), color)
 
         block = self.firstVisibleBlock()
@@ -108,7 +110,7 @@ class TextEditor(QPlainTextEdit):
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1)
-                color = self.palette().color(self.palette().Text)
+                color = QColor(self.ColorSchema["Editor_colors"]["linenumber_text"]["color"])
                 painter.setPen(color)
                 painter.drawText(5, top, self.lineNumberArea.width(), height,
                                  Qt.AlignLeft, number)
@@ -143,7 +145,7 @@ class TextEditor(QPlainTextEdit):
         # Highlight current line
         selection = QTextEdit.ExtraSelection()
 
-        lineColor = self.palette().color(self.palette().AlternateBase).darker(70)
+        lineColor = QColor(self.ColorSchema["Editor_colors"]["current_line"]["color"])
 
         selection.format.setBackground(lineColor)
         selection.format.setProperty(QTextFormat.FullWidthSelection, True)
@@ -158,8 +160,8 @@ class TextEditor(QPlainTextEdit):
         rendered, if the settings do not say otherwise (disable autorender)"""
 
         self.text_changed = True
-        if self.SettingsManager.get_setting_value("Editor/Autorender to html"):
-            self.InputTimer.start(self.SettingsManager.get_setting_value("Editor/Autorender timeout (ms)"))
+        if self.SettingsManager.get_setting_value("Render/Autorender"):
+            self.InputTimer.start(self.SettingsManager.get_setting_value("Render/Autorender delay"))
 
     def insert_text_at_cursor(self, text: str, move_center=False) -> None:
         """Inserts text at current cursor position. If move_center is set to True, moves cursor to the center of
@@ -226,7 +228,8 @@ class TextEditor(QPlainTextEdit):
     def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint) -> None:
         """Displays a tooltip at current cursor position if a citation tag or an image tag is under cursor. Hides
         the tooltip if no tags are under cursor"""
-
+        show_citation_tooltips = self.SettingsManager.get_setting_value("Editor/Show citation tooltips")
+        show_image_tooltips = self.SettingsManager.get_setting_value("Editor/Show image tooltips")
         hide_tooltip = True
         current_line_text = cursor.block().text()
         current_line_tags = self.highlighter.get_tags(current_line_text)
@@ -235,7 +238,7 @@ class TextEditor(QPlainTextEdit):
         for tag in current_line_tags:
             tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
 
-            if tag[2] == "citation":
+            if show_citation_tooltips and tag[2] == "citation":
                 # Remove brackets and @ symbol from the tag text
                 tag_text = tag_text[2:-1]
 
@@ -259,7 +262,10 @@ class TextEditor(QPlainTextEdit):
                     QToolTip.showText(display_point, self.citations[tag_text], self, QRect(), 5000)
                     hide_tooltip = False
 
-            elif tag[2] == "image" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+            elif show_image_tooltips and tag[2] == "image" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+                # Do nothing
+                if not self.SettingsManager.get_setting_value("Editor/Show citation tooltips"):
+                    return
 
                 path = tag_text[tag_text.find("(") + 1:tag_text.find(")")]
                 width = self.SettingsManager.get_setting_value("Editor/Image tooltip width")
@@ -291,10 +297,15 @@ class TextEditor(QPlainTextEdit):
     def read_settings(self) -> None:
         """Read settings and apply them"""
 
-        font = self.font()
+        font = QFont(self.SettingsManager.get_setting_value("Editor/Font name"))
         font.setPointSize(self.SettingsManager.get_setting_value("Editor/Font size"))
-        font.setRawName(self.SettingsManager.get_setting_value("Editor/Font name"))
         self.setFont(font)
+
+        if self.ColorSchema:
+            bg_color = self.ColorSchema['Editor_colors']['background']['color']
+            text_color = self.ColorSchema['Editor_colors']['text']['color']
+
+            self.setStyleSheet(f"QPlainTextEdit {{background-color: {bg_color}; color: {text_color}}}")
 
     @pyqtSlot(str)
     def on_pandoc_thread_finished(self, html: str) -> None:
