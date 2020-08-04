@@ -162,7 +162,8 @@ class SettingsManager(QObject):
 
         return QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
 
-    def get_color_schemas(self):
+    def get_color_schemas(self) -> dict:
+        """Return a dict of all color schemes found in the /color_schemas subdirectory of the app data directory"""
         # TODO: exception possible here
         path = self.get_appdata_path() + "/color_schemas"
         dir_iter = QDirIterator(path, QDirIterator.Subdirectories)
@@ -182,7 +183,8 @@ class SettingsManager(QObject):
 
         return color_schemas
 
-    def get_current_color_schema(self):
+    def get_current_color_schema(self) -> dict:
+        """Return current color schema or the default color schema, if failed to get the current one"""
         schema_name = self.get_setting_value("Editor/Current color schema")
         if schema_name != "System colors":
             try:
@@ -198,6 +200,7 @@ class SettingsManager(QObject):
         return schema
 
     def get_default_color_schema(self) -> dict:
+        """Return the color scheme based on the system colors"""
         palette = QPalette(self.parent.palette())
 
         schema = {
@@ -254,7 +257,14 @@ class SettingsManager(QObject):
                                 "image": {"name": "Image",
                                           "color": "#3e95ff"},
                                 "citation": {"name": "Citation",
-                                             "color": "#3e95ff"}}
+                                             "color": "#3e95ff"},
+                                "strikeout": {"name": "Strikeout",
+                                              "color": "#777777"},
+                                "superscript": {"name": "Strikeout",
+                                              "color": "#4081d1"},
+                                "subscript": {"name": "Strikeout",
+                                              "color": "#4081d1"}
+                                }
         }
 
         return schema

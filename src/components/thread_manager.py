@@ -23,7 +23,7 @@ class PandocThread(QThread):
         self.html = ""
 
     def run(self):
-        pandoc = subprocess.run(["pandoc", "--to", "html", "--filter", "pandoc-manubot-cite", "--filter", "pandoc-citeproc", "--css", "style.css", "--standalone"], input=self.markdown.encode(), capture_output=True)
+        pandoc = subprocess.run(["pandoc", "--to", "html", "--filter", "pandoc-manubot-cite", "--filter", "pandoc-citeproc", "--filter", "pandoc-fignos", "--css", "style.css", "--standalone"], input=self.markdown.encode(), capture_output=True)
         pandoc.check_returncode()
         self.html = pandoc.stdout.decode()
 

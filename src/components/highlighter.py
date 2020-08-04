@@ -11,6 +11,8 @@ class Rule():
         self.name = name
         self.expression = QRegExp(pattern)
         self.format = text_format
+        self.loffset = 0
+        self.roffset = 0
 
 
 class MarkdownHighlighter(QSyntaxHighlighter):
@@ -43,10 +45,16 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "ordered-list": r"^\s*\d\.",
         "unordered-list": r"^\s*[-+*]\s",
         "code": r"`..*`",
-        "link": r"()(^\[..*\]\(..*\))|" +
-                r"([^!])(\[..*\]\(..*\))",
-        "image": r"!\[.*\]\(..*\)",
-        "citation": r"\[@[\S][\S]*:[\S][\S]*\]"
+        "link": r"()(^\[..*\]\(..*\))()|" +
+                r"([^!])(\[..*\]\(..*\))()",
+        "image": r"!\[.*\]\(..*\)|!\[.*\]\(..*\)\{.*\}",
+        "citation": r"\[@[\S][\S]*:[\S][\S]*\]",
+        "strikeout": r"~~[^~][^~]*~~",
+        "superscript": r"\^..*\^",
+        "subscript": r"([^~])(~[^~][^~]*~)([^~])|" +
+                     r"^()(~[^~][^~]*~)([^~])|" +
+                     r"([^~])(~[^~][^~]*~)()$|" +
+                     r"^()(~[^~][^~]*~)()$"
     })
 
     def __init__(self, document: QTextDocument, settings_manager):
@@ -100,21 +108,16 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 loffset = 0
                 roffset = 0
 
-                if rule.name in ("italic", "bold"):
+                if rule.expression.captureCount() > 1:
                     group_n = 0
-                    for i in (2, 5, 8, 11):
-                        if rule.expression.cap(i):
-                            group_n = i
+                    center_count = int((rule.expression.captureCount()) / 3)
+                    for i in range(center_count):
+                        current_center = 2 + i * 3
+                        if rule.expression.cap(current_center):
+                            group_n = current_center
                             break
                     loffset = len(rule.expression.cap(group_n - 1))
                     roffset = len(rule.expression.cap(group_n + 1))
-                elif rule.name == "link":
-                    group_n = 0
-                    for i in (2, 4):
-                        if rule.expression.cap(i):
-                            group_n = i
-                            break
-                    loffset = len(rule.expression.cap(group_n - 1))
 
                 length = rule.expression.matchedLength() - loffset - roffset
                 tags.append((index + loffset, length, rule.name))

@@ -72,6 +72,9 @@ class MainWindow(QMainWindow):
         self.ui.AddCitationToolButton.setDefaultAction(self.ui.actionAddCitation)
 
         self.ui.RenderFileToolButton.setDefaultAction(self.ui.actionRenderFile)
+        self.ui.StrikethroughToolButton.setDefaultAction(self.ui.actionStrikethrough)
+        self.ui.SuperscriptToolButton.setDefaultAction(self.ui.actionSuperscript)
+        self.ui.SubscriptToolButton.setDefaultAction(self.ui.actionSubscript)
 
     def set_icons(self) -> None:
         # load common icons
@@ -100,6 +103,10 @@ class MainWindow(QMainWindow):
         self.ui.actionLink.setIcon(QIcon(":/icons_dark/icons_dark/link.svg"))
         self.ui.actionImage.setIcon(QIcon(":/icons_dark/icons_dark/insert-image.svg"))
         self.ui.actionCode.setIcon(QIcon(":/icons_dark/icons_dark/format-text-code.svg"))
+
+        self.ui.actionStrikethrough.setIcon(QIcon(":/icons_dark/icons_dark/format-text-strikethrough.svg"))
+        self.ui.actionSuperscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-superscript.svg"))
+        self.ui.actionSubscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-subscript.svg"))
 
     def set_active_tab(self, label: QLabel) -> None:
         """Makes specified label in MainTabsFrame appear selected and deselects all other labels. Switches tab in
@@ -503,6 +510,18 @@ class MainWindow(QMainWindow):
         """Render the contents of the editor at the currently active tab to html"""
         if self.get_editor():
             self.get_editor().render_to_html()
+
+    @pyqtSlot()
+    def on_actionStrikethrough_triggered(self) -> None:
+        self.get_editor().insert_double_tag("~~")
+
+    @pyqtSlot()
+    def on_actionSuperscript_triggered(self) -> None:
+        self.get_editor().insert_double_tag("^")
+
+    @pyqtSlot()
+    def on_actionSubscript_triggered(self) -> None:
+        self.get_editor().insert_double_tag("~")
 
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)

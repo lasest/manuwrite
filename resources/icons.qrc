@@ -31,6 +31,9 @@
         <file>icons_dark/go-down-skip.svg</file>
         <file>icons_dark/go-previous.svg</file>
         <file>icons_dark/go-next.svg</file>
+        <file>icons_dark/format-text-strikethrough.svg</file>
+        <file>icons_dark/format-text-superscript.svg</file>
+        <file>icons_dark/format-text-subscript.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">
