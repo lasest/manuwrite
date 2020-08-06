@@ -34,6 +34,7 @@
         <file>icons_dark/format-text-strikethrough.svg</file>
         <file>icons_dark/format-text-superscript.svg</file>
         <file>icons_dark/format-text-subscript.svg</file>
+        <file>icons_dark/insert-footnote.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">

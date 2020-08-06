@@ -11,8 +11,6 @@ class Rule():
         self.name = name
         self.expression = QRegExp(pattern)
         self.format = text_format
-        self.loffset = 0
-        self.roffset = 0
 
 
 class MarkdownHighlighter(QSyntaxHighlighter):
@@ -54,7 +52,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         "subscript": r"([^~])(~[^~][^~]*~)([^~])|" +
                      r"^()(~[^~][^~]*~)([^~])|" +
                      r"([^~])(~[^~][^~]*~)()$|" +
-                     r"^()(~[^~][^~]*~)()$"
+                     r"^()(~[^~][^~]*~)()$",
+        "footnote": r"\[\^..*\]",
+        "table": r"\{#tbl:..*\}"
     })
 
     def __init__(self, document: QTextDocument, settings_manager):
@@ -84,6 +84,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         for s in "line-break",  "horizontal-rule":
             self.formats[s].setBackground(QColor(color_schema["Markdown_colors"][s]["color"]))
+
+        for s in "heading-1", "heading-2", "heading-3", "heading-4", "heading-5", "heading-6", "bold", "italic", "bold-and-italic":
+            self.formats[s].setFontWeight(75)
 
         self.formats["code"].setFontFamily("Monospace")
 

@@ -263,7 +263,11 @@ class SettingsManager(QObject):
                                 "superscript": {"name": "Strikeout",
                                               "color": "#4081d1"},
                                 "subscript": {"name": "Strikeout",
-                                              "color": "#4081d1"}
+                                              "color": "#4081d1"},
+                                "footnote": {"name": "Footnote",
+                                             "color": "#ff0000"},
+                                "table": {"name": "Table",
+                                          "color": "#0000ff"}
                                 }
         }
 

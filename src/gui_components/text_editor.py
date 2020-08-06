@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
 from PyQt5.QtCore import QSize, QRect, Qt, pyqtSignal, QPoint, pyqtSlot, QTimer, QUrl
-from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent, QFont, QColor
+from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent, QFont, QColor, QTextCharFormat
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from components.highlighter import MarkdownHighlighter
@@ -23,6 +23,8 @@ class LineNumberArea(QWidget):
 
 class TextEditor(QPlainTextEdit):
 
+    ProjectStrucutreUpdated = pyqtSignal(dict)
+
     def __init__(self, parent, display_widget: QWebEngineView, settings_manager):
 
         super().__init__(parent)
@@ -36,7 +38,13 @@ class TextEditor(QPlainTextEdit):
         self.ThreadManager = ThreadManager(max_threads=4)
         self.setMouseTracking(True)
         self.InputTimer = QTimer(self)
+        self.DocumentParsingTimer = QTimer(self)
         self.SettingsManager = settings_manager
+        self.is_current_editor = False
+        self.is_parsing_document = False
+        self.char_format = QTextCharFormat(self.currentCharFormat())
+
+        self.document_data: dict = dict()
 
         self.ColorSchema = self.SettingsManager.get_current_color_schema()
 
@@ -49,10 +57,15 @@ class TextEditor(QPlainTextEdit):
         self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
         self.ThreadManager.pandocThreadFinished.connect(self.on_pandoc_thread_finished)
         self.InputTimer.timeout.connect(self.on_InputTimer_timeout)
+        self.DocumentParsingTimer.timeout.connect(self.on_DocumentParsingTimer_timeout)
+        self.ThreadManager.MarkdownDocumentParserThreadFinished.connect(self.on_parsing_document_finished)
 
         self.updateLineNumberAreaWidth(0)
         self.InputTimer.setSingleShot(True)
+        self.DocumentParsingTimer.setSingleShot(True)
         self.read_settings()
+
+
 
     def lineNumberAreaWidth(self) -> int:
         """Returns the width of the line number area depending on the number of digits that need to be displayed"""
@@ -205,16 +218,25 @@ class TextEditor(QPlainTextEdit):
         self.setTextCursor(cursor)
         cursor.insertText(text)
 
-    def insert_text_at_empty_line(self, text: str) -> None:
-        """Inserts text at current line, if it is empty, or creates a new line after the current line and inserts the
-        text on that new line"""
+    def insert_text_at_empty_paragraph(self, text: str) -> None:
+        """Inserts text in an empty paragraph"""
 
-        if self.textCursor().block().text() == "":
-            self.textCursor().insertText(text)
+        line_number = self.textCursor().blockNumber()
+        if line_number:
+            previous_line = self.document().findBlockByNumber(line_number - 1).text()
         else:
+            previous_line = ""
+
+        if self.textCursor().block().text() == "" and previous_line == "":
+            self.textCursor().insertText(text)
+        elif self.textCursor().block().text() == "" and previous_line != "":
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.EndOfLine)
             cursor.insertText("\n{}".format(text))
+        else:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.EndOfLine)
+            cursor.insertText("\n\n{}".format(text))
 
     def insert_double_tag(self, tag: str) -> None:
         """Inserts a double tag in the text (i.e. italic, bold, etc). Inserts at cursor if no text is selected, or at
@@ -306,6 +328,18 @@ class TextEditor(QPlainTextEdit):
             text_color = self.ColorSchema['Editor_colors']['text']['color']
 
             self.setStyleSheet(f"QPlainTextEdit {{background-color: {bg_color}; color: {text_color}}}")
+            self.char_format.setForeground(QColor(self.ColorSchema['Editor_colors']['text']['color']))
+
+    def apply_format_to_line(self, line_number: int, format: QTextCharFormat, block_state: int = None):
+        cursor = self.textCursor()
+        cursor.setPosition(self.document().findBlockByNumber(line_number).position())
+        cursor.select(QTextCursor.LineUnderCursor)
+        self.setTextCursor(cursor)
+
+        cursor.mergeCharFormat(format)
+
+        if block_state is not None:
+            self.document().findBlockByNumber(line_number).setUserState(block_state)
 
     @pyqtSlot(str)
     def on_pandoc_thread_finished(self, html: str) -> None:
@@ -324,3 +358,25 @@ class TextEditor(QPlainTextEdit):
         """Adds the citation returned by manubot thread to the self.citations dictionary when the thread is finished"""
 
         self.citations[citekey] = citation
+
+    def parse_document(self) -> None:
+        #print("Parsing document")
+
+        if not self.is_parsing_document:
+            #print("Sending command to thread manager")
+            self.ThreadManager.parse_markdown_document(self.document())
+            self.is_parsing_document = True
+
+    @pyqtSlot(dict)
+    def on_parsing_document_finished(self, data: dict):
+        # TODO: add time configuration
+        self.is_parsing_document = False
+        self.DocumentParsingTimer.start(5000)
+
+        self.ProjectStrucutreUpdated.emit(data)
+        print(data)
+
+    @pyqtSlot()
+    def on_DocumentParsingTimer_timeout(self):
+        if self.is_current_editor:
+            self.parse_document()

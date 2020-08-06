@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
+    <width>915</width>
     <height>600</height>
    </rect>
   </property>
@@ -312,6 +312,19 @@
               </widget>
              </item>
              <item>
+              <widget class="QToolButton" name="FootnoteToolButton">
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>22</width>
+                 <height>22</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QToolButton" name="OrdListToolButton">
                <property name="text">
                 <string>...</string>
@@ -425,6 +438,49 @@
                  <number>2</number>
                 </property>
                 <item>
+                 <widget class="QTabWidget" name="ProjectTabWidget">
+                  <property name="currentIndex">
+                   <number>1</number>
+                  </property>
+                  <widget class="QWidget" name="ProjectFilesTab">
+                   <attribute name="title">
+                    <string>Project</string>
+                   </attribute>
+                   <layout class="QVBoxLayout" name="verticalLayout_5">
+                    <item>
+                     <widget class="QTreeView" name="ProjectTreeView">
+                      <property name="minimumSize">
+                       <size>
+                        <width>150</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="contextMenuPolicy">
+                       <enum>Qt::CustomContextMenu</enum>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="ProjectStructureTab">
+                   <attribute name="title">
+                    <string>Strucutre</string>
+                   </attribute>
+                   <layout class="QVBoxLayout" name="verticalLayout_7">
+                    <item>
+                     <widget class="QTreeWidget" name="ProjectStructureTreeWidget">
+                      <column>
+                       <property name="text">
+                        <string notr="true">1</string>
+                       </property>
+                      </column>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QLabel" name="ProjectLabel">
                   <property name="autoFillBackground">
                    <bool>true</bool>
@@ -434,19 +490,6 @@
                   </property>
                   <property name="text">
                    <string>Project</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QTreeView" name="ProjectTreeView">
-                  <property name="minimumSize">
-                   <size>
-                    <width>150</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="contextMenuPolicy">
-                   <enum>Qt::CustomContextMenu</enum>
                   </property>
                  </widget>
                 </item>
@@ -531,7 +574,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>793</width>
+     <width>915</width>
      <height>35</height>
     </rect>
    </property>
@@ -809,6 +852,11 @@
   <action name="actionSubscript">
    <property name="text">
     <string>Subscript</string>
+   </property>
+  </action>
+  <action name="actionFootnote">
+   <property name="text">
+    <string>Footnote</string>
    </property>
   </action>
  </widget>

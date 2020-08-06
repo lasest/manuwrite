@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox)
+                            QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox, QTreeWidgetItem)
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex, QSize)
 from PyQt5.QtGui import *
 
@@ -21,7 +21,7 @@ from components.settings_manager import SettingsManager
 
 class MainWindow(QMainWindow):
 
-    OpenedEditor = namedtuple("OpenedEditor", ["filepath", "in_current_project"])
+    OpenedEditor = namedtuple("OpenedEditor", ["filepath", "in_current_project", "is_current_editor"])
 
     def __init__(self) -> None:
         super().__init__()
@@ -42,9 +42,12 @@ class MainWindow(QMainWindow):
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager = None
-        self.loading_project = False
         self.OpenedEditors = []
         self.SettingsManager = SettingsManager(self)
+        self.current_editor_index = 0
+
+        # Connect signals and slots
+        self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
 
         # Read settings
         self.read_settings()
@@ -75,6 +78,7 @@ class MainWindow(QMainWindow):
         self.ui.StrikethroughToolButton.setDefaultAction(self.ui.actionStrikethrough)
         self.ui.SuperscriptToolButton.setDefaultAction(self.ui.actionSuperscript)
         self.ui.SubscriptToolButton.setDefaultAction(self.ui.actionSubscript)
+        self.ui.FootnoteToolButton.setDefaultAction(self.ui.actionFootnote)
 
     def set_icons(self) -> None:
         # load common icons
@@ -107,6 +111,7 @@ class MainWindow(QMainWindow):
         self.ui.actionStrikethrough.setIcon(QIcon(":/icons_dark/icons_dark/format-text-strikethrough.svg"))
         self.ui.actionSuperscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-superscript.svg"))
         self.ui.actionSubscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-subscript.svg"))
+        self.ui.actionFootnote.setIcon(QIcon(":/icons_dark/icons_dark/insert-footnote.svg"))
 
     def set_active_tab(self, label: QLabel) -> None:
         """Makes specified label in MainTabsFrame appear selected and deselects all other labels. Switches tab in
@@ -134,8 +139,6 @@ class MainWindow(QMainWindow):
     def load_project(self, path: str) -> None:
         """Attempts to load project at specified path (path to project root directory)."""
 
-        self.loading_project = True
-
         # Create project manager for current project
         try:
             self.ProjectManager = ProjectManager(path)
@@ -153,8 +156,6 @@ class MainWindow(QMainWindow):
         self.ui.ProjectTreeView.header().setVisible(False)
         self.on_EditorTabLabel_clicked()
         self.ProjectManager.FsModel.directoryLoaded.connect(self.on_ProjectManager_ProjectDirectoryLoaded)
-
-        self.loading_project = False
 
     def read_settings(self) -> None:
         """Get settings from SettignsManager and adjust the ui accordingly"""
@@ -263,8 +264,9 @@ class MainWindow(QMainWindow):
 
         # Create editor
         editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager)
+        editor.ProjectStrucutreUpdated.connect(self.on_projectStructureUpdated)
 
-        self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False))
+        self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False, is_current_editor=True))
         widget.layout().addWidget(editor)
 
         # Create new tab
@@ -304,7 +306,7 @@ class MainWindow(QMainWindow):
             current_tab_index = self.ui.EditorTabWidget.currentIndex()
             filename = path[path.rfind("/") + 1:]
 
-            self.OpenedEditors[current_tab_index] = self.OpenedEditor(filepath=path, in_current_project=False)
+            self.OpenedEditors[current_tab_index] = self.OpenedEditor(filepath=path, in_current_project=False, is_current_editor=True)
             self.ui.EditorTabWidget.setTabToolTip(current_tab_index, path)
             self.ui.EditorTabWidget.setTabText(current_tab_index, filename)
 
@@ -373,7 +375,7 @@ class MainWindow(QMainWindow):
             tabname = path[path.rfind("/") + 1:]
 
             editor.document().setBaseUrl(QUrl.fromLocalFile(path))
-            self.OpenedEditors[index] = self.OpenedEditor(filepath=path, in_current_project=False)
+            self.OpenedEditors[index] = self.OpenedEditor(filepath=path, in_current_project=False, is_current_editor=True)
             self.ui.EditorTabWidget.setTabToolTip(index, path)
             self.ui.EditorTabWidget.setTabText(index, tabname)
 
@@ -450,7 +452,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_actionHorizontalRule_triggered(self) -> None:
         if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_empty_line("---")
+            self.get_editor().insert_text_at_empty_paragraph("---")
 
     @pyqtSlot()
     def on_actionBlockquote_triggered(self) -> None:
@@ -513,15 +515,27 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionStrikethrough_triggered(self) -> None:
-        self.get_editor().insert_double_tag("~~")
+        editor = self.get_editor()
+        if editor:
+            self.get_editor().insert_double_tag("~~")
 
     @pyqtSlot()
     def on_actionSuperscript_triggered(self) -> None:
-        self.get_editor().insert_double_tag("^")
+        editor = self.get_editor()
+        if editor:
+            editor.insert_double_tag("^")
 
     @pyqtSlot()
     def on_actionSubscript_triggered(self) -> None:
-        self.get_editor().insert_double_tag("~")
+        editor = self.get_editor()
+        if editor:
+            editor.insert_double_tag("~")
+
+    @pyqtSlot()
+    def on_actionFootnote_triggered(self) -> None:
+        editor = self.get_editor()
+        if editor:
+            print("foot")
 
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)
@@ -704,3 +718,62 @@ class MainWindow(QMainWindow):
         dialog = SettingsDialog(self.SettingsManager)
         dialog.show()
         dialog.exec_()
+
+    @pyqtSlot(int)
+    def on_currentEditor_changed(self, index: int) -> None:
+        for i in range(self.ui.EditorTabWidget.count()):
+            self.get_editor(i).is_current_editor = False
+
+        self.get_editor(index).is_current_editor = True
+        self.get_editor(index).parse_document()
+
+    @pyqtSlot(dict)
+    def on_projectStructureUpdated(self, project_strucure: dict):
+        self.ui.ProjectStructureTreeWidget.setColumnCount(3)
+        self.ui.ProjectStructureTreeWidget.clear()
+
+        headings = []
+        for heading in project_strucure["headings"].items():
+            identfifier = heading[0]
+            text = heading[1]["text"]
+            level = int(heading[1]["level"])
+
+            parent = None
+            for item in reversed(headings):
+                if int(item.text(2)) < level:
+                    parent = item
+                    break
+
+            if parent:
+                item = QTreeWidgetItem(parent, ("", text, str(level)))
+            else:
+                item = QTreeWidgetItem(("", text, str(level)))
+
+            headings.append(item)
+
+        for figure in project_strucure["figures"].items():
+            header_index = figure[1]["current_header_index"]
+            parent = headings[header_index]
+
+            QTreeWidgetItem(parent, ("", figure[1]["text"], figure[1]["filepath"]))
+
+        for citation in project_strucure["citations"].items():
+            header_index = citation[1]["current_header_index"]
+            parent = headings[header_index]
+
+            QTreeWidgetItem(parent, ("", str(citation[1]["block_number"]), ""))
+
+        for table in project_strucure["tables"].items():
+            header_index = table[1]["current_header_index"]
+            parent = headings[header_index]
+
+            QTreeWidgetItem(parent, ("", str(table[1]["block_number"]), ""))
+
+        for footnote in project_strucure["footnotes"].items():
+            header_index = footnote[1]["current_header_index"]
+            parent = headings[header_index]
+
+            QTreeWidgetItem(parent, ("", str(footnote[1]["block_number"]), ""))
+
+        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, headings)
+        self.ui.ProjectStructureTreeWidget.expandAll()
