@@ -66,17 +66,17 @@ def figure_extractor(image_tag: str):
 
 def citation_extractor(citation_tag: str):
     identifier = citation_tag[2:-1]
-    return {identifier: dict()}
+    return {identifier: {"text": identifier}}
 
 
 def footnote_extractor(footnote_tag: str):
     identifier = footnote_tag[2:-1]
-    return {identifier: dict()}
+    return {identifier: {"text": identifier}}
 
 
 def table_extractor(table_tab: str):
     identifier = table_tab[2:-1]
-    return {identifier: dict()}
+    return {identifier: {"text": identifier}}
 
 
 class IdentifierParser():
@@ -139,9 +139,6 @@ class MarkdownDocumentParserThread(QThread):
         super().__init__(parent)
         self.document = document
         self.document_info = {
-            "setext-h-1": list(),
-            "setext-h-2": list(),
-            "lines-to-clear": list(),
             "citations": collections.OrderedDict(),
             "figures": collections.OrderedDict(),
             "tables": collections.OrderedDict(),
@@ -193,6 +190,7 @@ class MarkdownDocumentParserThread(QThread):
                     print(info)
                     info[identifier]["block_number"] = i
                     info[identifier]["current_header_index"] = header_index
+                    info[identifier]["project_filepath"] = self.document.baseUrl().toString()
                     print(info)
                     if parser.category == "headings":
                         header_index += 1
@@ -286,7 +284,7 @@ class ThreadManager(QObject):
             self.pending_threads.remove(self.pending_threads[-1])
 
     def on_pandoc_thread_finished(self) -> None:
-        """Performes thread management and emits pandocThreadFinished to inform that the thread has finished"""
+        """Performs thread management and emits pandocThreadFinished to inform that the thread has finished"""
         sender = QObject.sender(self)
         self.run_next_thread(sender)
 
@@ -306,7 +304,6 @@ class ThreadManager(QObject):
         self.is_parsing_document = False
         sender = QObject.sender(self)
         self.run_next_thread(sender)
-        #print("Thread finished")
 
         self.MarkdownDocumentParserThreadFinished.emit(sender.document_info)
 

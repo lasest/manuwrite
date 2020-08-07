@@ -45,6 +45,13 @@ class MainWindow(QMainWindow):
         self.OpenedEditors = []
         self.SettingsManager = SettingsManager(self)
         self.current_editor_index = 0
+        self.ProjectStructureIcons = {
+            "heading": QIcon(":/icons_dark/icons_dark/heading-purple.svg"),
+            "figure": QIcon(":/icons_dark/icons_dark/image-jpeg.svg"),
+            "citation": QIcon(":/icons_dark/icons_dark/citation-yellow.svg"),
+            "table": QIcon(":/icons_dark/icons_dark/table-red.svg"),
+            "footnote": QIcon(":/icons_dark/icons_dark/footnote-blue.svg")
+        }
 
         # Connect signals and slots
         self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
@@ -175,6 +182,12 @@ class MainWindow(QMainWindow):
                                      f"Error: {str(type(e)) + ' ' + str(e)}")
                 self.ProjectManager = None
 
+        # Read stylesheet of ProjectStrucutreTreeWidget
+        file = open("resources/styles/qtree_widget.qss", "r")
+        stylesheet = file.read()
+        file.close()
+        self.ui.ProjectStructureTreeWidget.setStyleSheet(stylesheet)
+
     def write_settings(self) -> None:
         """Write settings to permanent storage"""
 
@@ -185,6 +198,61 @@ class MainWindow(QMainWindow):
             self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
+
+    def update_ProjectStructureTreeWidgetContents(self, project_structure: dict):
+
+        top_level_items = []
+
+        def get_entry_info(entry):
+            return entry[1]["text"], str(entry[1]["block_number"]), entry[1]["project_filepath"]
+
+        def create_item_from_entry(entry, icon_type):
+            header_index = entry[1]["current_header_index"]
+            if header_index >= 0:
+                parent = headings[header_index]
+                item = QTreeWidgetItem(parent, get_entry_info(entry))
+            else:
+                item = QTreeWidgetItem(get_entry_info(entry))
+                top_level_items.append(item)
+
+            item.setIcon(0, self.ProjectStructureIcons[icon_type])
+
+        self.ui.ProjectStructureTreeWidget.clear()
+
+        headings = []
+        for heading in project_structure["headings"].items():
+            level = int(heading[1]["level"])
+
+            parent = None
+            for item in reversed(headings):
+                if int(item.text(1)) < level:
+                    parent = item
+                    break
+            if parent:
+                item = QTreeWidgetItem(parent, get_entry_info(heading))
+            else:
+                item = QTreeWidgetItem(get_entry_info(heading))
+
+            item.setIcon(0, self.ProjectStructureIcons["heading"])
+            headings.append(item)
+
+        for figure in project_structure["figures"].items():
+            create_item_from_entry(figure, "figure")
+
+        for citation in project_structure["citations"].items():
+            create_item_from_entry(citation, "citation")
+
+        for table in project_structure["tables"].items():
+            create_item_from_entry(table, "table")
+
+        for footnote in project_structure["footnotes"].items():
+            create_item_from_entry(footnote, "footnote")
+
+        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, top_level_items)
+        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, headings)
+
+        self.ui.ProjectStructureTreeWidget.expandAll()
+        #self.ui.ProjectStructureTreeWidget.resizeColumnToContents(0)
 
     # Event handling
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -728,52 +796,6 @@ class MainWindow(QMainWindow):
         self.get_editor(index).parse_document()
 
     @pyqtSlot(dict)
-    def on_projectStructureUpdated(self, project_strucure: dict):
-        self.ui.ProjectStructureTreeWidget.setColumnCount(3)
-        self.ui.ProjectStructureTreeWidget.clear()
+    def on_projectStructureUpdated(self, project_structure: dict):
+        self.update_ProjectStructureTreeWidgetContents(project_structure)
 
-        headings = []
-        for heading in project_strucure["headings"].items():
-            identfifier = heading[0]
-            text = heading[1]["text"]
-            level = int(heading[1]["level"])
-
-            parent = None
-            for item in reversed(headings):
-                if int(item.text(2)) < level:
-                    parent = item
-                    break
-
-            if parent:
-                item = QTreeWidgetItem(parent, ("", text, str(level)))
-            else:
-                item = QTreeWidgetItem(("", text, str(level)))
-
-            headings.append(item)
-
-        for figure in project_strucure["figures"].items():
-            header_index = figure[1]["current_header_index"]
-            parent = headings[header_index]
-
-            QTreeWidgetItem(parent, ("", figure[1]["text"], figure[1]["filepath"]))
-
-        for citation in project_strucure["citations"].items():
-            header_index = citation[1]["current_header_index"]
-            parent = headings[header_index]
-
-            QTreeWidgetItem(parent, ("", str(citation[1]["block_number"]), ""))
-
-        for table in project_strucure["tables"].items():
-            header_index = table[1]["current_header_index"]
-            parent = headings[header_index]
-
-            QTreeWidgetItem(parent, ("", str(table[1]["block_number"]), ""))
-
-        for footnote in project_strucure["footnotes"].items():
-            header_index = footnote[1]["current_header_index"]
-            parent = headings[header_index]
-
-            QTreeWidgetItem(parent, ("", str(footnote[1]["block_number"]), ""))
-
-        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, headings)
-        self.ui.ProjectStructureTreeWidget.expandAll()

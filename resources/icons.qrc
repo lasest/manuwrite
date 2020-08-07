@@ -35,6 +35,11 @@
         <file>icons_dark/format-text-superscript.svg</file>
         <file>icons_dark/format-text-subscript.svg</file>
         <file>icons_dark/insert-footnote.svg</file>
+        <file>icons_dark/image-jpeg.svg</file>
+        <file>icons_dark/heading-purple.svg</file>
+        <file>icons_dark/citation-yellow.svg</file>
+        <file>icons_dark/footnote-blue.svg</file>
+        <file>icons_dark/table-red.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">
@@ -46,4 +51,13 @@
         <file>icons_common/settings.svg</file>
         <file>icons_common/warning.svg</file>
     </qresource>
+
+    <qresource prefix="ui">
+        <file>ui_elements/branch-closed.png</file>
+        <file>ui_elements/branch-end.png</file>
+        <file>ui_elements/branch-more.png</file>
+        <file>ui_elements/branch-open.png</file>
+        <file>ui_elements/vline.png</file>
+    </qresource>
+
 </RCC>

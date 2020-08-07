@@ -469,9 +469,46 @@
                    <layout class="QVBoxLayout" name="verticalLayout_7">
                     <item>
                      <widget class="QTreeWidget" name="ProjectStructureTreeWidget">
+                      <property name="lineWidth">
+                       <number>1</number>
+                      </property>
+                      <property name="editTriggers">
+                       <set>QAbstractItemView::NoEditTriggers</set>
+                      </property>
+                      <property name="showDropIndicator" stdset="0">
+                       <bool>false</bool>
+                      </property>
+                      <property name="iconSize">
+                       <size>
+                        <width>16</width>
+                        <height>16</height>
+                       </size>
+                      </property>
+                      <property name="indentation">
+                       <number>10</number>
+                      </property>
+                      <property name="headerHidden">
+                       <bool>false</bool>
+                      </property>
+                      <property name="columnCount">
+                       <number>3</number>
+                      </property>
+                      <attribute name="headerVisible">
+                       <bool>false</bool>
+                      </attribute>
                       <column>
                        <property name="text">
                         <string notr="true">1</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string notr="true">2</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string notr="true">3</string>
                        </property>
                       </column>
                      </widget>
