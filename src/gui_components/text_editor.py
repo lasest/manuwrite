@@ -1,10 +1,12 @@
+import copy
+
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QToolTip
 from PyQt5.QtCore import QSize, QRect, Qt, pyqtSignal, QPoint, pyqtSlot, QTimer, QUrl
 from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent, QFont, QColor, QTextCharFormat
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from components.highlighter import MarkdownHighlighter
-from components.thread_manager import ThreadManager
+from components.thread_manager import ThreadManager, document_info_template
 
 
 class LineNumberArea(QWidget):
@@ -23,7 +25,7 @@ class LineNumberArea(QWidget):
 
 class TextEditor(QPlainTextEdit):
 
-    ProjectStrucutreUpdated = pyqtSignal(dict)
+    FileStrucutreUpdated = pyqtSignal(dict)
 
     def __init__(self, parent, display_widget: QWebEngineView, settings_manager):
 
@@ -43,8 +45,7 @@ class TextEditor(QPlainTextEdit):
         self.is_current_editor = False
         self.is_parsing_document = False
         self.char_format = QTextCharFormat(self.currentCharFormat())
-
-        self.document_data: dict = dict()
+        self.document_structure: dict = copy.deepcopy(document_info_template)
 
         self.ColorSchema = self.SettingsManager.get_current_color_schema()
 
@@ -64,8 +65,6 @@ class TextEditor(QPlainTextEdit):
         self.InputTimer.setSingleShot(True)
         self.DocumentParsingTimer.setSingleShot(True)
         self.read_settings()
-
-
 
     def lineNumberAreaWidth(self) -> int:
         """Returns the width of the line number area depending on the number of digits that need to be displayed"""
@@ -330,7 +329,9 @@ class TextEditor(QPlainTextEdit):
             self.setStyleSheet(f"QPlainTextEdit {{background-color: {bg_color}; color: {text_color}}}")
             self.char_format.setForeground(QColor(self.ColorSchema['Editor_colors']['text']['color']))
 
-    def apply_format_to_line(self, line_number: int, format: QTextCharFormat, block_state: int = None):
+    # NOT CURRENTLY USED
+    def apply_format_to_line(self, line_number: int, format: QTextCharFormat, block_state: int = None) -> None:
+        """Applies given format and block state to the line at given block number"""
         cursor = self.textCursor()
         cursor.setPosition(self.document().findBlockByNumber(line_number).position())
         cursor.select(QTextCursor.LineUnderCursor)
@@ -340,6 +341,12 @@ class TextEditor(QPlainTextEdit):
 
         if block_state is not None:
             self.document().findBlockByNumber(line_number).setUserState(block_state)
+
+    def parse_document(self) -> None:
+        """Asks ThreadManager to parse the document for structure if the document isn't already being parsed"""
+        if not self.is_parsing_document:
+            self.ThreadManager.parse_markdown_document(self.document())
+            self.is_parsing_document = True
 
     @pyqtSlot(str)
     def on_pandoc_thread_finished(self, html: str) -> None:
@@ -359,24 +366,20 @@ class TextEditor(QPlainTextEdit):
 
         self.citations[citekey] = citation
 
-    def parse_document(self) -> None:
-        #print("Parsing document")
-
-        if not self.is_parsing_document:
-            #print("Sending command to thread manager")
-            self.ThreadManager.parse_markdown_document(self.document())
-            self.is_parsing_document = True
-
     @pyqtSlot(dict)
-    def on_parsing_document_finished(self, data: dict):
+    def on_parsing_document_finished(self, data: dict) -> None:
+        """Updates self.document_structure with newly parsed data and emits FileStrucutreUpdated so that the main
+        window could update the ProjectManager's information about current project structure or display the structure"""
         # TODO: add time configuration
         self.is_parsing_document = False
         self.DocumentParsingTimer.start(5000)
+        self.document_structure = data
 
-        self.ProjectStrucutreUpdated.emit(data)
-        print(data)
+        self.FileStrucutreUpdated.emit(data)
 
     @pyqtSlot()
-    def on_DocumentParsingTimer_timeout(self):
+    def on_DocumentParsingTimer_timeout(self) -> None:
+        """Starts parsing the document structure is this is the currently selected editor"""
+
         if self.is_current_editor:
             self.parse_document()

@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
 
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
-        self.ProjectManager = None
+        self.ProjectManager: ProjectManager = None
         self.OpenedEditors = []
         self.SettingsManager = SettingsManager(self)
         self.current_editor_index = 0
@@ -154,6 +154,8 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", "Failed to load project: " + e.message.lower())
             return
 
+        self.ProjectManager.Communicator.ProjectStructureUpdated.connect(self.on_ProjectStructureUpdated)
+
         # Populate ProjectWidget with information about project file structure
         self.ui.ProjectTreeView.setModel(self.ProjectManager.FsModel)
         self.ui.ProjectTreeView.setRootIndex(self.ProjectManager.FsModel.index(path))
@@ -167,7 +169,6 @@ class MainWindow(QMainWindow):
     def read_settings(self) -> None:
         """Get settings from SettignsManager and adjust the ui accordingly"""
 
-        self.ui.ProjectLabel.setStyleSheet("QLabel {background-color: SlateGrey; }")
         self.resize(self.SettingsManager.get_setting_value("MainWindow/size"))
         self.move(self.SettingsManager.get_setting_value("MainWindow/pos"))
         self.ui.splitter.setSizes(self.SettingsManager.get_setting_value("MainWindow/splitter_sizes"))
@@ -199,14 +200,30 @@ class MainWindow(QMainWindow):
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
 
-    def update_ProjectStructureTreeWidgetContents(self, project_structure: dict):
+    # TODO: maintain the state of the tree before update (i.e. which entry is selected and which entries are expanded
+    def update_structure_tree_widget(self, project_structure: dict) -> None:
+        """Loads given structure into structure tree widget"""
 
         top_level_items = []
 
-        def get_entry_info(entry):
-            return entry[1]["text"], str(entry[1]["block_number"]), entry[1]["project_filepath"]
+        def get_entry_info(entry) -> list:
+            """Returns a list of value, each for the corresponding column of the tree"""
+            info = [
+                entry[1]["text"],
+                str(entry[1]["block_number"]),
+                entry[1]["project_filepath"]
+            ]
+
+            if "level" in entry[1]:
+                info.append(str(entry[1]["level"]))
+            else:
+                info.append("")
+
+            return info
 
         def create_item_from_entry(entry, icon_type):
+            """Creates a QWidgetItem from a given entry if project_structure sub dictionaries. Sets its parent based on
+            header index. If header index is -1, adds it to top level items list"""
             header_index = entry[1]["current_header_index"]
             if header_index >= 0:
                 parent = headings[header_index]
@@ -219,13 +236,15 @@ class MainWindow(QMainWindow):
 
         self.ui.ProjectStructureTreeWidget.clear()
 
+        # Form a list of all the headings in the structure
         headings = []
         for heading in project_structure["headings"].items():
             level = int(heading[1]["level"])
 
+            # Find header's parent heading or create it w/o a parent, if it is a top level heading
             parent = None
             for item in reversed(headings):
-                if int(item.text(1)) < level:
+                if int(item.text(3)) < level:
                     parent = item
                     break
             if parent:
@@ -236,6 +255,7 @@ class MainWindow(QMainWindow):
             item.setIcon(0, self.ProjectStructureIcons["heading"])
             headings.append(item)
 
+        # Add all other elements of the tree
         for figure in project_structure["figures"].items():
             create_item_from_entry(figure, "figure")
 
@@ -248,11 +268,12 @@ class MainWindow(QMainWindow):
         for footnote in project_structure["footnotes"].items():
             create_item_from_entry(footnote, "footnote")
 
+        # Add top level items and headings. All child items seem to be added automatically after this step
         self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, top_level_items)
         self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, headings)
 
         self.ui.ProjectStructureTreeWidget.expandAll()
-        #self.ui.ProjectStructureTreeWidget.resizeColumnToContents(0)
+        self.ui.ProjectStructureTreeWidget.resizeColumnToContents(0)
 
     # Event handling
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -332,7 +353,7 @@ class MainWindow(QMainWindow):
 
         # Create editor
         editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager)
-        editor.ProjectStrucutreUpdated.connect(self.on_projectStructureUpdated)
+        editor.FileStrucutreUpdated.connect(self.on_fileStructureUpdated)
 
         self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False, is_current_editor=True))
         widget.layout().addWidget(editor)
@@ -787,15 +808,46 @@ class MainWindow(QMainWindow):
         dialog.show()
         dialog.exec_()
 
+    # TODO: change contents of structure tree on that event too?
     @pyqtSlot(int)
     def on_currentEditor_changed(self, index: int) -> None:
         for i in range(self.ui.EditorTabWidget.count()):
             self.get_editor(i).is_current_editor = False
-
-        self.get_editor(index).is_current_editor = True
-        self.get_editor(index).parse_document()
+        editor = self.get_editor(index)
+        if editor:
+            self.get_editor(index).is_current_editor = True
+            self.get_editor(index).parse_document()
 
     @pyqtSlot(dict)
-    def on_projectStructureUpdated(self, project_structure: dict):
-        self.update_ProjectStructureTreeWidgetContents(project_structure)
+    def on_fileStructureUpdated(self, file_structure: dict) -> None:
+        """Receives signal when the current editor (or the editor that once was current) reports that it's document
+        structure has changed. Updates structure tree immediately if it is displaying current file, or sends the
+        structure to project manager if it isn't"""
 
+        if self.ui.ProjectStrucutreCombobox.currentIndex() == 0:
+            self.update_structure_tree_widget(self.get_editor().document_structure)
+        else:
+            if self.ProjectManager:
+                self.ProjectManager.update_project_structure(file_structure)
+
+    @pyqtSlot(int)
+    def on_ProjectStrucutreCombobox_currentIndexChanged(self, index: int) -> None:
+        """Switches the structure tree between displaying the structure of the current file and the structure of the
+        current project"""
+
+        if index == 0:
+            editor = self.get_editor()
+            if editor:
+                self.update_structure_tree_widget(self.get_editor().document_structure)
+            else:
+                self.ui.ProjectStructureTreeWidget.clear()
+        else:
+            self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))
+
+    @pyqtSlot()
+    def on_ProjectStructureUpdated(self) -> None:
+        """Receives signal that ProjectManager has updated its project structure. Updates structure tree if the user
+        has selected to display project structure"""
+
+        if self.ui.ProjectStrucutreCombobox.currentIndex() == 1:
+            self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))

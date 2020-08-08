@@ -1,10 +1,21 @@
 import json
+import copy
 from collections import OrderedDict
 
 from PyQt5.QtWidgets import QFileSystemModel
-from PyQt5.QtCore import QModelIndex, QDir, QFile, QDate
+from PyQt5.QtCore import QModelIndex, QDir, QFile, QDate, pyqtSlot, pyqtSignal, QObject
 
 from common import ProjectError
+from components.thread_manager import ThreadManager, document_info_template
+
+
+class Communicator(QObject):
+    """Used to send signals"""
+
+    ProjectStructureUpdated = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
 
 
 class ProjectManager():
@@ -22,7 +33,9 @@ class ProjectManager():
         "Style": {"type": "str", "value": "Manubot classic"},
         "Render to": {"type": "str", "value": "Html"},
         "Pandoc command (auto)": {"type": "str", "value": ""},
-        "Pandoc command (manual)": {"type": "str", "value": ""}
+        "Pandoc command (manual)": {"type": "str", "value": ""},
+        "Project structure combined": {"type": "dict", "value": copy.deepcopy(document_info_template)},
+        "Project structure raw": {"type": "dict", "value": dict()}
     })
 
     def __init__(self, directory_path: str):
@@ -31,6 +44,9 @@ class ProjectManager():
         self.root_path = directory_path
         self.project_info = dict()
         self.FsModel = QFileSystemModel()
+        self.ThreadManager = ThreadManager(max_threads=1)
+        self.ThreadManager.MarkdownProjectParserThreadFinished.connect(self.on_MarkdownProjectParserThread_finished)
+        self.Communicator = Communicator()
 
         self.FsModel.setRootPath(directory_path)
         self.read_project_info()
@@ -53,9 +69,17 @@ class ProjectManager():
                 if key not in self.project_info:
                     self.project_info[key] = self.defaults[key]
 
+            # Update project structure
+            filenames = []
+            for filename in self.get_setting_value("Files to render"):
+                filenames.append(self.get_setting_value("Absolute path") + filename)
+
+            self.ThreadManager.parse_project(filenames)
+
         else:
             raise ProjectError("Project file doesn't exits")
 
+    # Is it used anywhere?
     def uptade_project_info(self, info: dict) -> None:
         """Updates self.project_info with data from given dictionary"""
 
@@ -91,7 +115,7 @@ class ProjectManager():
             file.open(QFile.ReadWrite)
 
             project_settings = ProjectManager.defaults
-            project_settings["Absolute path"] = directory_path
+            project_settings["Absolute path"] = {"type": "str", "value": directory_path}
 
             file.write(json.dumps(project_settings, indent=4).encode())
             file.close()
@@ -143,10 +167,63 @@ class ProjectManager():
 
     def get_setting_value(self, setting: str):
         """Return the value of a given setting"""
-
         return self.project_info[setting]["value"]
 
     def set_setting_value(self, setting: str, value) -> None:
         """Sets the value of a given setting"""
 
         self.project_info[setting]["value"] = value
+
+    def update_project_structure(self, file_structure: dict) -> None:
+        """Updates filestructure of a file in raw project structure. Then generates a new combined project structure
+        (from new raw structure) and updates corresponding project settings entry. Before all checks if the file
+        structure belongs to a file that is to be rendered according to the current project settings"""
+
+        filepath = file_structure["filepath"]
+        del file_structure["filepath"]
+
+        # Convert relative paths in 'files to render' to absolute paths
+        files_to_render = self.get_setting_value("Files to render").copy()
+        for i in range(len(files_to_render)):
+            files_to_render[i] = self.get_setting_value("Absolute path") + files_to_render[i]
+
+        # Check if filepath is to be rendered, otherwise do not include it in project structure
+        if filepath not in files_to_render:
+            return
+
+        # Get raw project structure from settings (in format {filepath: document_info}
+        raw_project_structure = self.get_setting_value("Project structure raw")
+        raw_project_structure[filepath] = file_structure
+
+        combined_project_structure = self.get_combined_project_structure(raw_project_structure)
+
+        self.set_setting_value("Project structure raw", raw_project_structure)
+        self.set_setting_value("Project structure combined", combined_project_structure)
+
+        # Send signal to main window to update project structure tree, if necessary
+        self.Communicator.ProjectStructureUpdated.emit()
+
+    def get_combined_project_structure(self, raw_project_structure: dict) -> dict:
+        """Convert raw project structure ({filepath: document_info}) to combined document structure (document_info)"""
+        combined = copy.deepcopy(document_info_template)
+        del combined["filepath"]
+
+        for key1, value1 in raw_project_structure.items():
+            for key2, value2 in value1.items():
+                combined[key2].update(value2)
+
+        return combined
+
+    # Doesn't work as a slot for some reason
+    #@pyqtSlot(dict)
+    def on_MarkdownProjectParserThread_finished(self, project_structure: dict) -> None:
+        """Update project structure with data received from MarkdownProjectParserThread"""
+
+        self.set_setting_value("Project structure raw", project_structure)
+
+        combined_project_structure = self.get_combined_project_structure(project_structure)
+        self.set_setting_value("Project structure combined", combined_project_structure)
+
+        self.Communicator.ProjectStructureUpdated.emit()
+
+

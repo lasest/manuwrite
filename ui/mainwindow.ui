@@ -468,6 +468,23 @@
                    </attribute>
                    <layout class="QVBoxLayout" name="verticalLayout_7">
                     <item>
+                     <widget class="QComboBox" name="ProjectStrucutreCombobox">
+                      <property name="currentIndex">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>Current file</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Current project (files to render)</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
+                    <item>
                      <widget class="QTreeWidget" name="ProjectStructureTreeWidget">
                       <property name="lineWidth">
                        <number>1</number>
@@ -488,10 +505,10 @@
                        <number>10</number>
                       </property>
                       <property name="headerHidden">
-                       <bool>false</bool>
+                       <bool>true</bool>
                       </property>
                       <property name="columnCount">
-                       <number>3</number>
+                       <number>4</number>
                       </property>
                       <attribute name="headerVisible">
                        <bool>false</bool>
@@ -511,23 +528,15 @@
                         <string notr="true">3</string>
                        </property>
                       </column>
+                      <column>
+                       <property name="text">
+                        <string notr="true">4</string>
+                       </property>
+                      </column>
                      </widget>
                     </item>
                    </layout>
                   </widget>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="ProjectLabel">
-                  <property name="autoFillBackground">
-                   <bool>true</bool>
-                  </property>
-                  <property name="styleSheet">
-                   <string notr="true"/>
-                  </property>
-                  <property name="text">
-                   <string>Project</string>
-                  </property>
                  </widget>
                 </item>
                </layout>
