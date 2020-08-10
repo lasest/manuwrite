@@ -3,3 +3,6 @@ venv
 __*
 src/resources/icons_rc.py
 pycharm_tasks.sh
+style.css
+other
+build.pdy
