@@ -13,6 +13,7 @@ from gui_components.add_citation_dialog import AddCitationDialog
 from gui_components.create_project_dialog import CreateProjectDialog
 from gui_components.settings_dialog import SettingsDialog
 from gui_components.project_settings_dialog import ProjectSettingsDialog
+from gui_components.add_footnote_dialog import AddFootnoteDialog
 from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager
@@ -623,8 +624,28 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_actionFootnote_triggered(self) -> None:
         editor = self.get_editor()
-        if editor:
-            print("foot")
+        if not editor:
+            return
+
+        use_project_structure = False
+        if self.ProjectManager:
+            if self.ProjectManager.is_file_to_be_rendered(editor.document().baseUrl().toLocalFile()):
+                use_project_structure = True
+
+        identifiers = dict()
+        if use_project_structure:
+            identifiers = self.ProjectManager.get_setting_value("Project structure combined")["footnotes"]
+        else:
+            identifiers = editor.document_structure["footnotes"]
+
+        dialog = AddFootnoteDialog(identifiers)
+        dialog.show()
+        if dialog.exec_():
+            identifier = dialog.identifier
+            text = dialog.text
+
+            editor.insert_text_at_cursor(f"[^{identifier}]")
+            editor.insert_text_at_empty_paragraph(f"[^{identifier}]: {text}")
 
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)

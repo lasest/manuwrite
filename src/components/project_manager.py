@@ -182,13 +182,8 @@ class ProjectManager():
         filepath = file_structure["filepath"]
         del file_structure["filepath"]
 
-        # Convert relative paths in 'files to render' to absolute paths
-        files_to_render = self.get_setting_value("Files to render").copy()
-        for i in range(len(files_to_render)):
-            files_to_render[i] = self.get_setting_value("Absolute path") + files_to_render[i]
-
         # Check if filepath is to be rendered, otherwise do not include it in project structure
-        if filepath not in files_to_render:
+        if not self.is_file_to_be_rendered(filepath):
             return
 
         # Get raw project structure from settings (in format {filepath: document_info}
@@ -213,6 +208,17 @@ class ProjectManager():
                 combined[key2].update(value2)
 
         return combined
+
+    def is_file_to_be_rendered(self, filepath: str) -> bool:
+        files_to_render = self.get_setting_value("Files to render").copy()
+        for i in range(len(files_to_render)):
+            files_to_render[i] = self.get_setting_value("Absolute path") + files_to_render[i]
+
+        # Check if filepath is to be rendered, otherwise do not include it in project structure
+        if filepath in files_to_render:
+            return True
+        else:
+            return False
 
     # Doesn't work as a slot for some reason
     #@pyqtSlot(dict)

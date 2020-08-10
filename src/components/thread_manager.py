@@ -224,6 +224,7 @@ class MarkdownProjectParserThread(QThread):
                 file_contents = f.read()
 
             document = QTextDocument(file_contents, self)
+            # TODO: set base url of a document to filepath here
             document_info = copy.deepcopy(document_info_template)
             parse_document(document, document_info)
             self.project_structure[filepath] = document_info
