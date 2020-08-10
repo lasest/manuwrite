@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Add footnote</string>
+   <string>Add footnote - ManuWrite</string>
   </property>
   <property name="modal">
    <bool>true</bool>

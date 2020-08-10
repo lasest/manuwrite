@@ -201,6 +201,23 @@ class MainWindow(QMainWindow):
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
 
+    def get_used_identifiers(self, identifier_type: str, editor: TextEditor) -> dict:
+        """Returns a dictionary of used identifier of a certain type for editor at tab with a given index. Document
+        or project structure is used to determine which identifiers are already used."""
+
+        use_project_structure = False
+        if self.ProjectManager:
+            if self.ProjectManager.is_file_to_be_rendered(editor.document().baseUrl().toLocalFile()):
+                use_project_structure = True
+
+        identifiers = dict()
+        if use_project_structure:
+            identifiers = self.ProjectManager.get_setting_value("Project structure combined")[identifier_type]
+        else:
+            identifiers = editor.document_structure[identifier_type]
+
+        return identifiers
+
     # TODO: maintain the state of the tree before update (i.e. which entry is selected and which entries are expanded
     def update_structure_tree_widget(self, project_structure: dict) -> None:
         """Loads given structure into structure tree widget"""
@@ -571,16 +588,32 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionImage_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() == 0:
+        editor = self.get_editor()
+
+        if editor is None:
             return
+
         # TODO: change default application/project folder to the folder of the current project
         dialog = AddImageDialog(self.SettingsManager.get_setting_value("Editor/Default image width"),
                                 self.SettingsManager.get_setting_value("Editor/Default image height"),
-                                self.SettingsManager.get_setting_value("Application/Project folder"))
+                                self.SettingsManager.get_setting_value("Application/Project folder"),
+                                self.get_used_identifiers("figures", editor))
         dialog.show()
         if dialog.exec_():
-            self.get_editor().insert_text_at_cursor("![{}]({}){{width={} height={}}}".format(dialog.image_text,
-                                                    dialog.image_path, dialog.image_width, dialog.image_height))
+
+            text = f"![{dialog.image_text}]({dialog.image_path})"
+
+            if dialog.has_additional_attributes:
+                text += "{"
+                if dialog.identifier:
+                    text += f"#{dialog.identifier}"
+                if dialog.image_width:
+                    text += f" width={dialog.image_width}"
+                if dialog.image_height:
+                    text += f" height={dialog.image_height}"
+                text += "}"
+
+            self.get_editor().insert_text_at_cursor(text)
 
     @pyqtSlot()
     def on_actionCode_triggered(self) -> None:
@@ -623,20 +656,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionFootnote_triggered(self) -> None:
+
         editor = self.get_editor()
         if not editor:
             return
 
-        use_project_structure = False
-        if self.ProjectManager:
-            if self.ProjectManager.is_file_to_be_rendered(editor.document().baseUrl().toLocalFile()):
-                use_project_structure = True
-
-        identifiers = dict()
-        if use_project_structure:
-            identifiers = self.ProjectManager.get_setting_value("Project structure combined")["footnotes"]
-        else:
-            identifiers = editor.document_structure["footnotes"]
+        identifiers = self.get_used_identifiers("footnotes", editor)
 
         dialog = AddFootnoteDialog(identifiers)
         dialog.show()

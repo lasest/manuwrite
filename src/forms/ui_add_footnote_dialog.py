@@ -50,7 +50,7 @@ class Ui_AddFootnoteDialog(object):
 
     def retranslateUi(self, AddFootnoteDialog):
         _translate = QtCore.QCoreApplication.translate
-        AddFootnoteDialog.setWindowTitle(_translate("AddFootnoteDialog", "Add footnote"))
+        AddFootnoteDialog.setWindowTitle(_translate("AddFootnoteDialog", "Add footnote - ManuWrite"))
         self.AutogenIdentifierCheckbox.setText(_translate("AddFootnoteDialog", "Generate identifier automatically"))
         self.IdentifierLabel.setText(_translate("AddFootnoteDialog", "Identifier"))
         self.TextLabel.setText(_translate("AddFootnoteDialog", "Footnote text"))
