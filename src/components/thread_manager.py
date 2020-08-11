@@ -64,8 +64,7 @@ def heading_extractor(heading: str) -> Tuple[str, dict]:
 
 def figure_extractor(image_tag: str) -> Tuple[str, dict]:
     """Extracts information about an image from image tag"""
-
-    identifier_regexp = QRegExp(r"{#fig:\w\w*")
+    identifier_regexp = QRegExp(r"\{#fig:\w\w*")
     loffset = 2
 
     # get identifier
