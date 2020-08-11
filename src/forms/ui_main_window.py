@@ -139,6 +139,10 @@ class Ui_MainWindow(object):
         self.FootnoteToolButton.setIconSize(QtCore.QSize(22, 22))
         self.FootnoteToolButton.setObjectName("FootnoteToolButton")
         self.horizontalLayout_5.addWidget(self.FootnoteToolButton)
+        self.TableToolButton = QtWidgets.QToolButton(self.frame)
+        self.TableToolButton.setIconSize(QtCore.QSize(22, 22))
+        self.TableToolButton.setObjectName("TableToolButton")
+        self.horizontalLayout_5.addWidget(self.TableToolButton)
         self.OrdListToolButton = QtWidgets.QToolButton(self.frame)
         self.OrdListToolButton.setIconSize(QtCore.QSize(22, 22))
         self.OrdListToolButton.setObjectName("OrdListToolButton")
@@ -351,6 +355,8 @@ class Ui_MainWindow(object):
         self.actionSubscript.setObjectName("actionSubscript")
         self.actionFootnote = QtWidgets.QAction(MainWindow)
         self.actionFootnote.setObjectName("actionFootnote")
+        self.actionAddTable = QtWidgets.QAction(MainWindow)
+        self.actionAddTable.setObjectName("actionAddTable")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionNewProject)
         self.menuFile.addAction(self.actionOpen)
@@ -390,6 +396,7 @@ class Ui_MainWindow(object):
         self.HorizontalRuleToolButton.setText(_translate("MainWindow", "..."))
         self.BlockquoteToolButton.setText(_translate("MainWindow", "..."))
         self.FootnoteToolButton.setText(_translate("MainWindow", "..."))
+        self.TableToolButton.setText(_translate("MainWindow", "..."))
         self.OrdListToolButton.setText(_translate("MainWindow", "..."))
         self.UnordListToolButton.setText(_translate("MainWindow", "..."))
         self.LinkToolButton.setText(_translate("MainWindow", "..."))
@@ -463,6 +470,7 @@ class Ui_MainWindow(object):
         self.actionSuperscript.setText(_translate("MainWindow", "Superscript"))
         self.actionSubscript.setText(_translate("MainWindow", "Subscript"))
         self.actionFootnote.setText(_translate("MainWindow", "Footnote"))
+        self.actionAddTable.setText(_translate("MainWindow", "Add table"))
 from PyQt5 import QtWebEngineWidgets
 from gui_components.qlabel_clickable import QLabelClickable
 from gui_components.qtabwidget_custom import QTabWidgetCustom

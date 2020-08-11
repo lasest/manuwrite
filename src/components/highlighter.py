@@ -82,8 +82,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for s in "link", "image", "citation":
             self.formats[s].setFontUnderline(True)
 
-        for s in "line-break",  "horizontal-rule":
-            self.formats[s].setBackground(QColor(color_schema["Markdown_colors"][s]["color"]))
+        self.formats["horizontal-rule"].setBackground(QColor(color_schema["Markdown_colors"]["horizontal-rule"]["color"]))
+        # for s in "line-break",  "horizontal-rule":
+        #     self.formats[s].setBackground(QColor(color_schema["Markdown_colors"][s]["color"]))
 
         for s in "heading-1", "heading-2", "heading-3", "heading-4", "heading-5", "heading-6", "bold", "italic", "bold-and-italic":
             self.formats[s].setFontWeight(75)

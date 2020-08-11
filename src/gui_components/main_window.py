@@ -14,6 +14,7 @@ from gui_components.create_project_dialog import CreateProjectDialog
 from gui_components.settings_dialog import SettingsDialog
 from gui_components.project_settings_dialog import ProjectSettingsDialog
 from gui_components.add_footnote_dialog import AddFootnoteDialog
+from gui_components.add_table_dialog import AddTableDialog
 from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
         self.ui.SuperscriptToolButton.setDefaultAction(self.ui.actionSuperscript)
         self.ui.SubscriptToolButton.setDefaultAction(self.ui.actionSubscript)
         self.ui.FootnoteToolButton.setDefaultAction(self.ui.actionFootnote)
+        self.ui.TableToolButton.setDefaultAction(self.ui.actionAddTable)
 
     def set_icons(self) -> None:
         # load common icons
@@ -120,6 +122,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSuperscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-superscript.svg"))
         self.ui.actionSubscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-subscript.svg"))
         self.ui.actionFootnote.setIcon(QIcon(":/icons_dark/icons_dark/insert-footnote.svg"))
+        self.ui.actionAddTable.setIcon(QIcon(":/icons_dark/icons_dark/table.svg"))
 
     def set_active_tab(self, label: QLabel) -> None:
         """Makes specified label in MainTabsFrame appear selected and deselects all other labels. Switches tab in
@@ -897,3 +900,14 @@ class MainWindow(QMainWindow):
 
         if self.ui.ProjectStrucutreCombobox.currentIndex() == 1:
             self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))
+
+    def on_TableToolButton_triggered(self) -> None:
+
+        editor = self.get_editor()
+        if not editor:
+            return
+
+        dialog = AddTableDialog(self.get_used_identifiers("tables", editor))
+        dialog.show()
+        if dialog.exec_():
+            editor.insert_text_at_empty_paragraph(dialog.table_tag)
