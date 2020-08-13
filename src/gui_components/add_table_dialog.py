@@ -9,7 +9,7 @@ import common
 
 class AddTableDialog(QDialog):
 
-    def __init__(self, used_identifiers: dict):
+    def __init__(self, used_identifiers: dict, settings_manager):
         super().__init__()
 
         self.ui = Ui_AddTableDialog()
@@ -19,6 +19,10 @@ class AddTableDialog(QDialog):
         self.used_identifiers = used_identifiers
         self.AcceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
         self.table_tag = ""  # The resulting table will be stored here
+        self.SettingsManager = settings_manager
+
+        # Read settings
+        self.read_settings()
 
         # Prepare ui
         if self.ui.AutogenIdentifierCheckbox.checkState():
@@ -30,6 +34,15 @@ class AddTableDialog(QDialog):
 
         # Connect signals and slots
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
+
+    def read_settings(self) -> None:
+        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+        self.ui.AutonumberCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
+
+    def write_settings(self) -> None:
+        self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
+                                               self.ui.AutogenIdentifierCheckbox.checkState())
+        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.checkState())
 
     def generate_identifier(self, identifier: str) -> str:
         index = 1
@@ -118,6 +131,8 @@ class AddTableDialog(QDialog):
         caption_text = f"Table: {self.ui.CaptionLineEdit.text()} {{#{identifier}}}"
 
         self.table_tag = table_body + "\n" + caption_text
+
+        self.write_settings()
         super().accept()
 
     @pyqtSlot(int)

@@ -597,10 +597,7 @@ class MainWindow(QMainWindow):
             return
 
         # TODO: change default application/project folder to the folder of the current project
-        dialog = AddImageDialog(self.SettingsManager.get_setting_value("Editor/Default image width"),
-                                self.SettingsManager.get_setting_value("Editor/Default image height"),
-                                self.SettingsManager.get_setting_value("Application/Project folder"),
-                                self.get_used_identifiers("figures", editor))
+        dialog = AddImageDialog(self.SettingsManager, self.get_used_identifiers("figures", editor))
         dialog.show()
         if dialog.exec_():
 
@@ -666,7 +663,7 @@ class MainWindow(QMainWindow):
 
         identifiers = self.get_used_identifiers("footnotes", editor)
 
-        dialog = AddFootnoteDialog(identifiers)
+        dialog = AddFootnoteDialog(identifiers, self.SettingsManager)
         dialog.show()
         if dialog.exec_():
             identifier = dialog.identifier
@@ -907,7 +904,7 @@ class MainWindow(QMainWindow):
         if not editor:
             return
 
-        dialog = AddTableDialog(self.get_used_identifiers("tables", editor))
+        dialog = AddTableDialog(self.get_used_identifiers("tables", editor), self.SettingsManager)
         dialog.show()
         if dialog.exec_():
             editor.insert_text_at_empty_paragraph(dialog.table_tag)

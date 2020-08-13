@@ -8,7 +8,7 @@ import common
 
 class AddFootnoteDialog(QDialog):
 
-    def __init__(self, used_identifiers):
+    def __init__(self, used_identifiers: dict, settings_manager):
 
         super().__init__()
         self.ui = Ui_AddFootnoteDialog()
@@ -19,6 +19,10 @@ class AddFootnoteDialog(QDialog):
         self.text = ""
         self.used_identifiers = used_identifiers
         self.AcceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
+        self.SettingsManager = settings_manager
+
+        # Read settings
+        self.read_settings()
 
         # Prepare ui
         if self.ui.AutogenIdentifierCheckbox.checkState():
@@ -30,6 +34,13 @@ class AddFootnoteDialog(QDialog):
 
         # Connect slots and signals
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
+
+    def read_settings(self) -> None:
+        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+
+    def write_settings(self) -> None:
+        self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
+                                               self.ui.AutogenIdentifierCheckbox.checkState())
 
     def generate_identifier(self) -> str:
         """Automatically generates a unique identifier for the footnote based on the already used identifiers"""
@@ -62,6 +73,8 @@ class AddFootnoteDialog(QDialog):
 
         self.identifier = identifier
         self.text = self.ui.TextPlainTextEdit.toPlainText()
+
+        self.write_settings()
         super().accept()
 
     @pyqtSlot(int)

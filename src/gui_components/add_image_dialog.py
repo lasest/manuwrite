@@ -8,27 +8,28 @@ import common
 
 class AddImageDialog(QDialog):
 
-    def __init__(self, default_width: int, default_height: int, default_dir: str, used_identifiers: dict):
+    def __init__(self, settings_manager, used_identifiers: dict):
 
         super().__init__()
         self.ui = Ui_AddImageDialog()
         self.ui.setupUi(self)
 
         # Set attributes
+        self.SettingsManager = settings_manager
         self.image_text: str = ""
         self.image_path: str = ""
         self.image_width: int = 0
         self.image_height: int = 0
-        self.default_dir: str = default_dir
+        self.default_dir: str = self.SettingsManager.get_setting_value("Application/Project folder")
         self.identifier: str = ""
         self.used_identifiers: dict = used_identifiers
         self.has_additional_attributes = False
         self.AcceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
 
-        # Prepare ui elements
-        self.ui.WidthLineEdit.setText(str(default_width))
-        self.ui.HeightLineEdit.setText(str(default_height))
+        # Read settings
+        self.read_settings()
 
+        # Prepare ui elements
         if self.ui.AutogenIdentifierCheckbox.checkState():
             self.ui.IdentifierLineEdit.setEnabled(False)
             self.ui.ImageTextLineEdit.setFocus()
@@ -38,6 +39,17 @@ class AddImageDialog(QDialog):
 
         # Connect slots and signals
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
+
+    def read_settings(self) -> None:
+        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+        self.ui.AutonumberCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
+        self.ui.WidthLineEdit.setText(str(self.SettingsManager.get_setting_value("Editor/Default image width")))
+        self.ui.HeightLineEdit.setText(str(self.SettingsManager.get_setting_value("Editor/Default image height")))
+
+    def write_settigns(self) -> None:
+        self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
+                                               self.ui.AutogenIdentifierCheckbox.checkState())
+        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.checkState())
 
     def generate_identifier(self, identifier: str) -> str:
         index = 1
@@ -83,6 +95,7 @@ class AddImageDialog(QDialog):
         if self.identifier or self.image_width or self.image_height:
             self.has_additional_attributes = True
 
+        self.write_settigns()
         super(AddImageDialog, self).accept()
 
     @pyqtSlot()

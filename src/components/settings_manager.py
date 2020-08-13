@@ -48,6 +48,22 @@ class SettingsManager(QObject):
 
             "ProjectSettingsDialog/current tab index/value": 0,
             "ProjectSettingsDialog/current tab index/type": "int",
+###################
+            "AddImageDialog/autogen identifier/value": 2,
+            "AddImageDialog/autogen identifier/type": "int",
+
+            "AddImageDialog/autonumber/value": 2,
+            "AddImageDialog/autonumber/type": "int",
+
+            "AddTableDialog/autogen identifier/value": 2,
+            "AddTableDialog/autogen identifier/type": "int",
+
+            "AddTableDialog/autonumber/value": 2,
+            "AddTableDialog/autonumber/type": "int",
+
+            "AddFootnoteDialog/autogen identifier/value": 2,
+            "AddFootnoteDialog/autogen identifier/type": "int",
+#################
 
             "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
             "Application/Project folder/type": "str",
