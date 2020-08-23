@@ -56,11 +56,8 @@ class TextEditor(QPlainTextEdit):
         self.cursorPositionChanged.connect(self.on_TextEditor_CursorMoved)
         self.textChanged.connect(self.on_TextEditor_textChanged)
         self.selectionChanged.connect(self.on_TextEditor_CursorMoved)
-        self.ThreadManager.manubotCiteThreadFinished.connect(self.on_manubot_thread_finished)
-        self.ThreadManager.pandocThreadFinished.connect(self.on_pandoc_thread_finished)
         self.InputTimer.timeout.connect(self.on_InputTimer_timeout)
         self.DocumentParsingTimer.timeout.connect(self.on_DocumentParsingTimer_timeout)
-        self.ThreadManager.MarkdownDocumentParserThreadFinished.connect(self.on_parsing_document_finished)
 
         self.updateLineNumberAreaWidth(0)
         self.InputTimer.setSingleShot(True)
@@ -268,7 +265,7 @@ class TextEditor(QPlainTextEdit):
                 if tag_text not in self.citations:
 
                     self.citations[tag_text] = ""
-                    self.ThreadManager.get_citation(tag_text)
+                    self.ThreadManager.get_citation(tag_text, self.on_manubot_thread_finished)
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
@@ -314,7 +311,7 @@ class TextEditor(QPlainTextEdit):
     def render_to_html(self) -> None:
         """Asks thread manager to render document contents to html"""
 
-        self.ThreadManager.markdown_to_html(self.toPlainText())
+        self.ThreadManager.markdown_to_html(self.toPlainText(), self.on_pandoc_thread_finished)
 
     def read_settings(self) -> None:
         """Read settings and apply them"""
@@ -346,7 +343,8 @@ class TextEditor(QPlainTextEdit):
     def parse_document(self) -> None:
         """Asks ThreadManager to parse the document for structure if the document isn't already being parsed"""
         if not self.is_parsing_document:
-            self.ThreadManager.parse_markdown_document(self.document())
+            print("Telling thread manager to parse document")
+            self.ThreadManager.parse_markdown_document(self.document(), self.on_parsing_document_finished)
             self.is_parsing_document = True
 
     @pyqtSlot(str)
@@ -362,8 +360,10 @@ class TextEditor(QPlainTextEdit):
         self.render_to_html()
 
     @pyqtSlot(str, str)
-    def on_manubot_thread_finished(self, citekey: str, citation: str) -> None:
+    def on_manubot_thread_finished(self, citation_info: dict) -> None:
         """Adds the citation returned by manubot thread to the self.citations dictionary when the thread is finished"""
+        citekey = citation_info["citekey"]
+        citation = citation_info["citation"]
 
         self.citations[citekey] = citation
 
@@ -376,6 +376,7 @@ class TextEditor(QPlainTextEdit):
         self.DocumentParsingTimer.start(5000)
         self.document_structure = data
 
+        print("Finished parsing document structure")
         self.FileStrucutreUpdated.emit(data)
 
     @pyqtSlot()

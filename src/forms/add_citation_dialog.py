@@ -20,7 +20,6 @@ class AddCitationDialog(QDialog):
         self.citation_identifier = ""
         self.allow_close = True
         self.ThreadManager = ThreadManager()
-        self.ThreadManager.manubotCiteThreadFinished.connect(self.on_thread_finished)
 
         # Get a list of prefixes, supported by manubot
         self.prefixes = list(prefix_to_handler.keys())
@@ -84,10 +83,10 @@ class AddCitationDialog(QDialog):
             super().accept()
 
     @pyqtSlot(str, str)
-    def on_thread_finished(self, citekey: str, citation: str) -> None:
+    def on_thread_finished(self, citation_info: dict) -> None:
         """Prints citation info received from pandoc thread to the ui"""
 
-        self.log(citation)
+        self.log(citation_info["citation"])
 
     @pyqtSlot()
     def on_ShowInfoPushButton_clicked(self) -> None:
@@ -100,4 +99,4 @@ class AddCitationDialog(QDialog):
             self.log(f"Type: {identifier_type}")
             self.log(f"Identifier: {identifier}")
             self.log("Retrieving info...\n")
-            self.ThreadManager.get_citation(identifier)
+            self.ThreadManager.get_citation(identifier, self.on_thread_finished)

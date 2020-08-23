@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Activate python venv
+if [ ! -d "./venv" ]
+then
+  python3 -m venv venv
+  source venv/bin/activate
+  pip install -r requirements.txt
+else
+  source venv/bin/activate
+fi
+
 # Process resources
 pyrcc5 resources/icons.qrc -o src/resources/icons_rc.py
 
@@ -15,16 +25,6 @@ pyuic5 ui/add_footnote_dialog.ui -o src/ui_forms/ui_add_footnote_dialog.py
 pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_heading_dialog.ui -o src/ui_forms/ui_add_heading_dialog.py
-
-# Activate python venv
-if [ ! -d "./venv" ]
-then
-  python3 -m venv venv
-  source venv/bin/activate
-  pip install -r requirements.txt
-else
-  source venv/bin/activate
-fi
 
 # Run main script
 python3 src/main.py&
