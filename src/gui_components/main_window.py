@@ -15,6 +15,7 @@ from gui_components.settings_dialog import SettingsDialog
 from gui_components.project_settings_dialog import ProjectSettingsDialog
 from gui_components.add_footnote_dialog import AddFootnoteDialog
 from gui_components.add_table_dialog import AddTableDialog
+from gui_components.add_heading_dialog import AddHeadingDialog
 from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager
@@ -220,6 +221,16 @@ class MainWindow(QMainWindow):
             identifiers = editor.document_structure[identifier_type]
 
         return identifiers
+
+    def insert_heading(self, heading_level: int) -> None:
+        """Calls AddHeadingDialog and inserts a heading if the user accepted the dialog"""
+
+        editor = self.get_editor()
+        if editor:
+            dialog = AddHeadingDialog(self.SettingsManager, heading_level, self.get_used_identifiers("headings", editor))
+            dialog.show()
+            if dialog.exec_():
+                editor.insert_text_at_empty_paragraph(dialog.heading_tag)
 
     # TODO: maintain the state of the tree before update (i.e. which entry is selected and which entries are expanded
     def update_structure_tree_widget(self, project_structure: dict) -> None:
@@ -531,33 +542,27 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionHeading1_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("# ")
+        self.insert_heading(1)
 
     @pyqtSlot()
     def on_actionHeading2_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("## ")
+        self.insert_heading(2)
 
     @pyqtSlot()
     def on_actionHeading3_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("### ")
+        self.insert_heading(3)
 
     @pyqtSlot()
     def on_actionHeading4_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("#### ")
+        self.insert_heading(4)
 
     @pyqtSlot()
     def on_actionHeading5_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("##### ")
+        self.insert_heading(5)
 
     @pyqtSlot()
     def on_actionHeading6_triggered(self) -> None:
-        if self.ui.EditorTabWidget.count() != 0:
-            self.get_editor().insert_text_at_line_beginning("###### ")
+        self.insert_heading(6)
 
     @pyqtSlot()
     def on_actionHorizontalRule_triggered(self) -> None:

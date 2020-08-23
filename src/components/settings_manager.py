@@ -13,6 +13,7 @@ class SettingsManager(QObject):
         self.parent = parent
         self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
         self.defaults = {
+            # Main window
             "MainWindow/size/value": QSize(640, 480),
             "MainWindow/size/type": "None",
 
@@ -31,6 +32,7 @@ class SettingsManager(QObject):
             "MainWindow/last_project/value": "",
             "MainWindow/last_project/type": "str",
 
+            # Settings dialog
             "SettingsDialog/size/value": QSize(400, 600),
             "SettingsDialog/size/type": "None",
 
@@ -40,6 +42,7 @@ class SettingsManager(QObject):
             "SettingsDialog/current tab index/value": 0,
             "SettingsDialog/current tab index/type": "int",
 
+            # Project settings dialog
             "ProjectSettingsDialog/size/value": QSize(400, 600),
             "ProjectSettingsDialog/size/type": "None",
 
@@ -48,26 +51,37 @@ class SettingsManager(QObject):
 
             "ProjectSettingsDialog/current tab index/value": 0,
             "ProjectSettingsDialog/current tab index/type": "int",
-###################
+
+            # Add heading dialog
+            "AddHeadingDialog/autonumber/value": 2,
+            "AddHeadingDialog/autonumber/type": "int",
+
+            "AddHeadingDialog/autogen identifier/value": 0,
+            "AddHeadingDialog/autogen identifier/type": "int",
+
+            # Add image dialog
             "AddImageDialog/autogen identifier/value": 2,
             "AddImageDialog/autogen identifier/type": "int",
 
             "AddImageDialog/autonumber/value": 2,
             "AddImageDialog/autonumber/type": "int",
 
+            # Add table dialog
             "AddTableDialog/autogen identifier/value": 2,
             "AddTableDialog/autogen identifier/type": "int",
 
             "AddTableDialog/autonumber/value": 2,
             "AddTableDialog/autonumber/type": "int",
 
+            # Add footnote dialog
             "AddFootnoteDialog/autogen identifier/value": 2,
             "AddFootnoteDialog/autogen identifier/type": "int",
-#################
 
+            # Application
             "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
             "Application/Project folder/type": "str",
 
+            # Editor
             "Editor/Font name/value": "Hack",
             "Editor/Font name/type": "str",
 
@@ -95,14 +109,12 @@ class SettingsManager(QObject):
             "Editor/Current color schema/value": "System colors",
             "Editor/Current color schema/type": "str",
 
+            # Render
             "Render/Autorender/value": True,
             "Render/Autorender/type": "bool",
 
             "Render/Autorender delay/value": 1000,
             "Render/Autorender delay/type": "int",
-
-            "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
-            "Projects/Project types/type": "list",
 
             "Render/Formats/value": [{"name": "Html", "pandoc name": "html", "file extension": "html"},
                                      {"name": "Pdf", "pandoc name": "pdf", "file extension": "pdf"},
@@ -112,7 +124,11 @@ class SettingsManager(QObject):
             "Render/Styles/value": [{"name": "Manuwrite strict", "folder": "manuwrite_classic"},
                                     {"name": "Manuwrite modern", "folder": "manuwrite_modern"},
                                     {"name": "Manubot classic", "folder": "manubot_classic"}],
-            "Render/Styles/type": "list"
+            "Render/Styles/type": "list",
+
+            # Projects
+            "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
+            "Projects/Project types/type": "list"
         }
 
         # Maps datatype names read from config to functions
