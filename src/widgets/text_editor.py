@@ -28,7 +28,7 @@ class TextEditor(QPlainTextEdit):
 
     FileStrucutreUpdated = pyqtSignal(dict)
 
-    def __init__(self, parent, display_widget: QWebEngineView, settings_manager):
+    def __init__(self, parent, display_widget: QWebEngineView, settings_manager, thread_manager):
 
         super().__init__(parent)
 
@@ -38,7 +38,7 @@ class TextEditor(QPlainTextEdit):
         self.highlighter = MarkdownHighlighter(self.document(), settings_manager)
         self.text_changed = False
         self.citations = dict()
-        self.ThreadManager = ThreadManager(max_threads=4)
+        self.ThreadManager = thread_manager
         self.setMouseTracking(True)
         self.InputTimer = QTimer(self)
         self.DocumentParsingTimer = QTimer(self)
@@ -343,7 +343,6 @@ class TextEditor(QPlainTextEdit):
     def parse_document(self) -> None:
         """Asks ThreadManager to parse the document for structure if the document isn't already being parsed"""
         if not self.is_parsing_document:
-            print("Telling thread manager to parse document")
             self.ThreadManager.parse_markdown_document(self.document(), self.on_parsing_document_finished)
             self.is_parsing_document = True
 
@@ -376,7 +375,6 @@ class TextEditor(QPlainTextEdit):
         self.DocumentParsingTimer.start(5000)
         self.document_structure = data
 
-        print("Finished parsing document structure")
         self.FileStrucutreUpdated.emit(data)
 
     @pyqtSlot()

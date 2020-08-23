@@ -20,6 +20,7 @@ from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager
 from components.settings_manager import SettingsManager
+from components.thread_manager import ThreadManager
 
 
 class MainWindow(QMainWindow):
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager: ProjectManager = None
+        self.ThreadManager = ThreadManager()
         self.OpenedEditors = []
         self.SettingsManager = SettingsManager(self)
         self.current_editor_index = 0
@@ -153,7 +155,7 @@ class MainWindow(QMainWindow):
 
         # Create project manager for current project
         try:
-            self.ProjectManager = ProjectManager(path)
+            self.ProjectManager = ProjectManager(path, self.ThreadManager)
         except ProjectError as e:
             self.ProjectManager = None
             QMessageBox.critical(self, "Error", "Failed to load project: " + e.message.lower())
@@ -384,7 +386,7 @@ class MainWindow(QMainWindow):
         widget.layout().setContentsMargins(0, 2, 0, 0)
 
         # Create editor
-        editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager)
+        editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager, self.ThreadManager)
         editor.FileStrucutreUpdated.connect(self.on_fileStructureUpdated)
 
         self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False, is_current_editor=True))
@@ -630,7 +632,7 @@ class MainWindow(QMainWindow):
         if self.ui.EditorTabWidget.count() == 0:
             return
 
-        dialog = AddCitationDialog()
+        dialog = AddCitationDialog(self.ThreadManager)
         dialog.show()
         if dialog.exec_():
             self.get_editor().insert_text_at_cursor("[@{}]".format(dialog.citation_identifier))

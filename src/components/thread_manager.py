@@ -114,6 +114,9 @@ class PandocThread(QThread):
 
 
 class ThreadWrapper():
+    """Stores the thread together with the function, which should be called when the thread is finished
+    (handler_function). Handler function is passed self.thread.result as an argument, hence all thread classes must
+    have a result field"""
 
     def __init__(self, thread, handler_function, thread_type=None):
         self.thread = thread
@@ -131,15 +134,21 @@ class ThreadManager(QObject):
     """Manages threads. Makes sure that the number of threads running at the same time is not too high. Keeps track of
     what threads are currently running and which are waiting in the queue"""
 
-    def __init__(self, max_threads: int = 4):
+    def __init__(self, max_threads: int = None):
 
         super().__init__()
 
         self.running_threads: List[ThreadWrapper] = []
         self.pending_threads: List[ThreadWrapper] = []
         self.running_thread_count = 0
-        self.max_threads = max_threads
-        self.is_parsing_document = False
+
+        if max_threads is None:
+            self.max_threads = QThread.idealThreadCount()
+        else:
+            self.max_threads = max_threads
+
+        if self.max_threads < 1:
+            self.max_threads = 1
 
     # House hold methods
     def run_thread(self, thread_wrapper: ThreadWrapper, disobey_thread_limit: bool = False) -> None:

@@ -21,14 +21,14 @@ class Communicator(QObject):
 
 class ProjectManager():
 
-    def __init__(self, directory_path: str):
+    def __init__(self, directory_path: str, thread_manager):
 
         # Set attributes
         self.defaults = copy.deepcopy(defaults.project_settings)
         self.root_path = directory_path
         self.project_info = dict()
         self.FsModel = QFileSystemModel()
-        self.ThreadManager = ThreadManager(max_threads=1)
+        self.ThreadManager = thread_manager
         self.Communicator = Communicator()
 
         self.FsModel.setRootPath(directory_path)

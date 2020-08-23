@@ -10,7 +10,7 @@ from components.thread_manager import ThreadManager
 
 class AddCitationDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, thread_manager):
         super().__init__()
 
         self.ui = Ui_AddCitationDialog()
@@ -19,7 +19,7 @@ class AddCitationDialog(QDialog):
         # Set attributes
         self.citation_identifier = ""
         self.allow_close = True
-        self.ThreadManager = ThreadManager()
+        self.ThreadManager = thread_manager
 
         # Get a list of prefixes, supported by manubot
         self.prefixes = list(prefix_to_handler.keys())
