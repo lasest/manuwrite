@@ -1,212 +1,12 @@
 import subprocess
-import collections
 import copy
-from typing import List, Tuple
+from typing import List
 
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, QRegExp, QFile
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
 from PyQt5.QtGui import QTextDocument
-import common
 
-
-class IdentifierParser():
-    """Used to parse a tag for information. For example get image caption and image filepath from image tag. Call
-    extract() to get the parsed information. The tag to be parsed is stored in regexp field after calling
-    regexp.indexIn() on the text to be parsed. Field 'extractor' stores the function which should be used on the tag
-    to parse it. Field 'category' stores the key of the 'document_info_template' dictionary, which should be updated
-    with the parsed information"""
-
-    def __init__(self, pattern, extractor, category):
-        self.regexp = QRegExp(pattern)
-        self.extractor = extractor
-        self.category = category
-
-    def extract(self) -> dict:
-        """Returns the dictionary with information parsed by the extractor function"""
-        return self.extractor(self.regexp.cap(0))
-
-# Extractor functions
-# Extractor function takes one string to be parsed and returns a tuple of parsed identifier and a dictionary in the
-# form of {identifier: {text: [name], ...}}. 'text' field must be present. This value will be displayed in project
-# structure tree as the name of the entry. Other optional field may be added
-
-
-def heading_extractor(heading: str) -> Tuple[str, dict]:
-    """Extracts information about a heading from the heading tag"""
-
-    identifier_regexp = QRegExp(r"\{#sec:\w\w*|\{#\w\w*")
-    loffset = 2
-
-    # Determine heading level
-    heading = heading.strip()
-    length = len(heading)
-    heading = heading.lstrip("#")
-    heading_level = length - len(heading)
-    if heading_level > 6:
-        heading_level = 6
-
-    # Save heading text
-    attributes_index = heading.find("{")
-    heading_text = ""
-    if attributes_index != -1:
-        heading_text = heading[:attributes_index]
-    else:
-        heading_text = heading
-
-    heading_text = heading_text.strip(" #")
-
-    # Check if heading has explicit identifier
-    index = identifier_regexp.indexIn(heading)
-    if index >= 0:
-        identifier = heading[index + loffset:index + identifier_regexp.matchedLength()]
-
-    # Generate an implicit identifier if there is no explicit one
-    if index == -1:
-        identifier = common.generate_identifier(heading_text)
-
-    # Return resulting dictionary
-    return identifier, {identifier: {"text": heading_text,
-                                     "level": heading_level}}
-
-
-def figure_extractor(image_tag: str) -> Tuple[str, dict]:
-    """Extracts information about an image from image tag"""
-    identifier_regexp = QRegExp(r"\{#fig:\w\w*")
-    loffset = 2
-
-    # get identifier
-    index = identifier_regexp.indexIn(image_tag)
-    if index >= 0:
-        identifier = image_tag[index + loffset: index + identifier_regexp.matchedLength()]
-    else:
-        identifier = "No identifier found"
-
-    # get caption
-    start = image_tag.index("[")
-    end = image_tag.index("]")
-    caption = image_tag[start + 1: end]
-
-    # get filepath
-    start = image_tag.index("(")
-    end = image_tag.index(")")
-    filepath = image_tag[start + 1: end]
-
-    return identifier, {identifier: {"text": caption,
-                                     "filepath": filepath}}
-
-
-def citation_extractor(citation_tag: str) -> Tuple[str, dict]:
-    """Extracts information about a citation from citation tag"""
-    identifier = citation_tag[2:-1]
-    return identifier, {identifier: {"text": identifier}}
-
-
-def footnote_extractor(footnote_tag: str) -> Tuple[str, dict]:
-    """Extracts information about a footnote from footnote tag"""
-    identifier = footnote_tag[2:-1]
-    return identifier, {identifier: {"text": identifier}}
-
-
-def table_extractor(table_tag: str) -> Tuple[str, dict]:
-    """Extracts information about a table from table tag"""
-    identifier = table_tag[2:-1]
-    return identifier, {identifier: {"text": identifier}}
-
-
-# From this dictionary a list of IdentifierParser objects will be created. Keys are patterns used to generate QRegExp
-# for each object. 'category' value corresponds to the keys in 'document_info_template'. 'extractor' value is the
-# extractor function to be used
-
-patterns = {
-        r"^\s*#$|^\s*#[^#].*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"^\s*##$|^\s*##[^#].*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"^\s*###$|^\s*###[^#].*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"^\s*####$|^\s*####[^#].*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"^\s*#####$|^\s*#####[^#].*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"^\s*######.*": {
-            "category": "headings",
-            "extractor": heading_extractor
-        },
-        r"!\[.*\]\(..*\)|!\[.*\]\(..*\)\{.*\}": {
-            "category": "figures",
-            "extractor": figure_extractor
-        },
-        r"\[@[\S][\S]*:[\S][\S]*\]": {
-            "category": "citations",
-            "extractor": citation_extractor
-        },
-        r"\[\^..*\]": {
-            "category": "footnotes",
-            "extractor": footnote_extractor
-        },
-        r"\{#tbl:..*\}": {
-            "category": "tables",
-            "extractor": table_extractor
-        }
-    }
-
-
-# The template of document_info dictionary. Each key except for filepath contains a dictionary in the form of
-# {identifier: {text: [name], ...}. 'text' key is mandatory
-
-document_info_template = {
-            "filepath": "",
-            "citations": collections.OrderedDict(),
-            "figures": collections.OrderedDict(),
-            "tables": collections.OrderedDict(),
-            "footnotes": collections.OrderedDict(),
-            "headings": collections.OrderedDict()
-        }
-
-# Create a list of IdentifierParser objects
-identifier_parsers: List[IdentifierParser] = []
-for key, value in patterns.items():
-    parser = IdentifierParser(key, value["extractor"], value["category"])
-    identifier_parsers.append(parser)
-
-
-def parse_document(document: QTextDocument, document_info: dict):
-    """Parses the document line by line for tags matching regexp of objects in identifier_parsers. Updates the
-    provided document_info dictionary with the parsed information"""
-
-    line_count = document.blockCount()
-    header_index = -1
-
-    for i in range(line_count):
-        current_line = document.findBlockByNumber(i).text()
-
-        for parser in identifier_parsers:
-            index = parser.regexp.indexIn(current_line)
-
-            while index >= 0:
-                # TODO: check if identifier has already been used
-                identifier, parsed_info = parser.extract()
-
-                # Add additional fields
-                parsed_info[identifier]["block_number"] = i
-                parsed_info[identifier]["current_header_index"] = header_index
-                parsed_info[identifier]["project_filepath"] = document.baseUrl().toLocalFile()
-
-                if parser.category == "headings":
-                    header_index += 1
-
-                document_info[parser.category].update(parsed_info)
-                length = parser.regexp.matchedLength()
-                index = parser.regexp.indexIn(current_line, index + length)
+import defaults
+from document_parsing import parse_document
 
 
 class MarkdownProjectParserThread(QThread):
@@ -230,7 +30,7 @@ class MarkdownProjectParserThread(QThread):
 
             document = QTextDocument(file_contents, self)
             # TODO: set base url of a document to filepath here
-            document_info = copy.deepcopy(document_info_template)
+            document_info = copy.deepcopy(defaults.document_info_template)
             parse_document(document, document_info)
             self.project_structure[filepath] = document_info
 
@@ -245,7 +45,7 @@ class MarkdownDocumentParserThread(QThread):
         super().__init__(parent)
 
         self.document = document
-        self.document_info = copy.deepcopy(document_info_template)
+        self.document_info = copy.deepcopy(defaults.document_info_template)
         self.document_info["filepath"] = self.document.baseUrl().toLocalFile()
 
     def is_setext_heading(self, line_number: int, heading_sybmol: str):

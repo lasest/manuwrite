@@ -4,6 +4,8 @@ from typing import Tuple, Dict, List
 from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextDocument, QColor
 from PyQt5.QtCore import QRegExp, Qt
 
+import defaults
+
 
 class Rule():
 
@@ -17,50 +19,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
     # TODO: implement alternate heading 1 and heading 2 syntax (requires working with previous line)
 
-    # Patterns to be detected
-    patterns = OrderedDict({
-        "heading-1": r"^\s*#$|^\s*#[^#].*",
-        "heading-2": r"^\s*##$|^\s*##[^#].*",
-        "heading-3": r"^\s*###$|^\s*###[^#].*",
-        "heading-4": r"^\s*####$|^\s*####[^#].*",
-        "heading-5": r"^\s*#####$|^\s*#####[^#].*",
-        "heading-6": r"^\s*######.*",
-        "line-break": r"\s\s$",
-        "horizontal-rule": r"^\*\*\*\**$|^----*$|^____*$",
-        "italic": r"()(^[*_][^*][^*]*[*_]$)()|" +
-                  r"([^*_])([*_][^*][^*]*[*_]$)()|" +
-                  r"()(^[*_][^*][^*]*[*_])([^*_])|" +
-                  r"([^*_])([*_][^*][^*]*[*_])([^*_])",
-        "bold": r"()(^[*_][*_][^*][^*]*[*_][*_]$)()|" +
-                r"([^*_])([*_][*_][^*][^*]*[*_][*_]$)()|" +
-                r"()(^[*_][*_][^*][^*]*[*_][*_])([^*_])|" +
-                r"([^*_])([*_][*_][^*][^*]*[*_][*_])([^*_])",
-        "bold-and-italic": r"[*_][*_][*_][^*][^*]*[*_][*_][*_]",
-        "blockquote-1": r"^\s*>$|^\s*>[^>].*",
-        "blockquote-2": r"^\s*>>$|^\s*>>[^>].*",
-        "blockquote-3": r"^\s*>>>$|^\s*>>>[^>].*",
-        "blockquote-n": r"^\s*>>>>$|^\s*>>>>[^>].*",
-        "ordered-list": r"^\s*\d\.",
-        "unordered-list": r"^\s*[-+*]\s",
-        "code": r"`..*`",
-        "link": r"()(^\[..*\]\(..*\))()|" +
-                r"([^!])(\[..*\]\(..*\))()",
-        "image": r"!\[.*\]\(..*\)|!\[.*\]\(..*\)\{.*\}",
-        "citation": r"\[@[\S][\S]*:[\S][\S]*\]",
-        "strikeout": r"~~[^~][^~]*~~",
-        "superscript": r"\^..*\^",
-        "subscript": r"([^~])(~[^~][^~]*~)([^~])|" +
-                     r"^()(~[^~][^~]*~)([^~])|" +
-                     r"([^~])(~[^~][^~]*~)()$|" +
-                     r"^()(~[^~][^~]*~)()$",
-        "footnote": r"\[\^..*\]",
-        "table": r"\{#tbl:..*\}"
-    })
-
     def __init__(self, document: QTextDocument, settings_manager):
         super().__init__(document)
 
         self.SettingsManager = settings_manager
+        self.patterns = defaults.highlighter_patterns
 
         # Create formats
         self.formats: Dict[str, QTextCharFormat] = {key: QTextCharFormat() for key in self.patterns.keys()}

@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import QFileSystemModel
 from PyQt5.QtCore import QModelIndex, QDir, QFile, QDate, pyqtSlot, pyqtSignal, QObject
 
 from common import ProjectError
-from components.thread_manager import ThreadManager, document_info_template
+import defaults
+from components.thread_manager import ThreadManager
 
 
 class Communicator(QObject):
@@ -20,27 +21,10 @@ class Communicator(QObject):
 
 class ProjectManager():
 
-    defaults = OrderedDict({
-        "Title": {"type": "str", "value": ""},
-        "Date created": {"type": "mapping/int", "value": [QDate.currentDate().year(), QDate.currentDate().month(),
-                                                          QDate.currentDate().day()]},
-        "Authors": {"type": "str", "value": ""},
-        "Project type": {"type": "enum", "value": "Notes", "allowed values": ["Notes", "Article", "Book"]},
-        "Absolute path": {"type": "str", "value": ""},
-        "Description": {"type": "str", "value": ""},
-        "Additional meta information": {"type": "str", "value": ""},
-        "Files to render": {"type": "mapping/str", "value": []},
-        "Style": {"type": "str", "value": "Manubot classic"},
-        "Render to": {"type": "str", "value": "Html"},
-        "Pandoc command (auto)": {"type": "str", "value": ""},
-        "Pandoc command (manual)": {"type": "str", "value": ""},
-        "Project structure combined": {"type": "dict", "value": copy.deepcopy(document_info_template)},
-        "Project structure raw": {"type": "dict", "value": dict()}
-    })
-
     def __init__(self, directory_path: str):
 
         # Set attributes
+        self.defaults = copy.deepcopy(defaults.project_settings)
         self.root_path = directory_path
         self.project_info = dict()
         self.FsModel = QFileSystemModel()
@@ -200,7 +184,7 @@ class ProjectManager():
 
     def get_combined_project_structure(self, raw_project_structure: dict) -> dict:
         """Convert raw project structure ({filepath: document_info}) to combined document structure (document_info)"""
-        combined = copy.deepcopy(document_info_template)
+        combined = copy.deepcopy(defaults.document_info_template)
         del combined["filepath"]
 
         for key1, value1 in raw_project_structure.items():

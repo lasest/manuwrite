@@ -3,6 +3,8 @@ import toml
 from PyQt5.QtCore import QObject, QSettings, QSize, QPoint, QStandardPaths, QDir, QDirIterator, Qt
 from PyQt5.QtGui import QPalette, QColor
 
+import defaults
+
 
 class SettingsManager(QObject):
 
@@ -12,124 +14,7 @@ class SettingsManager(QObject):
         # Default settings. Type "None" means that Settings manager shouldn't try to perform type converstion
         self.parent = parent
         self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
-        self.defaults = {
-            # Main window
-            "MainWindow/size/value": QSize(640, 480),
-            "MainWindow/size/type": "None",
-
-            "MainWindow/pos/value": QPoint(100, 100),
-            "MainWindow/pos/type": "None",
-
-            "MainWindow/splitter_sizes/value": [150, 294, 196],
-            "MainWindow/splitter_sizes/type": "map/int",
-
-            "MainWindow/project_widget_width/value": 150,
-            "MainWindow/project_widget_width/type": "int",
-
-            "MainWindow/preview_width/value": 196,
-            "MainWindow/preview_width/type": "int",
-
-            "MainWindow/last_project/value": "",
-            "MainWindow/last_project/type": "str",
-
-            # Settings dialog
-            "SettingsDialog/size/value": QSize(400, 600),
-            "SettingsDialog/size/type": "None",
-
-            "SettingsDialog/pos/value": QPoint(100, 100),
-            "SettingsDialog/pos/type": "None",
-
-            "SettingsDialog/current tab index/value": 0,
-            "SettingsDialog/current tab index/type": "int",
-
-            # Project settings dialog
-            "ProjectSettingsDialog/size/value": QSize(400, 600),
-            "ProjectSettingsDialog/size/type": "None",
-
-            "ProjectSettingsDialog/pos/value": QPoint(100, 100),
-            "ProjectSettingsDialog/pos/type": "None",
-
-            "ProjectSettingsDialog/current tab index/value": 0,
-            "ProjectSettingsDialog/current tab index/type": "int",
-
-            # Add heading dialog
-            "AddHeadingDialog/autonumber/value": 2,
-            "AddHeadingDialog/autonumber/type": "int",
-
-            "AddHeadingDialog/autogen identifier/value": 0,
-            "AddHeadingDialog/autogen identifier/type": "int",
-
-            # Add image dialog
-            "AddImageDialog/autogen identifier/value": 2,
-            "AddImageDialog/autogen identifier/type": "int",
-
-            "AddImageDialog/autonumber/value": 2,
-            "AddImageDialog/autonumber/type": "int",
-
-            # Add table dialog
-            "AddTableDialog/autogen identifier/value": 2,
-            "AddTableDialog/autogen identifier/type": "int",
-
-            "AddTableDialog/autonumber/value": 2,
-            "AddTableDialog/autonumber/type": "int",
-
-            # Add footnote dialog
-            "AddFootnoteDialog/autogen identifier/value": 2,
-            "AddFootnoteDialog/autogen identifier/type": "int",
-
-            # Application
-            "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
-            "Application/Project folder/type": "str",
-
-            # Editor
-            "Editor/Font name/value": "Hack",
-            "Editor/Font name/type": "str",
-
-            "Editor/Font size/value": 14,
-            "Editor/Font size/type": "int",
-
-            "Editor/Default image width/value": 500,
-            "Editor/Default image width/type": "int",
-
-            "Editor/Default image height/value": 500,
-            "Editor/Default image height/type": "int",
-
-            "Editor/Image tooltip height/value": 250,
-            "Editor/Image tooltip height/type": "int",
-
-            "Editor/Image tooltip width/value": 250,
-            "Editor/Image tooltip width/type": "int",
-
-            "Editor/Show image tooltips/value": True,
-            "Editor/Show image tooltips/type": "bool",
-
-            "Editor/Show citation tooltips/value": True,
-            "Editor/Show citation tooltips/type": "bool",
-
-            "Editor/Current color schema/value": "System colors",
-            "Editor/Current color schema/type": "str",
-
-            # Render
-            "Render/Autorender/value": True,
-            "Render/Autorender/type": "bool",
-
-            "Render/Autorender delay/value": 1000,
-            "Render/Autorender delay/type": "int",
-
-            "Render/Formats/value": [{"name": "Html", "pandoc name": "html", "file extension": "html"},
-                                     {"name": "Pdf", "pandoc name": "pdf", "file extension": "pdf"},
-                                     {"name": "Doc", "pandoc name": "doc", "file extension": "doc"}],
-            "Render/Formats/type": "list",
-
-            "Render/Styles/value": [{"name": "Manuwrite strict", "folder": "manuwrite_classic"},
-                                    {"name": "Manuwrite modern", "folder": "manuwrite_modern"},
-                                    {"name": "Manubot classic", "folder": "manubot_classic"}],
-            "Render/Styles/type": "list",
-
-            # Projects
-            "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
-            "Projects/Project types/type": "list"
-        }
+        self.defaults = defaults.application_settings
 
         # Maps datatype names read from config to functions
         self.datatypes = {
@@ -320,7 +205,3 @@ class SettingsManager(QObject):
                     toml.dump(color_schema, file_handle)
                     file_handle.close()
                     break
-
-
-
-

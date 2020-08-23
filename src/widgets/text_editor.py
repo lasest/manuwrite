@@ -6,7 +6,8 @@ from PyQt5.QtGui import QPainter, QTextFormat, QTextCursor, QMouseEvent, QFont, 
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from components.highlighter import MarkdownHighlighter
-from components.thread_manager import ThreadManager, document_info_template
+from components.thread_manager import ThreadManager
+import defaults
 
 
 class LineNumberArea(QWidget):
@@ -45,7 +46,7 @@ class TextEditor(QPlainTextEdit):
         self.is_current_editor = False
         self.is_parsing_document = False
         self.char_format = QTextCharFormat(self.currentCharFormat())
-        self.document_structure: dict = copy.deepcopy(document_info_template)
+        self.document_structure: dict = copy.deepcopy(defaults.document_info_template)
 
         self.ColorSchema = self.SettingsManager.get_current_color_schema()
 
