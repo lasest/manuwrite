@@ -472,5 +472,5 @@ class Ui_MainWindow(object):
         self.actionFootnote.setText(_translate("MainWindow", "Footnote"))
         self.actionAddTable.setText(_translate("MainWindow", "Add table"))
 from PyQt5 import QtWebEngineWidgets
-from gui_components.qlabel_clickable import QLabelClickable
-from gui_components.qtabwidget_custom import QTabWidgetCustom
+from widgets.qlabel_clickable import QLabelClickable
+from widgets.qtabwidget_custom import QTabWidgetCustom

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 
-from forms.ui_add_heading_dialog import Ui_AddHeadingDialog
+from ui_forms.ui_add_heading_dialog import Ui_AddHeadingDialog
 from components.settings_manager import SettingsManager
 import common
 

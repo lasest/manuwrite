@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTabWidget
-from gui_components.qtabbar_custom import QTabBarCustom
+from widgets.qtabbar_custom import QTabBarCustom
 
 
 class QTabWidgetCustom(QTabWidget):

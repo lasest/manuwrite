@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QAbstractButton, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 
-from forms.ui_add_link_dialog import Ui_AddLinkDialog
+from ui_forms.ui_add_link_dialog import Ui_AddLinkDialog
 
 
 class AddLinkDialog(QDialog):

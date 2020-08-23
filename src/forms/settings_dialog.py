@@ -3,8 +3,8 @@ from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QCloseEvent, QFont, QColor
 
 from components.settings_manager import SettingsManager
-from forms.ui_settings_dialog import Ui_SettingsDialog
-from gui_components.color_button import ColorButton
+from ui_forms.ui_settings_dialog import Ui_SettingsDialog
+from widgets.color_button import ColorButton
 
 
 class SettingsDialog(QDialog):

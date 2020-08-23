@@ -3,7 +3,7 @@ from typing import List
 from PyQt5.QtCore import pyqtSlot, QDir
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
-from forms.ui_create_project_dialog import Ui_CreateProjectDialog
+from ui_forms.ui_create_project_dialog import Ui_CreateProjectDialog
 
 
 class CreateProjectDialog(QDialog):

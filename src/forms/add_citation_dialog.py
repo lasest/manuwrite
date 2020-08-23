@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import pyqtSlot, QRegExp, Qt
 from manubot.cite.handlers import prefix_to_handler
 
-from forms.ui_add_citation_dialog import Ui_AddCitationDialog
+from ui_forms.ui_add_citation_dialog import Ui_AddCitationDialog
 from components.thread_manager import ThreadManager
 
 

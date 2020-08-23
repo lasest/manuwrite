@@ -933,12 +933,12 @@
   <customwidget>
    <class>QLabelClickable</class>
    <extends>QLabel</extends>
-   <header>gui_components.qlabel_clickable</header>
+   <header>widgets.qlabel_clickable</header>
   </customwidget>
   <customwidget>
    <class>QTabWidgetCustom</class>
    <extends>QTabWidget</extends>
-   <header>gui_components.qtabwidget_custom</header>
+   <header>widgets.qtabwidget_custom</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

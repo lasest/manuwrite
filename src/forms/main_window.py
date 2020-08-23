@@ -5,17 +5,17 @@ from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLa
 from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex, QSize)
 from PyQt5.QtGui import *
 
-from forms.ui_main_window import Ui_MainWindow
-from gui_components.text_editor import TextEditor
-from gui_components.add_link_dialog import AddLinkDialog
-from gui_components.add_image_dialog import AddImageDialog
-from gui_components.add_citation_dialog import AddCitationDialog
-from gui_components.create_project_dialog import CreateProjectDialog
-from gui_components.settings_dialog import SettingsDialog
-from gui_components.project_settings_dialog import ProjectSettingsDialog
-from gui_components.add_footnote_dialog import AddFootnoteDialog
-from gui_components.add_table_dialog import AddTableDialog
-from gui_components.add_heading_dialog import AddHeadingDialog
+from ui_forms.ui_main_window import Ui_MainWindow
+from widgets.text_editor import TextEditor
+from forms.add_link_dialog import AddLinkDialog
+from forms.add_image_dialog import AddImageDialog
+from forms.add_citation_dialog import AddCitationDialog
+from forms.create_project_dialog import CreateProjectDialog
+from forms.settings_dialog import SettingsDialog
+from forms.project_settings_dialog import ProjectSettingsDialog
+from forms.add_footnote_dialog import AddFootnoteDialog
+from forms.add_table_dialog import AddTableDialog
+from forms.add_heading_dialog import AddHeadingDialog
 from resources import icons_rc
 from common import ProjectError
 from components.project_manager import ProjectManager

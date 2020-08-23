@@ -2,7 +2,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QDialog, QShortcut, QMessageBox, QTableWidgetItem
 from PyQt5.QtGui import QKeySequence
 
-from forms.ui_add_table_dialog import Ui_AddTableDialog
+from ui_forms.ui_add_table_dialog import Ui_AddTableDialog
 
 import common
 

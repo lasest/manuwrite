@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QAbstractButton, QFileDialog, QShortcut, QM
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QKeySequence
 
-from forms.ui_add_image_dialog import Ui_AddImageDialog
+from ui_forms.ui_add_image_dialog import Ui_AddImageDialog
 import common
 
 

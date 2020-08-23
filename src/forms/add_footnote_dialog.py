@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QMessageBox, QShortcut
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QKeySequence
 
-from forms.ui_add_footnote_dialog import Ui_AddFootnoteDialog
+from ui_forms.ui_add_footnote_dialog import Ui_AddFootnoteDialog
 import common
 
 

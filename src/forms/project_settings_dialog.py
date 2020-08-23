@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QListWidgetItem, QListWidget
 from PyQt5.QtCore import QDate, QDirIterator, QDir, Qt, pyqtSlot
 from PyQt5.QtGui import QIcon, QCloseEvent
 
-from forms.ui_project_settings_dialog import Ui_ProjectSettingsDialog
+from ui_forms.ui_project_settings_dialog import Ui_ProjectSettingsDialog
 from components.project_manager import ProjectManager
 from components.settings_manager import SettingsManager
 
