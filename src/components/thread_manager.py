@@ -5,6 +5,7 @@ from typing import List, Tuple
 
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, QRegExp, QFile
 from PyQt5.QtGui import QTextDocument
+import common
 
 
 class IdentifierParser():
@@ -32,7 +33,7 @@ class IdentifierParser():
 def heading_extractor(heading: str) -> Tuple[str, dict]:
     """Extracts information about a heading from the heading tag"""
 
-    identifier_regexp = QRegExp(r"{#\w\w*")
+    identifier_regexp = QRegExp(r"\{#sec:\w\w*|\{#\w\w*")
     loffset = 2
 
     # Determine heading level
@@ -44,18 +45,23 @@ def heading_extractor(heading: str) -> Tuple[str, dict]:
         heading_level = 6
 
     # Save heading text
-    heading_text = heading.strip(" #")
+    attributes_index = heading.find("{")
+    heading_text = ""
+    if attributes_index != -1:
+        heading_text = heading[:attributes_index]
+    else:
+        heading_text = heading
+
+    heading_text = heading_text.strip(" #")
 
     # Check if heading has explicit identifier
-    # TODO: fully mimic pandoc's identifier generation
-
-    index = identifier_regexp.indexIn(heading_text)
+    index = identifier_regexp.indexIn(heading)
     if index >= 0:
-        identifier = heading_text[index + loffset:index + identifier_regexp.matchedLength()]
+        identifier = heading[index + loffset:index + identifier_regexp.matchedLength()]
 
     # Generate an implicit identifier if there is no explicit one
     if index == -1:
-        identifier = heading_text.lower().replace(" ", "-")
+        identifier = common.generate_identifier(heading_text)
 
     # Return resulting dictionary
     return identifier, {identifier: {"text": heading_text,

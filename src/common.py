@@ -16,7 +16,13 @@ def is_valid_identifier(identifier: str, allow_empty: bool = False) -> bool:
     return result
 
 
-def generate_identifier(prefix: str, text: str, used_identifiers=None) -> str:
+def generate_identifier(text: str, prefix: str = "", used_identifiers=None) -> str:
+    """Generates a valid pandoc identifier from given text and adds a specified prefix to it. Then checks if the
+    generated identifier is in used_identifiers. If it is, creates a unique identifier by adding a number at the end"""
+
+    if used_identifiers is None:
+        used_identifiers = set()
+
     text = text.strip()
 
     # Convert all to lowercase

@@ -83,7 +83,7 @@ class AddHeadingDialog(QDialog):
                 prefix = "sec:"
 
             if self.ui.AutogenIdentifierRadioButton.isChecked():
-                identifier = common.generate_identifier(prefix, self.ui.TextLineEdit.text(), self.used_identifiers)
+                identifier = common.generate_identifier(self.ui.TextLineEdit.text(), prefix, self.used_identifiers)
             else:
                 identifier += self.ui.IdentifierLineEdit.text()
 
