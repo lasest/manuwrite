@@ -1,8 +1,7 @@
-from collections import OrderedDict
 from typing import Tuple, Dict, List
 
 from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QTextDocument, QColor
-from PyQt5.QtCore import QRegExp, Qt
+from PyQt5.QtCore import QRegExp
 
 import defaults
 

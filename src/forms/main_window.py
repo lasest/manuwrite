@@ -1,8 +1,8 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTableWidgetItem, QHeaderView, QComboBox, QTreeWidgetItem)
-from PyQt5.QtCore import (Qt, pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QObject, QModelIndex, QSize)
+                            QMenu, QInputDialog, QTreeWidgetItem)
+from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex)
 from PyQt5.QtGui import *
 
 from ui_forms.ui_main_window import Ui_MainWindow
@@ -862,6 +862,7 @@ class MainWindow(QMainWindow):
         dialog.exec_()
 
     # TODO: change contents of structure tree on that event too?
+    # TODO: also change preview contents here?
     @pyqtSlot(int)
     def on_currentEditor_changed(self, index: int) -> None:
         for i in range(self.ui.EditorTabWidget.count()):

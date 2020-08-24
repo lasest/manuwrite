@@ -28,7 +28,7 @@ class TextEditor(QPlainTextEdit):
 
     FileStrucutreUpdated = pyqtSignal(dict)
 
-    def __init__(self, parent, display_widget: QWebEngineView, settings_manager, thread_manager):
+    def __init__(self, parent, display_widget: QWebEngineView, settings_manager, thread_manager: ThreadManager):
 
         super().__init__(parent)
 
@@ -37,7 +37,6 @@ class TextEditor(QPlainTextEdit):
         self.display_widget = display_widget
         self.highlighter = MarkdownHighlighter(self.document(), settings_manager)
         self.text_changed = False
-        self.citations = dict()
         self.ThreadManager = thread_manager
         self.setMouseTracking(True)
         self.InputTimer = QTimer(self)
@@ -247,6 +246,11 @@ class TextEditor(QPlainTextEdit):
     def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint) -> None:
         """Displays a tooltip at current cursor position if a citation tag or an image tag is under cursor. Hides
         the tooltip if no tags are under cursor"""
+
+        def is_inside_tag(tag, cursor_pos) -> bool:
+            """Returns True if given cursor position is inside tag boundaries"""
+            return tag[0] <= cursor_pos < (tag[1] + tag[0])
+
         show_citation_tooltips = self.SettingsManager.get_setting_value("Editor/Show citation tooltips")
         show_image_tooltips = self.SettingsManager.get_setting_value("Editor/Show image tooltips")
         hide_tooltip = True
@@ -257,31 +261,27 @@ class TextEditor(QPlainTextEdit):
         for tag in current_line_tags:
             tag_text = current_line_text[tag[0]:tag[0] + tag[1]]
 
-            if show_citation_tooltips and tag[2] == "citation":
+            if show_citation_tooltips and tag[2] == "citation" and is_inside_tag(tag, cursor_pos):
                 # Remove brackets and @ symbol from the tag text
                 tag_text = tag_text[2:-1]
 
-                # If the citekey is not in self.citations start manubot thread to retrieve citation info
-                if tag_text not in self.citations:
-
-                    self.citations[tag_text] = ""
-                    self.ThreadManager.get_citation(tag_text, self.on_manubot_thread_finished)
+                # TODO: use an extractor here?
+                # If the citekey is not in self.document_info["citations"] or doesn't have a citation text yet, show
+                # placeholder
+                if tag_text not in self.document_structure["citations"]:
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
-                # If the citekey is in self.citations but the citation info has not yet been retrieved show filler
-                elif self.citations[tag_text] == "" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
-
+                elif tag_text in self.document_structure["citations"] and self.document_structure["citations"][tag_text]["citation"] == "":
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
-                # If the citekey is in self.citations and the citation info is available show it
-                elif self.citations[tag_text] != "" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
-
-                    QToolTip.showText(display_point, self.citations[tag_text], self, QRect(), 5000)
+                # If the citekey is in self.document_info["citations"] and citation show citation info
+                else:
+                    QToolTip.showText(display_point, self.document_structure["citations"][tag_text]["citation"], self, QRect(), 5000)
                     hide_tooltip = False
 
-            elif show_image_tooltips and tag[2] == "image" and (tag[0] <= cursor_pos < (tag[1] + tag[0])):
+            elif show_image_tooltips and tag[2] == "image" and is_inside_tag(tag, cursor_pos):
                 # Do nothing
                 if not self.SettingsManager.get_setting_value("Editor/Show citation tooltips"):
                     return
@@ -364,7 +364,7 @@ class TextEditor(QPlainTextEdit):
         citekey = citation_info["citekey"]
         citation = citation_info["citation"]
 
-        self.citations[citekey] = citation
+        self.document_structure["citations"][citekey]["citation"] = citation
 
     @pyqtSlot(dict)
     def on_parsing_document_finished(self, data: dict) -> None:
@@ -373,6 +373,15 @@ class TextEditor(QPlainTextEdit):
         # TODO: add time configuration
         self.is_parsing_document = False
         self.DocumentParsingTimer.start(5000)
+
+        for citation in self.document_structure["citations"].items():
+            if citation[0] in data["citations"]:
+                data["citations"][citation[0]]["citation"] = citation[1]["citation"]
+
+        for citation in data["citations"].items():
+            if citation[1]["citation"] == "":
+                self.ThreadManager.get_citation(citation[0], self.on_manubot_thread_finished)
+
         self.document_structure = data
 
         self.FileStrucutreUpdated.emit(data)

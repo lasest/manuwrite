@@ -1,7 +1,8 @@
 import collections
 import copy
 
-from PyQt5.QtCore import QDate, QSize, QPoint, QStandardPaths
+from PyQt5.QtCore import QDate, QSize, QPoint, QStandardPaths, Qt
+from PyQt5.QtGui import QColor
 
 import components.extractors
 
@@ -241,3 +242,76 @@ parser_patterns = {
             "extractor": components.extractors.table_extractor
         }
     }
+
+
+def get_default_color_schema(palette) -> dict:
+    """Returns a default color schema based on a given palette"""
+    default_color_schema = {
+        "Data type": "Manuwrite color schema",
+        "Schema name": "System colors",
+        "Editor_colors": {"background": {"name": "Editor background",
+                                         "color": palette.color(palette.Base).name()},
+                          "text": {"name": "Text",
+                                   "color": palette.color(palette.Text).name()},
+                          "current_line": {"name": "Current line",
+                                           "color": palette.color(palette.AlternateBase).name()},
+                          "linenumber_area": {"name": "Line number area",
+                                              "color": palette.color(palette.AlternateBase).darker(150).name()},
+                          "linenumber_text": {"name": "Line number area text",
+                                              "color": palette.color(palette.Text).name()}},
+        "Markdown_colors": {"heading-1": {"name": "Heading 1",
+                                          "color": QColor(Qt.red).name()},
+                            "heading-2": {"name": "Heading 2",
+                                          "color": QColor(Qt.red).name()},
+                            "heading-3": {"name": "Heading 3",
+                                          "color": QColor(Qt.red).name()},
+                            "heading-4": {"name": "Heading 4",
+                                          "color": QColor(Qt.red).name()},
+                            "heading-5": {"name": "Heading 5",
+                                          "color": QColor(Qt.red).name()},
+                            "heading-6": {"name": "Heading 6",
+                                          "color": QColor(Qt.red).name()},
+                            "line-break": {"name": "Line break",
+                                           "color": "#ff8080"},
+                            "horizontal-rule": {"name": "Horizontal rule",
+                                                "color": "#ff8080"},
+                            "italic": {"name": "Italic",
+                                       "color": QColor(Qt.yellow).name()},
+                            "bold": {"name": "Bold",
+                                     "color": QColor(Qt.yellow).name()},
+                            "bold-and-italic": {"name": "Bold and italic",
+                                                "color": QColor(Qt.yellow).name()},
+                            "blockquote-1": {"name": "Blockquote 1",
+                                             "color": QColor(Qt.cyan).name()},
+                            "blockquote-2": {"name": "Blockquote 2",
+                                             "color": QColor(Qt.cyan).name()},
+                            "blockquote-3": {"name": "Blockquote 3",
+                                             "color": QColor(Qt.cyan).name()},
+                            "blockquote-n": {"name": "Blockquote n",
+                                             "color": QColor(Qt.cyan).name()},
+                            "ordered-list": {"name": "Ordered list",
+                                             "color": QColor(Qt.red).name()},
+                            "unordered-list": {"name": "Unordered list",
+                                               "color": QColor(Qt.red).name()},
+                            "code": {"name": "Code",
+                                     "color": QColor(Qt.green).name()},
+                            "link": {"name": "Link",
+                                     "color": "#3e95ff"},
+                            "image": {"name": "Image",
+                                      "color": "#3e95ff"},
+                            "citation": {"name": "Citation",
+                                         "color": "#3e95ff"},
+                            "strikeout": {"name": "Strikeout",
+                                          "color": "#777777"},
+                            "superscript": {"name": "Strikeout",
+                                            "color": "#4081d1"},
+                            "subscript": {"name": "Strikeout",
+                                          "color": "#4081d1"},
+                            "footnote": {"name": "Footnote",
+                                         "color": "#ff0000"},
+                            "table": {"name": "Table",
+                                      "color": "#0000ff"}
+                            }
+    }
+
+    return default_color_schema

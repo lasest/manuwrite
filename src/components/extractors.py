@@ -78,7 +78,7 @@ def figure_extractor(image_tag: str) -> Tuple[str, dict]:
 def citation_extractor(citation_tag: str) -> Tuple[str, dict]:
     """Extracts information about a citation from citation tag"""
     identifier = citation_tag[2:-1]
-    return identifier, {identifier: {"text": identifier}}
+    return identifier, {identifier: {"text": identifier, "citation": ""}}
 
 
 def footnote_extractor(footnote_tag: str) -> Tuple[str, dict]:

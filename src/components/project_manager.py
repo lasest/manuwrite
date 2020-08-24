@@ -3,7 +3,7 @@ import copy
 from collections import OrderedDict
 
 from PyQt5.QtWidgets import QFileSystemModel
-from PyQt5.QtCore import QModelIndex, QDir, QFile, QDate, pyqtSlot, pyqtSignal, QObject
+from PyQt5.QtCore import QModelIndex, QDir, QFile, pyqtSlot, pyqtSignal, QObject
 
 from common import ProjectError
 import defaults
@@ -21,7 +21,7 @@ class Communicator(QObject):
 
 class ProjectManager():
 
-    def __init__(self, directory_path: str, thread_manager):
+    def __init__(self, directory_path: str, thread_manager: ThreadManager):
 
         # Set attributes
         self.defaults = copy.deepcopy(defaults.project_settings)
@@ -63,7 +63,7 @@ class ProjectManager():
             raise ProjectError("Project file doesn't exits")
 
     # Is it used anywhere?
-    def uptade_project_info(self, info: dict) -> None:
+    def uptade_project_info(self, info: tuple) -> None:
         """Updates self.project_info with data from given dictionary"""
 
         self.project_info[info[0]]["value"] = info[1]

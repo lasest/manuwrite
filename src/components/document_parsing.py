@@ -45,7 +45,6 @@ def parse_document(document: QTextDocument, document_info: dict):
             index = parser.regexp.indexIn(current_line)
 
             while index >= 0:
-                # TODO: check if identifier has already been used
                 identifier, parsed_info = parser.extract()
 
                 # Add additional fields
