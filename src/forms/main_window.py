@@ -186,12 +186,6 @@ class MainWindow(QMainWindow):
                                      f"Error: {str(type(e)) + ' ' + str(e)}")
                 self.ProjectManager = None
 
-        # Read stylesheet of ProjectStrucutreTreeWidget
-        file = open("resources/styles/qtree_widget.qss", "r")
-        stylesheet = file.read()
-        file.close()
-        self.ui.ProjectStructureTreeWidget.setStyleSheet(stylesheet)
-
     def write_settings(self) -> None:
         """Write settings to permanent storage"""
 

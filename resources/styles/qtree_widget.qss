@@ -1,3 +1,5 @@
+/* Not currently used */
+
 QTreeView::branch:has-siblings:!adjoins-item {
     border-image: url(:/ui/ui_elements/vline.png) 0;
 }
