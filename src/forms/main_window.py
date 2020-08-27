@@ -617,7 +617,7 @@ class MainWindow(QMainWindow):
         editor = self.get_editor()
 
         if editor:
-            dialog = AddCrossRefDialog(self.get_current_structure(self.get_editor()))
+            dialog = AddCrossRefDialog(self.get_current_structure(editor), editor.is_cursor_in_sentence())
             dialog.show()
             if dialog.exec_():
                 editor.insert_text_at_cursor(dialog.tag)

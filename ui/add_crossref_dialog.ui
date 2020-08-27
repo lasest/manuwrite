@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>436</width>
+    <height>342</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,46 @@
       </layout>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="CleverRefGroupBox">
+     <property name="title">
+      <string>Clever references</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="DefaultCleverRefRadioButton">
+        <property name="text">
+         <string>Do nothing</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="LCCleverRefRadioButton">
+        <property name="text">
+         <string>Add reference name (lower-case)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="TCCleverRefRadioButton">
+        <property name="text">
+         <string>Add reference name (title-case)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="NoCleverRefRadioButton">
+        <property name="text">
+         <string>Disable</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QTreeWidget" name="StructureTreeWidget">

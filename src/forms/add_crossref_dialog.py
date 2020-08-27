@@ -10,7 +10,7 @@ import defaults
 
 class AddCrossRefDialog(QDialog):
 
-    def __init__(self, project_structure: dict):
+    def __init__(self, project_structure: dict, is_cursor_in_sentence: bool):
 
         super().__init__()
         self.ui = Ui_AddCrossRefDialog()
@@ -28,6 +28,11 @@ class AddCrossRefDialog(QDialog):
         # Prepare ui
         common.load_project_structure(self.project_structure, self.ui.StructureTreeWidget, ["footnotes", "citations"])
         self.ui.StructureTreeWidget.setHeaderLabels(("Identifier", "Text"))
+
+        if is_cursor_in_sentence:
+            self.ui.LCCleverRefRadioButton.setChecked(True)
+        else:
+            self.ui.TCCleverRefRadioButton.setChecked(True)
 
     def get_identifier_list(self) -> list:
         """Returns a list of all identifiers in project structure"""
@@ -72,6 +77,18 @@ class AddCrossRefDialog(QDialog):
             tag += prefix + ":"
 
         tag += identifier
+
+        # Handle clever references
+        clever_ref_symbol = ""
+        if self.ui.LCCleverRefRadioButton.isChecked():
+            clever_ref_symbol = "+"
+        elif self.ui.TCCleverRefRadioButton.isChecked():
+            clever_ref_symbol = "*"
+        elif self.ui.NoCleverRefRadioButton.isChecked():
+            clever_ref_symbol = "!"
+
+        tag = clever_ref_symbol + tag
+
         self.tag = tag
 
         super().accept()

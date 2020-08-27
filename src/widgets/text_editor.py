@@ -346,6 +346,29 @@ class TextEditor(QPlainTextEdit):
             self.ThreadManager.parse_markdown_document(self.document(), self.on_parsing_document_finished)
             self.is_parsing_document = True
 
+    def is_cursor_in_sentence(self) -> bool:
+        """Determines if the cursor is inside a sentence. For example to determine if next word should be
+        title-cased."""
+        line_number = self.textCursor().blockNumber()
+        current_line = self.document().findBlockByNumber(line_number).text()
+        cursor_pos = self.textCursor().positionInBlock()
+
+        if not current_line:
+            return False
+
+        in_sentence = True
+        for index in range(cursor_pos - 1, -1, -1):
+            current_symbol = current_line[index]
+
+            if current_symbol in (" ", "\t"):
+                continue
+            if current_symbol in {".", "!", "?"}:
+                in_sentence = False
+
+            break
+
+        return in_sentence
+
     @pyqtSlot(str)
     def on_pandoc_thread_finished(self, html: str) -> None:
         """Updates document preview when pandoc thread finishes"""
