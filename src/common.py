@@ -25,7 +25,7 @@ def is_valid_identifier(identifier: str, allow_empty: bool = False) -> bool:
     return result
 
 
-def generate_identifier(text: str, prefix: str = "", used_identifiers=None) -> str:
+def generate_identifier(text: str, prefix: str = "", used_identifiers=None, placeholder: str = "identifier") -> str:
     """Generates a valid pandoc identifier from given text and adds a specified prefix to it. Then checks if the
     generated identifier is in used_identifiers. If it is, creates a unique identifier by adding a number at the end"""
 
@@ -58,10 +58,13 @@ def generate_identifier(text: str, prefix: str = "", used_identifiers=None) -> s
         if text[index].isalnum() or text[index] in {'_', '-', '.'}:
             clear_text += text[index]
 
+    if clear_text == "":
+        clear_text = placeholder
+
     identifier = prefix + clear_text
 
     # Check if identifier is not already used
-    if identifier in used_identifiers:
+    if identifier in used_identifiers or clear_text == placeholder:
         i = 1
         while identifier + "-" + str(i) in used_identifiers:
             i += 1

@@ -100,16 +100,18 @@ class AddTableDialog(QDialog):
     def accept(self) -> None:
         # Handle identifier
         identifier = ""
+        prefix = ""
 
         # Add prefix to include table in numbering
         if self.ui.AutonumberCheckbox.checkState():
-            identifier += "tbl:"
+            prefix += "tbl:"
 
         # Generate identifier or use one provided by the user
         if self.ui.AutogenIdentifierCheckbox.checkState():
-            identifier = self.generate_identifier(identifier)
+            identifier = common.generate_identifier(self.ui.CaptionLineEdit.text(), prefix, self.used_identifiers,
+                                                    placeholder="table")
         else:
-            identifier += self.ui.IdentifierLineEdit.text().strip()
+            identifier += prefix + self.ui.IdentifierLineEdit.text().strip()
 
         # Check if identifier is valid and unused
         if not common.is_valid_identifier(identifier, allow_empty=True):
