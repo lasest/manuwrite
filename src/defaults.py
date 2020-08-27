@@ -59,8 +59,9 @@ highlighter_patterns = collections.OrderedDict({
                      r"([^~])(~[^~][^~]*~)()$|" +
                      r"^()(~[^~][^~]*~)()$",
         "footnote": r"\[\^..*\]",
-        "table": r"\{#tbl:..*\}"
-        # "cross-reference": r"\[[^\^].*\]|\[[^\^].*\]\[[^\^].*\]"
+        "table": r"\{#tbl:..*\}",
+        "cross-reference": r"^()([+!*]?@\S\S*)()|" +
+                           r"([^\[])([+!*]?@\S\S*)()"
     })
 
 # Default project settings
