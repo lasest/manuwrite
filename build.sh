@@ -25,6 +25,7 @@ pyuic5 ui/add_footnote_dialog.ui -o src/ui_forms/ui_add_footnote_dialog.py
 pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_heading_dialog.ui -o src/ui_forms/ui_add_heading_dialog.py
+pyuic5 ui/add_crossref_dialog.ui -o src/ui_forms/ui_add_crossref_dialog.py
 
 # Run main script
 python3 src/main.py&

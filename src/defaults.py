@@ -2,7 +2,7 @@ import collections
 import copy
 
 from PyQt5.QtCore import QDate, QSize, QPoint, QStandardPaths, Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon
 
 import components.extractors
 
@@ -45,7 +45,11 @@ highlighter_patterns = collections.OrderedDict({
         "unordered-list": r"^\s*[-+*]\s",
         "code": r"`..*`",
         "link": r"()(^\[..*\]\(..*\))()|" +
-                r"([^!])(\[..*\]\(..*\))()",
+                r"([^!])(\[..*\]\(..*\))()|" +
+                r"()(<https://.*>)()|" +
+                r"()(<http://.*>)()|" +
+                r"()(<ftp://.*>)()|" +
+                r"()(<ftps://.*>)()",
         "image": r"!\[.*\]\(..*\)|!\[.*\]\(..*\)\{.*\}",
         "citation": r"\[@[\S][\S]*:[\S][\S]*\]",
         "strikeout": r"~~[^~][^~]*~~",
@@ -56,6 +60,7 @@ highlighter_patterns = collections.OrderedDict({
                      r"^()(~[^~][^~]*~)()$",
         "footnote": r"\[\^..*\]",
         "table": r"\{#tbl:..*\}"
+        # "cross-reference": r"\[[^\^].*\]|\[[^\^].*\]\[[^\^].*\]"
     })
 
 # Default project settings
@@ -243,6 +248,22 @@ parser_patterns = {
         }
     }
 
+ProjectStructureIcons = {
+    "citations": {"icon": QIcon(":/icons_dark/icons_dark/citation-yellow.svg")},
+    "figures": {"icon": QIcon(":/icons_dark/icons_dark/image-jpeg.svg")},
+    "tables": {"icon": QIcon(":/icons_dark/icons_dark/table-red.svg")},
+    "footnotes": {"icon": QIcon(":/icons_dark/icons_dark/footnote-blue.svg")},
+    "headings": {"icon": QIcon(":/icons_dark/icons_dark/heading-purple.svg")}
+}
+
+identifier_categories = ["headings", "figures", "citations", "footnotes", "tables"]
+
+identifier_prefixes = {
+    "headings": "sec",
+    "figures": "fig",
+    "tables": "tbl"
+}
+
 
 def get_default_color_schema(palette) -> dict:
     """Returns a default color schema based on a given palette"""
@@ -310,7 +331,9 @@ def get_default_color_schema(palette) -> dict:
                             "footnote": {"name": "Footnote",
                                          "color": "#ff0000"},
                             "table": {"name": "Table",
-                                      "color": "#0000ff"}
+                                      "color": "#0000ff"},
+                            "cross-reference": {"name": "Cross reference",
+                                                "color": "#00ff00"}
                             }
     }
 

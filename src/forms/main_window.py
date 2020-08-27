@@ -16,8 +16,9 @@ from forms.project_settings_dialog import ProjectSettingsDialog
 from forms.add_footnote_dialog import AddFootnoteDialog
 from forms.add_table_dialog import AddTableDialog
 from forms.add_heading_dialog import AddHeadingDialog
+from forms.add_crossref_dialog import AddCrossRefDialog
 from resources import icons_rc
-from common import ProjectError
+import common
 from components.project_manager import ProjectManager
 from components.settings_manager import SettingsManager
 from components.thread_manager import ThreadManager
@@ -47,16 +48,9 @@ class MainWindow(QMainWindow):
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager: ProjectManager = None
         self.ThreadManager = ThreadManager()
-        self.OpenedEditors = []
         self.SettingsManager = SettingsManager(self)
+        self.OpenedEditors = []
         self.current_editor_index = 0
-        self.ProjectStructureIcons = {
-            "heading": QIcon(":/icons_dark/icons_dark/heading-purple.svg"),
-            "figure": QIcon(":/icons_dark/icons_dark/image-jpeg.svg"),
-            "citation": QIcon(":/icons_dark/icons_dark/citation-yellow.svg"),
-            "table": QIcon(":/icons_dark/icons_dark/table-red.svg"),
-            "footnote": QIcon(":/icons_dark/icons_dark/footnote-blue.svg")
-        }
 
         # Connect signals and slots
         self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
@@ -92,6 +86,7 @@ class MainWindow(QMainWindow):
         self.ui.SubscriptToolButton.setDefaultAction(self.ui.actionSubscript)
         self.ui.FootnoteToolButton.setDefaultAction(self.ui.actionFootnote)
         self.ui.TableToolButton.setDefaultAction(self.ui.actionAddTable)
+        self.ui.CrossRefToolButton.setDefaultAction(self.ui.actionCrossRef)
 
     def set_icons(self) -> None:
         # load common icons
@@ -126,6 +121,7 @@ class MainWindow(QMainWindow):
         self.ui.actionSubscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-subscript.svg"))
         self.ui.actionFootnote.setIcon(QIcon(":/icons_dark/icons_dark/insert-footnote.svg"))
         self.ui.actionAddTable.setIcon(QIcon(":/icons_dark/icons_dark/table.svg"))
+        self.ui.actionCrossRef.setIcon(QIcon(":/icons_dark/icons_dark/text-frame-link.svg"))
 
     def set_active_tab(self, label: QLabel) -> None:
         """Makes specified label in MainTabsFrame appear selected and deselects all other labels. Switches tab in
@@ -156,7 +152,7 @@ class MainWindow(QMainWindow):
         # Create project manager for current project
         try:
             self.ProjectManager = ProjectManager(path, self.ThreadManager)
-        except ProjectError as e:
+        except common.ProjectError as e:
             self.ProjectManager = None
             QMessageBox.critical(self, "Error", "Failed to load project: " + e.message.lower())
             return
@@ -207,10 +203,9 @@ class MainWindow(QMainWindow):
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
 
-    def get_used_identifiers(self, identifier_type: str, editor: TextEditor) -> dict:
-        """Returns a dictionary of used identifier of a certain type for editor at tab with a given index. Document
-        or project structure is used to determine which identifiers are already used."""
-
+    def get_current_structure(self, editor: TextEditor) -> dict:
+        """Returns a dictionary describing the structure of the currently open document, or the structure of the current
+        project if current file is to be rendered"""
         use_project_structure = False
         if self.ProjectManager:
             if self.ProjectManager.is_file_to_be_rendered(editor.document().baseUrl().toLocalFile()):
@@ -218,11 +213,19 @@ class MainWindow(QMainWindow):
 
         identifiers = dict()
         if use_project_structure:
-            identifiers = self.ProjectManager.get_setting_value("Project structure combined")[identifier_type]
+            identifiers = self.ProjectManager.get_setting_value("Project structure combined")
         else:
-            identifiers = editor.document_structure[identifier_type]
+            identifiers = editor.document_structure
 
         return identifiers
+
+    def get_used_identifiers(self, identifier_type: str, editor: TextEditor) -> dict:
+        """Returns a dictionary of used identifier of a certain type for editor at tab with a given index. Document
+        or project structure is used to determine which identifiers are already used."""
+
+        identifiers = self.get_current_structure(editor)
+
+        return identifiers[identifier_type]
 
     def insert_heading(self, heading_level: int) -> None:
         """Calls AddHeadingDialog and inserts a heading if the user accepted the dialog"""
@@ -237,77 +240,7 @@ class MainWindow(QMainWindow):
     # TODO: maintain the state of the tree before update (i.e. which entry is selected and which entries are expanded
     def update_structure_tree_widget(self, project_structure: dict) -> None:
         """Loads given structure into structure tree widget"""
-
-        top_level_items = []
-
-        def get_entry_info(entry) -> list:
-            """Returns a list of value, each for the corresponding column of the tree"""
-            info = [
-                entry[1]["text"],
-                str(entry[1]["block_number"]),
-                entry[1]["project_filepath"]
-            ]
-
-            if "level" in entry[1]:
-                info.append(str(entry[1]["level"]))
-            else:
-                info.append("")
-
-            return info
-
-        def create_item_from_entry(entry, icon_type):
-            """Creates a QWidgetItem from a given entry if project_structure sub dictionaries. Sets its parent based on
-            header index. If header index is -1, adds it to top level items list"""
-            header_index = entry[1]["current_header_index"]
-            if header_index >= 0:
-                parent = headings[header_index]
-                item = QTreeWidgetItem(parent, get_entry_info(entry))
-            else:
-                item = QTreeWidgetItem(get_entry_info(entry))
-                top_level_items.append(item)
-
-            item.setIcon(0, self.ProjectStructureIcons[icon_type])
-
-        self.ui.ProjectStructureTreeWidget.clear()
-
-        # Form a list of all the headings in the structure
-        headings = []
-        for heading in project_structure["headings"].items():
-            level = int(heading[1]["level"])
-
-            # Find header's parent heading or create it w/o a parent, if it is a top level heading
-            parent = None
-            for item in reversed(headings):
-                if int(item.text(3)) < level:
-                    parent = item
-                    break
-            if parent:
-                item = QTreeWidgetItem(parent, get_entry_info(heading))
-            else:
-                item = QTreeWidgetItem(get_entry_info(heading))
-
-            item.setIcon(0, self.ProjectStructureIcons["heading"])
-            headings.append(item)
-
-        # Add all other elements of the tree
-        for figure in project_structure["figures"].items():
-            create_item_from_entry(figure, "figure")
-
-        for citation in project_structure["citations"].items():
-            create_item_from_entry(citation, "citation")
-
-        for table in project_structure["tables"].items():
-            create_item_from_entry(table, "table")
-
-        for footnote in project_structure["footnotes"].items():
-            create_item_from_entry(footnote, "footnote")
-
-        # Add top level items and headings. All child items seem to be added automatically after this step
-        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, top_level_items)
-        self.ui.ProjectStructureTreeWidget.insertTopLevelItems(0, headings)
-
-        self.ui.ProjectStructureTreeWidget.expandAll()
-        self.ui.ProjectStructureTreeWidget.resizeColumnToContents(0)
+        common.load_project_structure(project_structure, self.ui.ProjectStructureTreeWidget)
 
     # Event handling
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -679,6 +612,16 @@ class MainWindow(QMainWindow):
             editor.insert_text_at_cursor(f"[^{identifier}]")
             editor.insert_text_at_empty_paragraph(f"[^{identifier}]: {text}")
 
+    @pyqtSlot()
+    def on_actionCrossRef_triggered(self) -> None:
+        editor = self.get_editor()
+
+        if editor:
+            dialog = AddCrossRefDialog(self.get_current_structure(self.get_editor()))
+            dialog.show()
+            if dialog.exec_():
+                editor.insert_text_at_cursor(dialog.tag)
+
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)
     def on_actionProjectTab_triggered(self, checked: bool) -> None:
@@ -714,7 +657,7 @@ class MainWindow(QMainWindow):
             self.ProjectManager.uptade_project_info(("Project type", dialog.project_type))
             try:
                 self.ProjectManager.save_project_data()
-            except ProjectError as e:
+            except common.ProjectError as e:
                 QMessageBox.critical(self, "Error", f"Failed to create project: {e.message}")
 
     @pyqtSlot(QPoint)
@@ -781,7 +724,7 @@ class MainWindow(QMainWindow):
         if name:
             try:
                 self.ProjectManager.create_file(path + "/" + name[0])
-            except ProjectError as e:
+            except common.ProjectError as e:
                 QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot()
@@ -796,7 +739,7 @@ class MainWindow(QMainWindow):
             clicked_item = self.ui.ProjectTreeView.rootIndex()
         try:
             self.ProjectManager.delete_file(clicked_item)
-        except ProjectError as e:
+        except common.ProjectError as e:
             QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot()
@@ -815,7 +758,7 @@ class MainWindow(QMainWindow):
         if name:
             try:
                 self.ProjectManager.rename(clicked_item, name[0])
-            except ProjectError as e:
+            except common.ProjectError as e:
                 QMessageBox.critical(self, "Error", f"An error occured: {e.message}")
 
     @pyqtSlot(str)

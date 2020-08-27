@@ -41,6 +41,7 @@
         <file>icons_dark/footnote-blue.svg</file>
         <file>icons_dark/table-red.svg</file>
         <file>icons_dark/table.svg</file>
+        <file>icons_dark/text-frame-link.svg</file>
     </qresource>
 
     <qresource prefix="/icons_common">

@@ -155,6 +155,10 @@ class Ui_MainWindow(object):
         self.LinkToolButton.setIconSize(QtCore.QSize(22, 22))
         self.LinkToolButton.setObjectName("LinkToolButton")
         self.horizontalLayout_5.addWidget(self.LinkToolButton)
+        self.CrossRefToolButton = QtWidgets.QToolButton(self.frame)
+        self.CrossRefToolButton.setIconSize(QtCore.QSize(22, 22))
+        self.CrossRefToolButton.setObjectName("CrossRefToolButton")
+        self.horizontalLayout_5.addWidget(self.CrossRefToolButton)
         self.ImageToolButton = QtWidgets.QToolButton(self.frame)
         self.ImageToolButton.setIconSize(QtCore.QSize(22, 22))
         self.ImageToolButton.setObjectName("ImageToolButton")
@@ -357,6 +361,8 @@ class Ui_MainWindow(object):
         self.actionFootnote.setObjectName("actionFootnote")
         self.actionAddTable = QtWidgets.QAction(MainWindow)
         self.actionAddTable.setObjectName("actionAddTable")
+        self.actionCrossRef = QtWidgets.QAction(MainWindow)
+        self.actionCrossRef.setObjectName("actionCrossRef")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionNewProject)
         self.menuFile.addAction(self.actionOpen)
@@ -400,6 +406,7 @@ class Ui_MainWindow(object):
         self.OrdListToolButton.setText(_translate("MainWindow", "..."))
         self.UnordListToolButton.setText(_translate("MainWindow", "..."))
         self.LinkToolButton.setText(_translate("MainWindow", "..."))
+        self.CrossRefToolButton.setText(_translate("MainWindow", "..."))
         self.ImageToolButton.setText(_translate("MainWindow", "..."))
         self.CodeToolButton.setText(_translate("MainWindow", "..."))
         self.AddCitationToolButton.setText(_translate("MainWindow", "..."))
@@ -471,6 +478,7 @@ class Ui_MainWindow(object):
         self.actionSubscript.setText(_translate("MainWindow", "Subscript"))
         self.actionFootnote.setText(_translate("MainWindow", "Footnote"))
         self.actionAddTable.setText(_translate("MainWindow", "Add table"))
+        self.actionCrossRef.setText(_translate("MainWindow", "Cross reference"))
 from PyQt5 import QtWebEngineWidgets
 from widgets.qlabel_clickable import QLabelClickable
 from widgets.qtabwidget_custom import QTabWidgetCustom
