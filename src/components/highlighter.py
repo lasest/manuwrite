@@ -36,7 +36,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
     def set_formats(self) -> None:
         """Sets formats which will be applied to the text by highlighter"""
 
-        color_schema = self.SettingsManager.get_current_color_schema()
+        color_schema = self.SettingsManager.color_schema
 
         for key in self.formats.keys():
             self.formats[key].setForeground(QColor(color_schema["Markdown_colors"][key]["color"]))

@@ -47,7 +47,7 @@ class TextEditor(QPlainTextEdit):
         self.char_format = QTextCharFormat(self.currentCharFormat())
         self.document_structure: dict = copy.deepcopy(defaults.document_info_template)
 
-        self.ColorSchema = self.SettingsManager.get_current_color_schema()
+        self.ColorSchema = self.SettingsManager.color_schema
 
         # Connect signals to slots
         self.document().blockCountChanged.connect(self.updateLineNumberAreaWidth)

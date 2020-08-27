@@ -11,10 +11,7 @@ class SettingsManager(QObject):
     def __init__(self, parent):
         super().__init__(parent)
 
-        # Default settings. Type "None" means that Settings manager shouldn't try to perform type converstion
         self.parent = parent
-        self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
-        self.defaults = defaults.application_settings
 
         # Maps datatype names read from config to functions
         self.datatypes = {
@@ -25,6 +22,13 @@ class SettingsManager(QObject):
             "list": list,
             "map/int": "mapping"
         }
+
+        # Default settings. Type "None" means that Settings manager shouldn't try to perform type converstion
+        self.defaults = defaults.application_settings
+
+        # Load settigns
+        self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
+        self.color_schema = self.get_current_color_schema()
 
         # Set settings to defaults if some keys are missing
         for key, value in self.defaults.items():
