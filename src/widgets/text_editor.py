@@ -63,6 +63,9 @@ class TextEditor(QPlainTextEdit):
         self.DocumentParsingTimer.setSingleShot(True)
         self.read_settings()
 
+        # Trigger it to highlight current line, when the editor is first opened
+        self.on_TextEditor_CursorMoved()
+
     def lineNumberAreaWidth(self) -> int:
         """Returns the width of the line number area depending on the number of digits that need to be displayed"""
 

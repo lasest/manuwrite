@@ -1,4 +1,4 @@
-import json
+import toml
 import copy
 from collections import OrderedDict
 
@@ -36,12 +36,12 @@ class ProjectManager():
 
     def read_project_info(self) -> None:
         """Reads project configuration data from default storage location"""
-        if QFile.exists(self.root_path + "/.manuwrite/project.json"):
+        if QFile.exists(self.root_path + "/.manuwrite/project.toml"):
             try:
                 file = QFile()
-                file.setFileName(self.root_path + "/.manuwrite/project.json")
+                file.setFileName(self.root_path + "/.manuwrite/project.toml")
                 file.open(QFile.ReadOnly)
-                data = OrderedDict(json.loads(file.readAll().data().decode()))
+                data = OrderedDict(toml.loads(file.readAll().data().decode()))
             except OSError:
                 raise ProjectError("An error occured while reading project file")
             finally:
@@ -72,9 +72,9 @@ class ProjectManager():
         """Saves project configuration data to permanent storage"""
         try:
             file = QFile()
-            file.setFileName(self.root_path + "/.manuwrite/project.json")
+            file.setFileName(self.root_path + "/.manuwrite/project.toml")
             file.open(QFile.WriteOnly)
-            file.write(json.dumps(self.project_info, indent=4).encode())
+            file.write(toml.dumps(self.project_info).encode())
         except OSError:
             raise ProjectError("Failed to write project configuration data")
         finally:
@@ -94,13 +94,13 @@ class ProjectManager():
 
             directory.mkpath(".manuwrite/render")
             file = QFile()
-            file.setFileName(directory_path + "/.manuwrite/project.json")
+            file.setFileName(directory_path + "/.manuwrite/project.toml")
             file.open(QFile.ReadWrite)
 
-            project_settings = ProjectManager.defaults
+            project_settings = copy.deepcopy(defaults.project_settings)
             project_settings["Absolute path"] = {"type": "str", "value": directory_path}
 
-            file.write(json.dumps(project_settings, indent=4).encode())
+            file.write(toml.dumps(project_settings).encode())
             file.close()
         except OSError:
             raise ProjectError("Error creating project files")
@@ -214,5 +214,3 @@ class ProjectManager():
         self.set_setting_value("Project structure combined", combined_project_structure)
 
         self.Communicator.ProjectStructureUpdated.emit()
-
-

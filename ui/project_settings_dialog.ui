@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>639</width>
-    <height>639</height>
+    <width>832</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,11 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="MainTabWidget">
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="MetaInfoTab">
       <attribute name="title">
@@ -376,6 +379,679 @@
           </layout>
          </item>
         </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="GeneralTab">
+      <attribute name="title">
+       <string>Pandoc</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QCheckBox" name="NumberSectionsCheckbox">
+         <property name="text">
+          <string>Number sections</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="StandaloneCheckbox">
+         <property name="text">
+          <string>Generate standalone file</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="IncludeMetadataCheckbox">
+         <property name="text">
+          <string>Include metadata</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="CrossRefGroupBox">
+         <property name="title">
+          <string>Cross references</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QCheckBox" name="PandocXnosCheckbox">
+            <property name="text">
+             <string>Use pandoc-xnos</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <widget class="QCheckBox" name="PandocSecnosCheckbox">
+               <property name="text">
+                <string>Use pandoc-secnos</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="PandocSecnosLabel">
+               <property name="text">
+                <string>Numbers section references (sections are numbered by pandoc itself).</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="PandocFignosCheckbox">
+               <property name="text">
+                <string>Use pandoc-fignos</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="PandocFignosLabel">
+               <property name="text">
+                <string>Numbers figures and figure references.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="PandocTablenosCheckbox">
+               <property name="text">
+                <string>Use pandoc-tablenos</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="PandocTablenosLabel">
+               <property name="text">
+                <string>Numbers tables and table references.</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="PandocEqnosCheckbox">
+               <property name="text">
+                <string>Use pandoc-eqnos</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="PandocEqnosLabel">
+               <property name="text">
+                <string>Numbers equations and equation references.</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="CitationsGroupBox">
+         <property name="title">
+          <string>Citations</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QCheckBox" name="PandocCiteProcCheckbox">
+            <property name="text">
+             <string>Use pandoc-citeproc</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="PandocCiteprocLabel">
+            <property name="text">
+             <string>Generates a bibliography based on in-text citations using a bibliography file and a csl style.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="ManualBibLayout">
+            <item>
+             <widget class="QLabel" name="ManualBibLabel">
+              <property name="text">
+               <string>Manual bibliography file</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="ManualBibLineEdit"/>
+            </item>
+            <item>
+             <widget class="QToolButton" name="ManualBibToolButton">
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="ManubotCiteCheckbox">
+            <property name="text">
+             <string>Use manubot-cite</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="ManubotCiteLabel">
+            <property name="text">
+             <string>Automatically resolves in-text citations to generate a bibliography file for pandoc-citeproc.</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="PandocXnosTab">
+      <attribute name="title">
+       <string>Pandoc-xnos</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QScrollArea" name="scrollArea">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QAbstractScrollArea::AdjustToContents</enum>
+         </property>
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>779</width>
+            <height>602</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_10">
+           <item>
+            <widget class="QGroupBox" name="PandocSecnosGroupBox">
+             <property name="title">
+              <string>Pandoc-secnos</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QCheckBox" name="SecnosCleverCheckbox">
+                <property name="text">
+                 <string>Clever references by default</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <layout class="QHBoxLayout" name="SecnosPlusLayout">
+                <item>
+                 <widget class="QLabel" name="SecnosPlusNameLabel">
+                  <property name="text">
+                   <string>&quot;+&quot; reference name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="SecnosPlusNameLineEdit">
+                  <property name="placeholderText">
+                   <string>section...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="1" column="1">
+               <layout class="QHBoxLayout" name="SecnosStarLayout">
+                <item>
+                 <widget class="QLabel" name="SecnosStarNameLabel">
+                  <property name="text">
+                   <string>&quot;*&quot; reference name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="SecnosStarLineEdit">
+                  <property name="placeholderText">
+                   <string>Section...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="PandocFignosGroupBox">
+             <property name="title">
+              <string>Pandoc-fignos</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_11">
+                <item>
+                 <widget class="QCheckBox" name="FignosCleverCheckbox">
+                  <property name="text">
+                   <string>Clever references by default</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_5">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_14">
+                    <item>
+                     <widget class="QLabel" name="FignosPlusNameLabel">
+                      <property name="text">
+                       <string>&quot;+&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="FignosCaptionNameLabel">
+                      <property name="text">
+                       <string>Caption name</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_13">
+                    <item>
+                     <widget class="QLineEdit" name="FignosPlusNameLineEdit">
+                      <property name="placeholderText">
+                       <string>fig...</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="FignosCaptionNameLIneEdit">
+                      <property name="placeholderText">
+                       <string>Figure</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <item>
+                 <widget class="QCheckBox" name="FignosNumberBySecCheckbox">
+                  <property name="text">
+                   <string>Number by section</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_16">
+                    <item>
+                     <widget class="QLabel" name="FignosStarNameLabel">
+                      <property name="text">
+                       <string>&quot;*&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="FignosCaptionSepLabel">
+                      <property name="text">
+                       <string>Caption separator</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_15">
+                    <item>
+                     <widget class="QLineEdit" name="FignosStarNameLineEdit">
+                      <property name="placeholderText">
+                       <string>Fig...</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="FignosCaptionSepCombobox">
+                      <item>
+                       <property name="text">
+                        <string>None</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Colon</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Period</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Space</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Quad</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Newline</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="PandocTablenosGroupBox">
+             <property name="title">
+              <string>Pandoc-tablenos</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_17">
+                <item>
+                 <widget class="QCheckBox" name="TablenosCleverCheckbox">
+                  <property name="text">
+                   <string>Clever references by default</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_7">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_19">
+                    <item>
+                     <widget class="QLabel" name="TablenosPlusNameLabel">
+                      <property name="text">
+                       <string>&quot;+&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="TablenosCaptionNameLabel">
+                      <property name="text">
+                       <string>Caption name</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_21">
+                    <item>
+                     <widget class="QLineEdit" name="TablenosPlusNameLineEdit">
+                      <property name="placeholderText">
+                       <string>table...</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="TablenosCaptionNameLineEdit">
+                      <property name="placeholderText">
+                       <string>Table...</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_18">
+                <item>
+                 <widget class="QCheckBox" name="TablenosNumberBySecCheckbox">
+                  <property name="text">
+                   <string>Number by section</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_8">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_22">
+                    <item>
+                     <widget class="QLabel" name="TablenosStarNameLabel">
+                      <property name="text">
+                       <string>&quot;*&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="TablenosCaptionSepLabel">
+                      <property name="text">
+                       <string>Caption separator</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_20">
+                    <item>
+                     <widget class="QLineEdit" name="TablenosStarNameLineEdit">
+                      <property name="placeholderText">
+                       <string>Table...</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="TablenosCaptionSepCombobox">
+                      <item>
+                       <property name="text">
+                        <string>None</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Colon</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Period</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Space</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Quad</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>Newline</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="PandocEqnosGroupBox">
+             <property name="title">
+              <string>Pandoc-eqnos</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_23">
+                <item>
+                 <widget class="QCheckBox" name="EqnosCleverCheckbox">
+                  <property name="text">
+                   <string>Clever references by default</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_10">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_26">
+                    <item>
+                     <widget class="QLabel" name="EqnosPlusNameLabel">
+                      <property name="text">
+                       <string>&quot;+&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_25">
+                    <item>
+                     <widget class="QLineEdit" name="EqnosPlusNameLineEdit"/>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="EqnosEqrefCheckbox">
+                  <property name="text">
+                   <string>Use AMS-style equation references
+(i.e., equation numbers set in brackets)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_24">
+                <item>
+                 <widget class="QCheckBox" name="EqnosNumberBySecCheckbox">
+                  <property name="text">
+                   <string>Number by section</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_11">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_28">
+                    <item>
+                     <widget class="QLabel" name="EqnosStarNameLabel">
+                      <property name="text">
+                       <string>&quot;*&quot; reference name</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_27">
+                    <item>
+                     <widget class="QLineEdit" name="EqnosStarNameLineEdit"/>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>20</width>
+                    <height>40</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
        </item>
       </layout>
      </widget>
