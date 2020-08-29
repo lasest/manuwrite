@@ -388,6 +388,33 @@
         </widget>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="NumberOffsetLayout">
+         <item>
+          <widget class="QLabel" name="NumberOffsetLabel">
+           <property name="text">
+            <string>Offset section headings numbers by:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="NumberOffsetSpinBox"/>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QCheckBox" name="StandaloneCheckbox">
          <property name="text">
           <string>Generate standalone file</string>
@@ -411,7 +438,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QFrame" name="frame">
+           <widget class="QFrame" name="PandocXnosFrame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -508,41 +535,53 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="ManualBibLayout">
-            <item>
-             <widget class="QLabel" name="ManualBibLabel">
-              <property name="text">
-               <string>Manual bibliography file</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="ManualBibLineEdit"/>
-            </item>
-            <item>
-             <widget class="QToolButton" name="ManualBibToolButton">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="ManubotCiteCheckbox">
-            <property name="text">
-             <string>Use manubot-cite</string>
+           <widget class="QFrame" name="PandocCiteProcFrame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="ManubotCiteLabel">
-            <property name="text">
-             <string>Automatically resolves in-text citations to generate a bibliography file for pandoc-citeproc.</string>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_29">
+             <item>
+              <layout class="QHBoxLayout" name="ManualBibLayout">
+               <item>
+                <widget class="QLabel" name="ManualBibLabel">
+                 <property name="text">
+                  <string>Manual bibliography file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="ManualBibLineEdit"/>
+               </item>
+               <item>
+                <widget class="QToolButton" name="ManualBibToolButton">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="ManubotCiteCheckbox">
+               <property name="text">
+                <string>Use manubot-cite</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="ManubotCiteLabel">
+               <property name="text">
+                <string>Automatically resolves in-text citations to generate a bibliography file for pandoc-citeproc.</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
@@ -594,10 +633,17 @@
             <x>0</x>
             <y>0</y>
             <width>779</width>
-            <height>602</height>
+            <height>631</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
+           <item>
+            <widget class="QCheckBox" name="XnosCapitaliseCheckbox">
+             <property name="text">
+              <string>Capitalise the name of &quot;+&quot; reference</string>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="QGroupBox" name="PandocSecnosGroupBox">
              <property name="title">
@@ -967,7 +1013,11 @@
                   <item>
                    <layout class="QVBoxLayout" name="verticalLayout_25">
                     <item>
-                     <widget class="QLineEdit" name="EqnosPlusNameLineEdit"/>
+                     <widget class="QLineEdit" name="EqnosPlusNameLineEdit">
+                      <property name="placeholderText">
+                       <string>eq...</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </item>
@@ -977,7 +1027,7 @@
                  <widget class="QCheckBox" name="EqnosEqrefCheckbox">
                   <property name="text">
                    <string>Use AMS-style equation references
-(i.e., equation numbers set in brackets)</string>
+(equation numbers set in brackets)</string>
                   </property>
                  </widget>
                 </item>
@@ -1021,7 +1071,11 @@
                   <item>
                    <layout class="QVBoxLayout" name="verticalLayout_27">
                     <item>
-                     <widget class="QLineEdit" name="EqnosStarNameLineEdit"/>
+                     <widget class="QLineEdit" name="EqnosStarNameLineEdit">
+                      <property name="placeholderText">
+                       <string>Eq...</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </item>

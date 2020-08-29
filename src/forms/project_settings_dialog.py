@@ -27,16 +27,19 @@ class ProjectSettingsDialog(QDialog):
         self.pandoc_args = self.ProjectManager.get_setting_value("Pandoc_args")
         self.pandoc_kwargs = self.ProjectManager.get_setting_value("Pandoc_kwargs")
 
-        # Prepare ui elements
-        self.set_toolbuttons_actions()
-        self.load_icons()
-
         # Read settings
         self.read_window_settings()
         self.read_meta_information_settings()
         self.read_render_settings()
         self.read_pandoc_settings()
         self.read_xnos_settings()
+
+        # Prepare ui elements
+        self.set_toolbuttons_actions()
+        self.load_icons()
+
+        self.on_NumberSectionsCheckbox_stateChanged(self.ui.NumberSectionsCheckbox.checkState())
+        self.on_PandocXnosCheckbox_stateChanged(self.ui.PandocXnosCheckbox.checkState())
 
     def load_icons(self) -> None:
         self.ui.actionMoveToTheTop.setIcon(QIcon(":/icons_dark/icons_dark/go-up-skip.svg"))
@@ -65,12 +68,19 @@ class ProjectSettingsDialog(QDialog):
         self.ui.PandocCiteProcCheckbox.setChecked(self.pandoc_filters["pandoc-citeproc"])
         self.ui.ManubotCiteCheckbox.setChecked(self.pandoc_filters["pandoc-manubot-cite"])
 
+        number_offset = self.pandoc_kwargs["number-offset"]
+        if number_offset:
+            self.ui.NumberOffsetSpinBox.setValue(int(number_offset))
+        else:
+            self.ui.NumberOffsetSpinBox.setValue(0)
+
         self.ui.NumberSectionsCheckbox.setChecked(self.pandoc_args["number-sections"])
         self.ui.StandaloneCheckbox.setChecked(self.pandoc_args["standalone"])
 
         self.ui.ManualBibLineEdit.setText(self.yaml_metablock["bibliography"])
 
     def read_xnos_settings(self) -> None:
+        self.ui.XnosCapitaliseCheckbox.setChecked(self.yaml_metablock["xnos-capitalise"])
         self.ui.SecnosCleverCheckbox.setChecked(self.yaml_metablock["secnos-cleveref"])
         self.ui.SecnosPlusNameLineEdit.setText(self.yaml_metablock["secnos-plus-name"])
         self.ui.SecnosStarNameLineEdit.setText(self.yaml_metablock["secnos-star-name"])
@@ -234,12 +244,21 @@ class ProjectSettingsDialog(QDialog):
         self.pandoc_filters["pandoc-citeproc"] = self.ui.PandocCiteProcCheckbox.isChecked()
         self.pandoc_filters["pandoc-manubot-cite"] = self.ui.ManubotCiteCheckbox.isChecked()
 
+        number_offset = self.ui.NumberOffsetSpinBox.value()
+        if number_offset:
+            self.pandoc_kwargs["number-offset"] = number_offset
+            self.yaml_metablock["xnos-number-offset"] = number_offset
+        else:
+            self.pandoc_kwargs["number-offset"] = ""
+            self.yaml_metablock["xnos-number-offset"] = ""
+
         self.pandoc_args["number-sections"] = self.ui.NumberSectionsCheckbox.isChecked()
         self.pandoc_args["standalone"] = self.ui.StandaloneCheckbox.isChecked()
 
         self.yaml_metablock["bibliography"] = self.ui.ManualBibLineEdit.text()
 
     def update_xnos_settings(self) -> None:
+        self.yaml_metablock["xnos-capitalise"] = self.ui.XnosCapitaliseCheckbox.isChecked()
         self.yaml_metablock["secnos-cleveref"] = self.ui.SecnosCleverCheckbox.isChecked()
         self.yaml_metablock["secnos-plus-name"] = self.ui.SecnosPlusNameLineEdit.text()
         self.yaml_metablock["secnos-star-name"] = self.ui.SecnosStarNameLineEdit.text()
@@ -466,3 +485,28 @@ class ProjectSettingsDialog(QDialog):
         """Generate the pandoc command based on the current gui inputs and put it to pandoc command line edit"""
         command = self.get_pandoc_command()
         self.ui.PandocCommandLineEdit.setText(command)
+
+    # Ui consistency slots - enable/disable some elements of the form depending on the state of other elements
+    @pyqtSlot(int)
+    def on_NumberSectionsCheckbox_stateChanged(self, state: int):
+        self.ui.NumberOffsetSpinBox.setEnabled(state)
+        if not state:
+            self.ui.NumberOffsetSpinBox.setValue(0)
+
+    @pyqtSlot(int)
+    def on_PandocXnosCheckbox_stateChanged(self, state: int):
+        self.ui.PandocXnosFrame.setEnabled(not state)
+
+        if state:
+            self.ui.PandocSecnosCheckbox.setChecked(False)
+            self.ui.PandocFignosCheckbox.setChecked(False)
+            self.ui.PandocTablenosCheckbox.setChecked(False)
+            self.ui.PandocEqnosCheckbox.setChecked(False)
+
+    @pyqtSlot(int)
+    def on_PandocCiteProcCheckbox_stateChanged(self, state: int):
+        self.ui.PandocCiteProcFrame.setEnabled(state)
+
+        if not state:
+            self.ui.ManualBibLineEdit.setText("")
+            self.ui.ManubotCiteCheckbox.setChecked(False)

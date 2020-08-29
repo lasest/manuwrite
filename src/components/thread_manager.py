@@ -109,7 +109,11 @@ class PandocThread(QThread):
 
     def run(self) -> None:
         pandoc = subprocess.run(["pandoc", "--to", "html", "--filter", "pandoc-manubot-cite", "--filter", "pandoc-citeproc", "--filter", "pandoc-fignos", "--filter", "pandoc-tablenos", "--filter", "pandoc-secnos", "--css", "style.css", "--standalone"], input=self.markdown.encode(), capture_output=True)
-        pandoc.check_returncode()
+        try:
+            pandoc.check_returncode()
+        except subprocess.CalledProcessError as e:
+            print(str(e))
+
         self.result = pandoc.stdout.decode()
 
 

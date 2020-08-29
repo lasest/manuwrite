@@ -103,10 +103,13 @@ project_settings = collections.OrderedDict({
             # Meta information
             "title": "",
             "author": "",
+            # TODO: add keywords to meta information in gui
             "keywords": "",
             "abstract": "",
 
             # Pandoc-xnos section
+            "xnos-number-offset": "",
+            "xnos-capitalise": False,
             # Pandoc-secnos section
             "secnos-cleveref": True,
             "secnos-plus-name": "",
@@ -140,7 +143,8 @@ project_settings = collections.OrderedDict({
         "Pandoc_kwargs": {"type": "dict", "value": {
             "to": "html",
             "css": "",
-            "output": ""
+            "output": "",
+            "number-offset": ""
         }},
 
         # Pandoc non-keyword arguments (i.e. --arg). Added to the comman if the value is True

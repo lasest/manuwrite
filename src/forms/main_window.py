@@ -818,7 +818,9 @@ class MainWindow(QMainWindow):
         structure to project manager if it isn't"""
 
         if self.ui.ProjectStrucutreCombobox.currentIndex() == 0:
-            self.update_structure_tree_widget(self.get_editor().document_structure)
+            editor = self.get_editor()
+            if editor:
+                self.update_structure_tree_widget(editor.document_structure)
         else:
             if self.ProjectManager:
                 self.ProjectManager.update_project_structure(file_structure)
