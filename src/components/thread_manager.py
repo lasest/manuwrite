@@ -2,11 +2,11 @@ import subprocess
 import copy
 from typing import List
 
-from PyQt5.QtCore import QThread, QObject
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
 from PyQt5.QtGui import QTextDocument
 
 import defaults
-from document_parsing import parse_document
+from components.document_parsing import parse_document
 
 
 class MarkdownProjectParserThread(QThread):
@@ -113,21 +113,27 @@ class PandocThread(QThread):
         self.result = pandoc.stdout.decode()
 
 
-class ThreadWrapper():
+class ThreadWrapper(QObject):
     """Stores the thread together with the function, which should be called when the thread is finished
     (handler_function). Handler function is passed self.thread.result as an argument, hence all thread classes must
     have a result field"""
 
+    thread_finished = pyqtSignal(QObject)
+
     def __init__(self, thread, handler_function, thread_type=None):
+        super().__init__()
         self.thread = thread
         self.handler_function = handler_function
         self.thread_type = thread_type
+
+        self.thread.finished.connect(self.handle)
 
     def start_thread(self):
         self.thread.start()
 
     def handle(self):
         self.handler_function(self.thread.result)
+        self.thread_finished.emit(self)
 
 
 class ThreadManager(QObject):
@@ -175,30 +181,27 @@ class ThreadManager(QObject):
 
     # Thread-starting methods
     def get_citation(self, citekey: str, handler_function) -> None:
-        """Starts manubot thread to get citation info for a given citekey. When thread is finished
-        manubotCiteThreadFinished signal is emitted and should be caught by the caller"""
+        """Starts manubot thread to get citation info for a given citekey."""
 
         thread_wrapper = ThreadWrapper(ManubotCiteThread(self, citekey), handler_function)
-        thread_wrapper.thread.finished.connect(self.on_thread_finished)
+        thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
 
     def markdown_to_html(self, markdown: str, handler_function) -> None:
-        """Starts pandoc thread to convert given string from markdown to html. When the thread is finished
-        pandocThreadFinished signal is emitted and should be caught by the caller"""
+        """Starts pandoc thread to convert given string from markdown to html."""
 
         thread_wrapper = ThreadWrapper(PandocThread(self, markdown), handler_function)
-        thread_wrapper.thread.finished.connect(self.on_thread_finished)
+        thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
 
     def parse_markdown_document(self, document: QTextDocument, handler_function) -> None:
-        """Starts a MarkdownDocumentParserThread to parse a given markdown document for document structure. Does not
-        obey the thread limit, but checks to make sure that only one such thread is running at a time"""
+        """Starts a MarkdownDocumentParserThread to parse a given markdown document for document structure."""
 
         thread_wrapper = ThreadWrapper(MarkdownDocumentParserThread(self, document), handler_function,
                                        thread_type="document_parser")
-        thread_wrapper.thread.finished.connect(self.on_thread_finished)
+        thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper, disobey_thread_limit=True)
 
@@ -206,19 +209,6 @@ class ThreadManager(QObject):
         """Starts MarkdownProjectParser thread to parse a given list of files"""
 
         thread_wrapper = ThreadWrapper(MarkdownProjectParserThread(self, filenames), handler_function)
-        thread_wrapper.thread.finished.connect(self.on_thread_finished)
+        thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
-
-    # Thread.finished handlers
-    def on_thread_finished(self) -> None:
-        sender = QObject.sender(self)
-
-        thread_wrapper = None
-        for wrapper in self.running_threads:
-            if wrapper.thread == sender:
-                thread_wrapper = wrapper
-                break
-
-        self.run_next_thread(thread_wrapper)
-        thread_wrapper.handle()

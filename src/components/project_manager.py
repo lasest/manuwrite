@@ -150,7 +150,7 @@ class ProjectManager():
 
     def get_setting_value(self, setting: str):
         """Return the value of a given setting"""
-        return self.project_info[setting]["value"]
+        return copy.deepcopy(self.project_info[setting]["value"])
 
     def set_setting_value(self, setting: str, value) -> None:
         """Sets the value of a given setting"""

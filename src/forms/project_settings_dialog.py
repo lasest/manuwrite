@@ -19,12 +19,21 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager = project_manager
         self.SettingsManager = settings_manager
 
+        self.pandoc_filters = self.ProjectManager.get_setting_value("Pandoc_filters")
+        self.yaml_metablock = self.ProjectManager.get_setting_value("YAML_metablock")
+        self.pandoc_args = self.ProjectManager.get_setting_value("Pandoc_args")
+        self.pandoc_kargs = self.ProjectManager.get_setting_value("Pandoc_kargs")
+
         # Prepare ui elements
         self.set_toolbuttons_actions()
         self.load_icons()
+
+        # Read settings
         self.read_window_settings()
         self.read_meta_information_settings()
         self.read_render_settings()
+        self.read_pandoc_settings()
+        self.read_xnos_settings()
 
     def load_icons(self) -> None:
         self.ui.actionMoveToTheTop.setIcon(QIcon(":/icons_dark/icons_dark/go-up-skip.svg"))
@@ -42,6 +51,51 @@ class ProjectSettingsDialog(QDialog):
         self.ui.MoveRightToolButton.setDefaultAction(self.ui.actionMoveRight)
         self.ui.MoveDownToolButton.setDefaultAction(self.ui.actionMoveDown)
         self.ui.MoveAllDownToolButton.setDefaultAction(self.ui.actionMoveToTheBottom)
+
+    def read_pandoc_settings(self) -> None:
+        self.ui.PandocXnosCheckbox.setChecked(self.pandoc_filters["pandoc-xnos"])
+        self.ui.PandocSecnosCheckbox.setChecked(self.pandoc_filters["pandoc-secnos"])
+        self.ui.PandocFignosCheckbox.setChecked(self.pandoc_filters["pandoc-fignos"])
+        self.ui.PandocTablenosCheckbox.setChecked(self.pandoc_filters["pandoc-tablenos"])
+        self.ui.PandocEqnosCheckbox.setChecked(self.pandoc_filters["pandoc-eqnos"])
+        self.ui.PandocCiteProcCheckbox.setChecked(self.pandoc_filters["pandoc-citeproc"])
+        self.ui.ManubotCiteCheckbox.setChecked(self.pandoc_filters["pandoc-manubot-cite"])
+
+        self.ui.NumberSectionsCheckbox.setChecked(self.pandoc_args["number-sections"])
+        self.ui.StandaloneCheckbox.setChecked(self.pandoc_args["standalone"])
+
+        self.ui.ManualBibLineEdit.setText(self.yaml_metablock["bibliography"])
+
+    def read_xnos_settings(self) -> None:
+        self.ui.SecnosCleverCheckbox.setChecked(self.yaml_metablock["secnos-cleveref"])
+        self.ui.SecnosPlusNameLineEdit.setText(self.yaml_metablock["secnos-plus-name"])
+        self.ui.SecnosStarNameLineEdit.setText(self.yaml_metablock["secnos-star-name"])
+
+        self.ui.FignosCleverCheckbox.setChecked(self.yaml_metablock["fignos-cleveref"])
+        self.ui.FignosNumberBySecCheckbox.setChecked(self.yaml_metablock["fignos-number-by-section"])
+        self.ui.FignosPlusNameLineEdit.setText(self.yaml_metablock["fignos-plus-name"])
+        self.ui.FignosStarNameLineEdit.setText(self.yaml_metablock["fignos-star-name"])
+        self.ui.FignosCaptionNameLineEdit.setText(self.yaml_metablock["fignos-caption-name"])
+        index = self.ui.FignosCaptionSepCombobox.findText(self.yaml_metablock["fignos-caption-separator"])
+        if index == -1:
+            index = 0
+        self.ui.FignosCaptionSepCombobox.setCurrentIndex(index)
+
+        self.ui.TablenosCleverCheckbox.setChecked(self.yaml_metablock["tablenos-cleveref"])
+        self.ui.TablenosNumberBySecCheckbox.setChecked(self.yaml_metablock["tablenos-number-by-section"])
+        self.ui.TablenosPlusNameLineEdit.setText(self.yaml_metablock["tablenos-plus-name"])
+        self.ui.TablenosStarNameLineEdit.setText(self.yaml_metablock["tablenos-star-name"])
+        self.ui.TablenosCaptionNameLineEdit.setText(self.yaml_metablock["tablenos-caption-name"])
+        index = self.ui.TablenosCaptionSepCombobox.findText(self.yaml_metablock["tablenos-caption-separator"])
+        if index == -1:
+            index = 0
+        self.ui.TablenosCaptionSepCombobox.setCurrentIndex(index)
+
+        self.ui.EqnosCleverCheckbox.setChecked(self.yaml_metablock["eqnos-cleveref"])
+        self.ui.EqnosNumberBySecCheckbox.setChecked(self.yaml_metablock["eqnos-number-by-section"])
+        self.ui.EqnosPlusNameLineEdit.setText(self.yaml_metablock["eqnos-plus-name"])
+        self.ui.EqnosStarNameLineEdit.setText(self.yaml_metablock["eqnos-star-name"])
+        self.ui.EqnosEqrefCheckbox.setChecked(self.yaml_metablock["eqnos-eqref"])
 
     def read_window_settings(self) -> None:
         """Read window settings (i.e. position, size, etc)"""
@@ -63,6 +117,7 @@ class ProjectSettingsDialog(QDialog):
         self.ui.DescriptionPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Description"))
         self.ui.AdditionalMetaInfoPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Additional meta " +
                                                                                                    "information"))
+        self.ui.MetaInfoCheckbox.setChecked(self.ProjectManager.get_setting_value("Include_metainfo"))
 
     def read_render_settings(self) -> None:
         """Read render settings and update gui elements on Render tab"""
@@ -131,6 +186,7 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Authors", self.ui.AuthorsLineEdit.text())
         self.ProjectManager.set_setting_value("Description", self.ui.DescriptionPlainTextEdit.toPlainText())
         self.ProjectManager.set_setting_value("Additional meta information", self.ui.AdditionalMetaInfoPlainTextEdit.toPlainText())
+        self.ProjectManager.set_setting_value("Include_metainfo", self.ui.MetaInfoCheckbox.isChecked())
 
     def update_render_settings(self) -> None:
         """Update render information settings in Project manager with info from gui"""
@@ -146,6 +202,53 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Pandoc command (manual)", self.ui.PandocCommandManualLineEdit.text())
         self.ProjectManager.set_setting_value("Additional meta information",
                                               self.ui.AdditionalMetaInfoPlainTextEdit.toPlainText())
+
+    def update_pandoc_settings(self) -> None:
+        self.pandoc_filters["pandoc-xnos"] = self.ui.PandocXnosCheckbox.isChecked()
+        self.pandoc_filters["pandoc-secnos"] = self.ui.PandocSecnosCheckbox.isChecked()
+        self.pandoc_filters["pandoc-fignos"] = self.ui.PandocFignosCheckbox.isChecked()
+        self.pandoc_filters["pandoc-tablenos"] = self.ui.PandocTablenosCheckbox.isChecked()
+        self.pandoc_filters["pandoc-eqnos"] = self.ui.PandocEqnosCheckbox.isChecked()
+        self.pandoc_filters["pandoc-citeproc"] = self.ui.PandocCiteProcCheckbox.isChecked()
+        self.pandoc_filters["pandoc-manubot-cite"] = self.ui.ManubotCiteCheckbox.isChecked()
+
+        self.pandoc_args["number-sections"] = self.ui.NumberSectionsCheckbox.isChecked()
+        self.pandoc_args["standalone"] = self.ui.StandaloneCheckbox.isChecked()
+
+        self.yaml_metablock["bibliography"] = self.ui.ManualBibLineEdit.text()
+
+    def update_xnos_settings(self) -> None:
+        self.yaml_metablock["secnos-cleveref"] = self.ui.SecnosCleverCheckbox.isChecked()
+        self.yaml_metablock["secnos-plus-name"] = self.ui.SecnosPlusNameLineEdit.text()
+        self.yaml_metablock["secnos-star-name"] = self.ui.SecnosStarNameLineEdit.text()
+
+        self.yaml_metablock["fignos-cleveref"] = self.ui.FignosCleverCheckbox.isChecked()
+        self.yaml_metablock["fignos-number-by-section"] = self.ui.FignosNumberBySecCheckbox.isChecked()
+        self.yaml_metablock["fignos-plus-name"] = self.ui.FignosPlusNameLineEdit.text()
+        self.yaml_metablock["fignos-star-name"] = self.ui.FignosStarNameLineEdit.text()
+        self.yaml_metablock["fignos-caption-name"] = self.ui.FignosCaptionNameLineEdit.text()
+
+        if self.ui.FignosCaptionSepCombobox.currentIndex() != 0:
+            self.yaml_metablock["fignos-caption-separator"] = self.ui.FignosCaptionSepCombobox.currentText()
+        else:
+            self.yaml_metablock["fignos-caption-separator"] = ""
+
+        self.yaml_metablock["tablenos-cleveref"] = self.ui.TablenosCleverCheckbox.isChecked()
+        self.yaml_metablock["tablenos-number-by-section"] = self.ui.TablenosNumberBySecCheckbox.isChecked()
+        self.yaml_metablock["tablenos-plus-name"] = self.ui.TablenosPlusNameLineEdit.text()
+        self.yaml_metablock["tablenos-star-name"] = self.ui.TablenosStarNameLineEdit.text()
+        self.yaml_metablock["tablenos-caption-name"] = self.ui.TablenosCaptionNameLineEdit.text()
+
+        if self.ui.TablenosCaptionSepCombobox.currentIndex() != 0:
+            self.yaml_metablock["tablenos-caption-separator"] = self.ui.TablenosCaptionSepCombobox.currentText()
+        else:
+            self.yaml_metablock["tablenos-caption-separator"] = ""
+
+        self.yaml_metablock["eqnos-cleveref"] = self.ui.EqnosCleverCheckbox.isChecked()
+        self.yaml_metablock["eqnos-number-by-section"] = self.ui.EqnosNumberBySecCheckbox.isChecked()
+        self.yaml_metablock["eqnos-plus-name"] = self.ui.EqnosPlusNameLineEdit.text()
+        self.yaml_metablock["eqnos-star-name"] = self.ui.EqnosStarNameLineEdit.text()
+        self.yaml_metablock["eqnos-eqref"] = self.ui.EqnosEqrefCheckbox.isChecked()
 
     def get_current_list_widget(self) -> QListWidget:
         """Get QListWidget from Render tab which currently has a selected item in it"""
@@ -186,6 +289,14 @@ class ProjectSettingsDialog(QDialog):
         self.update_window_settings()
         self.update_meta_information_settings()
         self.update_render_settings()
+        self.update_pandoc_settings()
+        self.update_xnos_settings()
+
+        self.ProjectManager.set_setting_value("YAML_metablock", self.yaml_metablock)
+        self.ProjectManager.set_setting_value("Pandoc_filters", self.pandoc_filters)
+        self.ProjectManager.set_setting_value("Pandoc_kargs", self.pandoc_kargs)
+        self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
+
         self.ProjectManager.save_project_data()
 
         super().accept()

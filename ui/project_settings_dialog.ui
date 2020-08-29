@@ -28,14 +28,14 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <widget class="QCheckBox" name="MetaInfoCheckbox">
+         <property name="text">
+          <string>Include this information in the output file</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QVBoxLayout" name="MetaInformationLayout">
-         <item>
-          <widget class="QLabel" name="MetaInfoLabel">
-           <property name="text">
-            <string>Meta information</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <layout class="QHBoxLayout" name="TitleLayout">
            <item>
@@ -161,13 +161,6 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QVBoxLayout" name="MetaInfoVerticalLayout">
-         <item>
-          <widget class="QLabel" name="RenderInfoLabel">
-           <property name="text">
-            <string>Render settings</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <layout class="QHBoxLayout" name="ChooseFilesHorizontalLayout">
            <item>
@@ -398,13 +391,6 @@
         <widget class="QCheckBox" name="StandaloneCheckbox">
          <property name="text">
           <string>Generate standalone file</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="IncludeMetadataCheckbox">
-         <property name="text">
-          <string>Include metadata</string>
          </property>
         </widget>
        </item>
@@ -653,7 +639,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="SecnosStarLineEdit">
+                 <widget class="QLineEdit" name="SecnosStarNameLineEdit">
                   <property name="placeholderText">
                    <string>Section...</string>
                   </property>
@@ -709,7 +695,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLineEdit" name="FignosCaptionNameLIneEdit">
+                     <widget class="QLineEdit" name="FignosCaptionNameLineEdit">
                       <property name="placeholderText">
                        <string>Figure</string>
                       </property>
@@ -761,6 +747,11 @@
                     </item>
                     <item>
                      <widget class="QComboBox" name="FignosCaptionSepCombobox">
+                      <item>
+                       <property name="text">
+                        <string>Default</string>
+                       </property>
+                      </item>
                       <item>
                        <property name="text">
                         <string>None</string>
@@ -899,6 +890,11 @@
                     </item>
                     <item>
                      <widget class="QComboBox" name="TablenosCaptionSepCombobox">
+                      <item>
+                       <property name="text">
+                        <string>Default</string>
+                       </property>
+                      </item>
                       <item>
                        <property name="text">
                         <string>None</string>
@@ -1063,7 +1059,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>
