@@ -20,6 +20,7 @@ class SettingsManager(QObject):
             "bool": bool,
             "None": None,
             "list": list,
+            "dict": dict,
             "map/int": "mapping"
         }
 

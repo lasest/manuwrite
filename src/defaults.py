@@ -83,10 +83,11 @@ project_settings = collections.OrderedDict({
 
         # Render section
         "Files to render": {"type": "mapping/str", "value": []},
-        "Style": {"type": "str", "value": "Manubot classic"},
-        "Render to": {"type": "str", "value": "Html"},
+        "Style": {"type": "str", "value": "manuwrite_strict"},
+        "Render to": {"type": "str", "value": "html"},
         "Pandoc command (auto)": {"type": "str", "value": ""},
         "Pandoc command (manual)": {"type": "str", "value": ""},
+        "Full_pandoc_command": {"type": "str", "value": ""},
 
         # Pandoc section
         # Pandoc filters. Added to the command as --filter=key if the value is True
@@ -134,7 +135,9 @@ project_settings = collections.OrderedDict({
 
         # Pandoc keyword arguments (i.e. --key=value). Added to the command if the value is not an empty string.
         "Pandoc_kargs": {"type": "dict", "value": {
-            "to": "html"
+            "to": "html",
+            "css": "",
+            "output": ""
         }},
 
         # Pandoc non-keyword arguments (i.e. --arg). Added to the comman if the value is True
@@ -250,15 +253,28 @@ application_settings = {
             "Render/Autorender delay/value": 1000,
             "Render/Autorender delay/type": "int",
 
-            "Render/Formats/value": [{"name": "Html", "pandoc name": "html", "file extension": "html"},
-                                     {"name": "Pdf", "pandoc name": "pdf", "file extension": "pdf"},
-                                     {"name": "Doc", "pandoc name": "doc", "file extension": "doc"}],
-            "Render/Formats/type": "list",
+            "Render/Formats/value": {
+                "html": {"name": "Html", "pandoc_option": "html", "file_extension": "html"},
+                "pdf": {"name": "Pdf", "pandoc_option": "pdf", "file_extension": "pdf"},
+                "doc": {"name": "Doc", "pandoc_option": "doc", "file_extension": "doc"}
+            },
+            "Render/Formats/type": "dict",
 
-            "Render/Styles/value": [{"name": "Manuwrite strict", "folder": "manuwrite_classic"},
-                                    {"name": "Manuwrite modern", "folder": "manuwrite_modern"},
-                                    {"name": "Manubot classic", "folder": "manubot_classic"}],
-            "Render/Styles/type": "list",
+            "Render/Styles/value": {
+                "manuwrite_strict": {
+                    "name": "Manuwrite strict",
+                    "path": "path1"
+                },
+                "manuwrite_modern": {
+                    "name": "Manuwrite modern",
+                    "path": "path2"
+                },
+                "manubot_classic": {
+                    "name": "Manubot classic",
+                    "path": "path3"
+                }
+            },
+            "Render/Styles/type": "dict",
 
             # Projects
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],

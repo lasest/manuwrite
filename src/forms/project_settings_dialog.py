@@ -52,6 +52,7 @@ class ProjectSettingsDialog(QDialog):
         self.ui.MoveDownToolButton.setDefaultAction(self.ui.actionMoveDown)
         self.ui.MoveAllDownToolButton.setDefaultAction(self.ui.actionMoveToTheBottom)
 
+    # Reading settings
     def read_pandoc_settings(self) -> None:
         self.ui.PandocXnosCheckbox.setChecked(self.pandoc_filters["pandoc-xnos"])
         self.ui.PandocSecnosCheckbox.setChecked(self.pandoc_filters["pandoc-secnos"])
@@ -150,24 +151,27 @@ class ProjectSettingsDialog(QDialog):
 
         # Populate StylesCombobox
         styles = self.SettingsManager.get_setting_value("Render/Styles")
-        for style in styles:
-            self.ui.StyleCombobox.addItem(style["name"])
+        for identifier, style_info in styles.items():
+            self.ui.StyleCombobox.addItem(style_info["name"], userData=identifier)
 
-        index = self.ui.StyleCombobox.findText(self.ProjectManager.get_setting_value("Style"))
+        current_style_identifier = self.ProjectManager.get_setting_value("Style")
+        index = self.ui.StyleCombobox.findData(current_style_identifier)
         self.ui.StyleCombobox.setCurrentIndex(index)
 
         # Populate formats combobox
         formats = self.SettingsManager.get_setting_value("Render/Formats")
-        for format in formats:
-            self.ui.RenderToCombobox.addItem(format["name"])
+        for identifier, format_info in formats.items():
+            self.ui.RenderToCombobox.addItem(format_info["name"], userData=identifier)
 
-        index = self.ui.RenderToCombobox.findText(self.ProjectManager.get_setting_value("Render to"))
+        current_output_format_identifier = self.ProjectManager.get_setting_value("Render to")
+        index = self.ui.RenderToCombobox.findData(current_output_format_identifier)
         self.ui.RenderToCombobox.setCurrentIndex(index)
 
         # Populate PandocCommandLineEdit
         self.ui.PandocCommandLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (auto)"))
         self.ui.PandocCommandManualLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (manual)"))
 
+    # Writing settings
     def update_window_settings(self) -> None:
         self.SettingsManager.set_setting_value("ProjectSettingsDialog/size", self.size())
         self.SettingsManager.set_setting_value("ProjectSettingsDialog/pos", self.pos())
@@ -190,18 +194,35 @@ class ProjectSettingsDialog(QDialog):
 
     def update_render_settings(self) -> None:
         """Update render information settings in Project manager with info from gui"""
+        # Update files to render
         files_to_render = []
         for i in range(self.ui.FilesToRenderListWidget.count()):
             if not self.ui.FilesToRenderListWidget.item(i).text().endswith("(File not found!)"):
                 files_to_render.append(self.ui.FilesToRenderListWidget.item(i).text())
         self.ProjectManager.set_setting_value("Files to render", files_to_render)
 
-        self.ProjectManager.set_setting_value("Style", self.ui.StyleCombobox.currentText())
-        self.ProjectManager.set_setting_value("Render to", self.ui.RenderToCombobox.currentText())
-        self.ProjectManager.set_setting_value("Pandoc command (auto)", self.ui.PandocCommandLineEdit.text())
+        # Update style info
+        style_identifier = self.ui.StyleCombobox.currentData()
+        self.ProjectManager.set_setting_value("Style", style_identifier)
+        styles = self.SettingsManager.get_setting_value("Render/Styles")
+        style_filepath = styles[style_identifier]["path"]
+        self.pandoc_kargs["css"] = style_filepath
+
+        # Update output format and filename
+        format_identifier = self.ui.RenderToCombobox.currentData()
+        self.ProjectManager.set_setting_value("Render to", format_identifier)
+        formats = self.SettingsManager.get_setting_value("Render/Formats")
+        current_format = formats[format_identifier]
+
+        self.pandoc_kargs["to"] = current_format["pandoc_option"]
+        self.pandoc_kargs["output"] = f"output.{current_format['file_extension']}"
+
+        # Update pandoc command
+        self.ProjectManager.set_setting_value("Pandoc command (auto)", self.get_pandoc_command())
         self.ProjectManager.set_setting_value("Pandoc command (manual)", self.ui.PandocCommandManualLineEdit.text())
-        self.ProjectManager.set_setting_value("Additional meta information",
-                                              self.ui.AdditionalMetaInfoPlainTextEdit.toPlainText())
+
+        full_pandoc_command = self.ProjectManager.get_setting_value("Pandoc command (auto)") + " " + self.ProjectManager.get_setting_value("Pandoc command (manual)")
+        self.ProjectManager.set_setting_value("Full_pandoc_command", full_pandoc_command)
 
     def update_pandoc_settings(self) -> None:
         self.pandoc_filters["pandoc-xnos"] = self.ui.PandocXnosCheckbox.isChecked()
@@ -250,6 +271,7 @@ class ProjectSettingsDialog(QDialog):
         self.yaml_metablock["eqnos-star-name"] = self.ui.EqnosStarNameLineEdit.text()
         self.yaml_metablock["eqnos-eqref"] = self.ui.EqnosEqrefCheckbox.isChecked()
 
+    # End of writing settings
     def get_current_list_widget(self) -> QListWidget:
         """Get QListWidget from Render tab which currently has a selected item in it"""
         if self.ui.FilesToRenderListWidget.selectedItems():
@@ -262,24 +284,42 @@ class ProjectSettingsDialog(QDialog):
         return ListWidget
 
     def get_pandoc_command(self) -> str:
-        """Form a pandoc command based on the info from gui"""
-        # TODO: add filters
-        command = "pandoc --standalone "
-        for i in range(self.ui.FilesToRenderListWidget.count()):
-            item = self.ui.FilesToRenderListWidget.item(i)
-            if not item.text().endswith("(File not found!)"):
-                command += item.text() + " "
+        """Forms a pandoc command based on the info from gui"""
 
-        formats = self.SettingsManager.get_setting_value("Render/Formats")
-        current_format = None
-        for format in formats:
-            if format["name"] == self.ui.RenderToCombobox.currentText():
-                current_format = format
+        command = ""
 
-        # TODO: update css file in project directory with the corresponding template
-        command += "--css .manuwrite/style/style.css "
-        command += f"--to {current_format['pandoc name']} "
-        command += f"output.{current_format['file extension']}"
+        def add_arg(arg: str, option=True) -> None:
+            nonlocal command
+            prefix = ""
+            if option:
+                prefix += "--"
+
+            command += f"{prefix}{arg} "
+
+        add_arg("pandoc", option=False)
+
+        # Add pandoc args
+        for key, value in self.pandoc_args.items():
+            if value:
+                add_arg(key)
+
+        # Add pandoc filters
+        for key, value in self.pandoc_filters.items():
+            if value:
+                add_arg(f"filter={key}")
+
+        # Add pandoc kargs
+        for key, value in self.pandoc_kargs.items():
+            if not (type(value) == str and value == ""):
+                add_arg(f"{key}={value}")
+
+        # Add files to be rendered
+        files_to_render = list(self.ProjectManager.get_setting_value("Files to render"))
+        for file in files_to_render:
+            add_arg(file, option=False)
+
+        # Remove trailing space
+        command = command[:-1]
 
         return command
 
