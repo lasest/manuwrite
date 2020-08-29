@@ -646,9 +646,11 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             ProjectManager.create_project(dialog.path)
             self.load_project(dialog.path)
-            self.ProjectManager.uptade_project_info(("Title", dialog.title))
-            self.ProjectManager.uptade_project_info(("Authors", dialog.authors))
-            self.ProjectManager.uptade_project_info(("Project type", dialog.project_type))
+            yaml_metablock = self.ProjectManager.get_setting_value("YAML_metablock")
+            yaml_metablock["title"] = dialog.title
+            yaml_metablock["author"] = dialog.authors
+            self.ProjectManager.set_setting_value("YAML_metablock", yaml_metablock)
+            self.ProjectManager.set_setting_value("Project type", dialog.project_type)
             try:
                 self.ProjectManager.save_project_data()
             except common.ProjectError as e:

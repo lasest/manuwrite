@@ -62,12 +62,6 @@ class ProjectManager():
         else:
             raise ProjectError("Project file doesn't exits")
 
-    # Is it used anywhere?
-    def uptade_project_info(self, info: tuple) -> None:
-        """Updates self.project_info with data from given dictionary"""
-
-        self.project_info[info[0]]["value"] = info[1]
-
     def save_project_data(self) -> None:
         """Saves project configuration data to permanent storage"""
         try:

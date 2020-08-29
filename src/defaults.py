@@ -72,12 +72,9 @@ project_settings = collections.OrderedDict({
         "Project structure raw": {"type": "dict", "value": dict()},
 
         # Meta information section
-        "Title": {"type": "str", "value": ""},
         "Date created": {"type": "mapping/int", "value": [QDate.currentDate().year(), QDate.currentDate().month(),
                                                           QDate.currentDate().day()]},
-        "Authors": {"type": "str", "value": ""},
         "Project type": {"type": "enum", "value": "Notes", "allowed values": ["Notes", "Article", "Book"]},
-        "Description": {"type": "str", "value": ""},
         "Additional meta information": {"type": "str", "value": ""},
         "Include_metainfo": {"type": "bool", "value": True},
 
@@ -103,6 +100,12 @@ project_settings = collections.OrderedDict({
 
         # YAML Metablock key-value pairs. Added to yaml metablock file if the value is not an empty string
         "YAML_metablock": {"type": "dict", "value": {
+            # Meta information
+            "title": "",
+            "author": "",
+            "keywords": "",
+            "abstract": "",
+
             # Pandoc-xnos section
             # Pandoc-secnos section
             "secnos-cleveref": True,
@@ -134,7 +137,7 @@ project_settings = collections.OrderedDict({
         }},
 
         # Pandoc keyword arguments (i.e. --key=value). Added to the command if the value is not an empty string.
-        "Pandoc_kargs": {"type": "dict", "value": {
+        "Pandoc_kwargs": {"type": "dict", "value": {
             "to": "html",
             "css": "",
             "output": ""

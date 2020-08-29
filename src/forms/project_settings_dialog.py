@@ -1,5 +1,8 @@
-from PyQt5.QtWidgets import QDialog, QListWidgetItem, QListWidget
-from PyQt5.QtCore import QDate, QDirIterator, QDir, Qt, pyqtSlot
+import copy
+import yaml
+
+from PyQt5.QtWidgets import QDialog, QListWidgetItem, QListWidget, QMessageBox
+from PyQt5.QtCore import QDate, QDirIterator, QDir, Qt, pyqtSlot, QFile, QIODevice
 from PyQt5.QtGui import QIcon, QCloseEvent
 
 from ui_forms.ui_project_settings_dialog import Ui_ProjectSettingsDialog
@@ -22,7 +25,7 @@ class ProjectSettingsDialog(QDialog):
         self.pandoc_filters = self.ProjectManager.get_setting_value("Pandoc_filters")
         self.yaml_metablock = self.ProjectManager.get_setting_value("YAML_metablock")
         self.pandoc_args = self.ProjectManager.get_setting_value("Pandoc_args")
-        self.pandoc_kargs = self.ProjectManager.get_setting_value("Pandoc_kargs")
+        self.pandoc_kwargs = self.ProjectManager.get_setting_value("Pandoc_kwargs")
 
         # Prepare ui elements
         self.set_toolbuttons_actions()
@@ -107,15 +110,15 @@ class ProjectSettingsDialog(QDialog):
 
     def read_meta_information_settings(self) -> None:
         """Read meta information settings and update gui elements on Meta information tab"""
-        self.ui.TitleLineEdit.setText(self.ProjectManager.get_setting_value("Title"))
+        self.ui.TitleLineEdit.setText(self.yaml_metablock["title"])
 
         date = list(map(int, self.ProjectManager.get_setting_value("Date created")))
         date = QDate(date[0], date[1], date[2])
         self.ui.dateEdit.setDate(date)
 
-        self.ui.AuthorsLineEdit.setText(self.ProjectManager.get_setting_value("Authors"))
+        self.ui.AuthorsLineEdit.setText(self.yaml_metablock["author"])
         self.ui.ProjectTypeValueLabel.setText(self.ProjectManager.get_setting_value("Project type"))
-        self.ui.DescriptionPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Description"))
+        self.ui.DescriptionPlainTextEdit.setPlainText(self.yaml_metablock["abstract"])
         self.ui.AdditionalMetaInfoPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Additional meta " +
                                                                                                    "information"))
         self.ui.MetaInfoCheckbox.setChecked(self.ProjectManager.get_setting_value("Include_metainfo"))
@@ -180,15 +183,13 @@ class ProjectSettingsDialog(QDialog):
 
     def update_meta_information_settings(self) -> None:
         """Update meta information settings in Project manager with info from gui"""
-        self.ui.PandocCommandLineEdit.setText(self.get_pandoc_command())
 
-        self.ProjectManager.set_setting_value("Title", self.ui.TitleLineEdit.text())
+        self.yaml_metablock["title"] = self.ui.TitleLineEdit.text()
 
         date = self.ui.dateEdit.date()
         self.ProjectManager.set_setting_value("Date created", [date.year(), date.month(), date.day()])
-
-        self.ProjectManager.set_setting_value("Authors", self.ui.AuthorsLineEdit.text())
-        self.ProjectManager.set_setting_value("Description", self.ui.DescriptionPlainTextEdit.toPlainText())
+        self.yaml_metablock["author"] = self.ui.AuthorsLineEdit.text()
+        self.yaml_metablock["abstract"] = self.ui.DescriptionPlainTextEdit.toPlainText()
         self.ProjectManager.set_setting_value("Additional meta information", self.ui.AdditionalMetaInfoPlainTextEdit.toPlainText())
         self.ProjectManager.set_setting_value("Include_metainfo", self.ui.MetaInfoCheckbox.isChecked())
 
@@ -206,7 +207,7 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Style", style_identifier)
         styles = self.SettingsManager.get_setting_value("Render/Styles")
         style_filepath = styles[style_identifier]["path"]
-        self.pandoc_kargs["css"] = style_filepath
+        self.pandoc_kwargs["css"] = style_filepath
 
         # Update output format and filename
         format_identifier = self.ui.RenderToCombobox.currentData()
@@ -214,8 +215,8 @@ class ProjectSettingsDialog(QDialog):
         formats = self.SettingsManager.get_setting_value("Render/Formats")
         current_format = formats[format_identifier]
 
-        self.pandoc_kargs["to"] = current_format["pandoc_option"]
-        self.pandoc_kargs["output"] = f"output.{current_format['file_extension']}"
+        self.pandoc_kwargs["to"] = current_format["pandoc_option"]
+        self.pandoc_kwargs["output"] = f"output.{current_format['file_extension']}"
 
         # Update pandoc command
         self.ProjectManager.set_setting_value("Pandoc command (auto)", self.get_pandoc_command())
@@ -308,8 +309,8 @@ class ProjectSettingsDialog(QDialog):
             if value:
                 add_arg(f"filter={key}")
 
-        # Add pandoc kargs
-        for key, value in self.pandoc_kargs.items():
+        # Add pandoc kwargs
+        for key, value in self.pandoc_kwargs.items():
             if not (type(value) == str and value == ""):
                 add_arg(f"{key}={value}")
 
@@ -323,20 +324,56 @@ class ProjectSettingsDialog(QDialog):
 
         return command
 
+    def generate_yaml_metablock(self) -> str:
+        """Generates a yaml string from self.yaml_metablock dictionary"""
+
+        # Remove entries w/o values (i.e. empty strings)
+        yaml_metablock = copy.deepcopy(self.yaml_metablock)
+        keys_to_remove = []
+        for key in yaml_metablock:
+            if type(yaml_metablock[key]) == str and yaml_metablock[key] == "":
+                keys_to_remove.append(key)
+
+        for key in keys_to_remove:
+            yaml_metablock.pop(key)
+
+        # Generate the yaml output
+        yaml_text = yaml.dump(yaml_metablock)
+
+        return yaml_text
+
     def accept(self) -> None:
         """Update project settings in Project manager and save them if the dialog is accepted"""
-
+        # Update settings
         self.update_window_settings()
         self.update_meta_information_settings()
         self.update_render_settings()
         self.update_pandoc_settings()
         self.update_xnos_settings()
 
+        # Set certain settings
         self.ProjectManager.set_setting_value("YAML_metablock", self.yaml_metablock)
         self.ProjectManager.set_setting_value("Pandoc_filters", self.pandoc_filters)
-        self.ProjectManager.set_setting_value("Pandoc_kargs", self.pandoc_kargs)
+        self.ProjectManager.set_setting_value("Pandoc_kwargs", self.pandoc_kwargs)
         self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
 
+        # Save YAML metablock to file
+        yaml_text = self.generate_yaml_metablock()
+
+        filepath = self.ProjectManager.get_setting_value("Absolute path") + "/yaml_metablock.yaml"
+        try:
+            file_handle = QFile(filepath)
+            if file_handle.open(QIODevice.WriteOnly | QIODevice.Text):
+                file_handle.write(yaml_text.encode())
+                file_handle.close()
+        except Exception as e:
+            QMessageBox.critical(self, "Error saving settings",
+                                 f"Some error occured when trying to save the settings. ({str(e)})")
+            return
+        finally:
+            file_handle.close()
+
+        # Write settings to file
         self.ProjectManager.save_project_data()
 
         super().accept()
