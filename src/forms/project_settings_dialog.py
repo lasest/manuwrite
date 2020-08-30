@@ -225,17 +225,23 @@ class ProjectSettingsDialog(QDialog):
         style_identifier = self.ui.CssStyleCombobox.currentData()
         self.ProjectManager.set_setting_value("Css_style", style_identifier)
 
+        # Copy css style to project folder
         styles = self.SettingsManager.get_setting_value("Render/Css_styles")
-        style_filepath = styles[style_identifier]["path"]
-        self.pandoc_kwargs["css"] = style_filepath
+        old_path = styles[style_identifier]["path"]
+        new_path = self.ProjectManager.get_setting_value("Absolute path") + "/style.css"
+        QFile.copy(old_path, new_path)
+        self.pandoc_kwargs["css"] = "style.css"
 
         # Update csl style info
         style_identifier = self.ui.CslStyleCombobox.currentData()
         self.ProjectManager.set_setting_value("Csl_style", style_identifier)
 
+        # Copy csl style to project folder
         styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
-        style_filepath = styles[style_identifier]["path"]
-        self.pandoc_kwargs["csl"] = style_filepath
+        old_path = styles[style_identifier]["path"]
+        new_path = self.ProjectManager.get_setting_value("Absolute path") + "/csl_style.csl"
+        QFile.copy(old_path, new_path)
+        self.pandoc_kwargs["csl"] = "csl_style.csl"
 
         # Update output format and filename
         format_identifier = self.ui.OutputFormatCombobox.currentData()
@@ -395,7 +401,8 @@ class ProjectSettingsDialog(QDialog):
                 file_handle.write(line.encode())
                 file_handle.close()
 
-                self.pandoc_kwargs["metadata-file"] = filepath
+                # Add argument to pandoc command
+                self.pandoc_kwargs["metadata-file"] = "yaml_metablock.yaml"
 
         except Exception as e:
             QMessageBox.critical(self, "Error saving settings",

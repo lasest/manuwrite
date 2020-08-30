@@ -172,7 +172,7 @@ class ThreadManager(QObject):
         if self.max_threads < 1:
             self.max_threads = 1
 
-    # House hold methods
+    # Household methods
     def run_thread(self, thread_wrapper: ThreadWrapper, disobey_thread_limit: bool = False) -> None:
         """Runs a thread if it will not violate the thread count limit. Otherwise puts the thread in the queue"""
 
