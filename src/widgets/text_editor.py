@@ -28,25 +28,30 @@ class TextEditor(QPlainTextEdit):
 
     FileStrucutreUpdated = pyqtSignal(dict)
 
-    def __init__(self, parent, display_widget: QWebEngineView, settings_manager, thread_manager: ThreadManager):
+    def __init__(self, parent, display_widget: QWebEngineView, settings_manager, thread_manager: ThreadManager,
+                 filename: str):
 
         super().__init__(parent)
 
         # Set attributes
-        self.lineNumberArea = LineNumberArea(self)
         self.display_widget = display_widget
-        self.highlighter = MarkdownHighlighter(self.document(), settings_manager)
-        self.text_changed = False
+        self.SettingsManager = settings_manager
         self.ThreadManager = thread_manager
-        self.setMouseTracking(True)
+
+        self.lineNumberArea = LineNumberArea(self)
         self.InputTimer = QTimer(self)
         self.DocumentParsingTimer = QTimer(self)
-        self.SettingsManager = settings_manager
+        self.highlighter = MarkdownHighlighter(self.document(), self.SettingsManager)
+        self.char_format = QTextCharFormat(self.currentCharFormat())
+
+        self.text_changed = False
+        self.setMouseTracking(True)
         self.is_current_editor = False
         self.is_parsing_document = False
-        self.char_format = QTextCharFormat(self.currentCharFormat())
-        self.document_structure: dict = copy.deepcopy(defaults.document_info_template)
+        self.filename = ""
+        self.set_filename(filename)
 
+        self.document_structure: dict = copy.deepcopy(defaults.document_info_template)
         self.ColorSchema = self.SettingsManager.color_schema
 
         # Connect signals to slots
@@ -138,7 +143,8 @@ class TextEditor(QPlainTextEdit):
         # Display tool tip for image or citation
         point = self.viewport().mapToGlobal(self.cursorRect().topLeft())
         cursor = self.textCursor()
-        self.display_tooltips_for_cursor(cursor, point)
+        if self.is_markdown_file():
+            self.display_tooltips_for_cursor(cursor, point)
 
         # Don't highlight if multiple lines are selected
         extraSelections = []
@@ -174,6 +180,22 @@ class TextEditor(QPlainTextEdit):
         self.text_changed = True
         if self.SettingsManager.get_setting_value("Render/Autorender"):
             self.InputTimer.start(self.SettingsManager.get_setting_value("Render/Autorender delay"))
+
+    def set_filename(self, filename: str) -> None:
+        """Sets the filename field, rehighlights the document according to the new extension"""
+        self.filename = filename
+
+        # Remove md syntax highlighting if new file is not markdown
+        prevent_highlighting = not self.is_markdown_file()
+        self.highlighter.prevent_highlighting(prevent_highlighting)
+
+    def is_markdown_file(self) -> bool:
+        """Determines if current file can or cannot be treated as markdown based on file extension"""
+        # Return True if there is no file extension or it is a markdown extension
+        if "." not in self.filename or self.filename.endswith((".md", ".markdown")):
+            return True
+        else:
+            return False
 
     def insert_text_at_cursor(self, text: str, move_center=False) -> None:
         """Inserts text at current cursor position. If move_center is set to True, moves cursor to the center of
@@ -307,14 +329,18 @@ class TextEditor(QPlainTextEdit):
         pos.setX(pos.x() - self.viewportMargins().left())
         pos.setY(pos.y() - self.viewportMargins().top())
         cursor = self.cursorForPosition(pos)
-
-        self.display_tooltips_for_cursor(cursor, event.globalPos())
+        if self.is_markdown_file():
+            self.display_tooltips_for_cursor(cursor, event.globalPos())
         super(TextEditor, self).mouseMoveEvent(event)
 
     def render_to_html(self) -> None:
         """Asks thread manager to render document contents to html"""
-
-        self.ThreadManager.markdown_to_html(self.toPlainText(), self.on_pandoc_thread_finished)
+        # Render if current filename is markdown
+        if self.is_markdown_file():
+            self.ThreadManager.markdown_to_html(self.toPlainText(), self.on_pandoc_thread_finished)
+        else:
+            # Send empty strings to display widget to clear it
+            self.on_pandoc_thread_finished("")
 
     def read_settings(self) -> None:
         """Read settings and apply them"""

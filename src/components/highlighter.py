@@ -23,6 +23,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         self.SettingsManager = settings_manager
         self.patterns = defaults.highlighter_patterns
+        self.allow_highlighting = True
 
         # Create formats
         self.formats: Dict[str, QTextCharFormat] = {key: QTextCharFormat() for key in self.patterns.keys()}
@@ -32,6 +33,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.rules: List[Rule] = []
         for pattern in self.patterns.items():
             self.rules.append(Rule(pattern[0], pattern[1], self.formats[pattern[0]]))
+
+    def prevent_highlighting(self, prevent: bool):
+        """Stops or resumes highlighting of the current document"""
+        self.allow_highlighting = not prevent
+        self.rehighlight()
 
     def set_formats(self) -> None:
         """Sets formats which will be applied to the text by highlighter"""
@@ -55,7 +61,10 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
     def highlightBlock(self, text: str) -> None:
         """Finds and highlights tags in the text. Automatically called when document changes"""
-        tags = self.get_tags(text)
+        if self.allow_highlighting:
+            tags = self.get_tags(text)
+        else:
+            tags = []
 
         for tag in tags:
             self.setFormat(tag[0], tag[1], self.formats[tag[2]])

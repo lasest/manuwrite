@@ -47,8 +47,8 @@ class MainWindow(QMainWindow):
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager: ProjectManager = None
-        self.ThreadManager = ThreadManager()
-        self.SettingsManager = SettingsManager(self)
+        self.ThreadManager: ThreadManager = ThreadManager()
+        self.SettingsManager: SettingsManager = SettingsManager(self)
         self.OpenedEditors = []
         self.current_editor_index = 0
 
@@ -317,15 +317,16 @@ class MainWindow(QMainWindow):
         widget.layout().setContentsMargins(0, 2, 0, 0)
 
         # Create editor
-        editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager, self.ThreadManager)
+        filename = f"Untitled {self.ui.EditorTabWidget.untitled_docs_counter}"
+        editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager, self.ThreadManager, filename)
         editor.FileStrucutreUpdated.connect(self.on_fileStructureUpdated)
 
         self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False, is_current_editor=True))
+        self.ui.EditorTabWidget.untitled_docs_counter += 1
         widget.layout().addWidget(editor)
 
         # Create new tab
-        self.ui.EditorTabWidget.untitled_docs_counter += 1
-        index = self.ui.EditorTabWidget.addTab(widget, f"Untitled {self.ui.EditorTabWidget.untitled_docs_counter}")
+        index = self.ui.EditorTabWidget.addTab(widget, editor.filename)
         self.ui.EditorTabWidget.setCurrentIndex(index)
 
         editor.setFocus()
@@ -358,11 +359,11 @@ class MainWindow(QMainWindow):
 
             # Configure new tab
             current_tab_index = self.ui.EditorTabWidget.currentIndex()
-            filename = path[path.rfind("/") + 1:]
+            editor.set_filename(path[path.rfind("/") + 1:])
 
             self.OpenedEditors[current_tab_index] = self.OpenedEditor(filepath=path, in_current_project=False, is_current_editor=True)
             self.ui.EditorTabWidget.setTabToolTip(current_tab_index, path)
-            self.ui.EditorTabWidget.setTabText(current_tab_index, filename)
+            self.ui.EditorTabWidget.setTabText(current_tab_index, editor.filename)
 
     @pyqtSlot()
     def on_actionSave_triggered(self, index: int = None) -> bool:
@@ -426,12 +427,12 @@ class MainWindow(QMainWindow):
             finally:
                 file_handle.close()
 
-            tabname = path[path.rfind("/") + 1:]
+            editor.set_filename(path[path.rfind("/") + 1:])
 
             editor.document().setBaseUrl(QUrl.fromLocalFile(path))
             self.OpenedEditors[index] = self.OpenedEditor(filepath=path, in_current_project=False, is_current_editor=True)
             self.ui.EditorTabWidget.setTabToolTip(index, path)
-            self.ui.EditorTabWidget.setTabText(index, tabname)
+            self.ui.EditorTabWidget.setTabText(index, editor.filename)
 
         return result
 
@@ -824,12 +825,17 @@ class MainWindow(QMainWindow):
     # TODO: also change preview contents here?
     @pyqtSlot(int)
     def on_currentEditor_changed(self, index: int) -> None:
+        # Mark all editors as not-current
         for i in range(self.ui.EditorTabWidget.count()):
             self.get_editor(i).is_current_editor = False
+
+        # Get editor at index and set it current
         editor = self.get_editor(index)
         if editor:
-            self.get_editor(index).is_current_editor = True
-            self.get_editor(index).parse_document()
+            editor.is_current_editor = True
+            editor.parse_document()
+            if self.SettingsManager.get_setting_value("Render/Autorender"):
+                editor.render_to_html()
 
     @pyqtSlot(dict)
     def on_fileStructureUpdated(self, file_structure: dict) -> None:
