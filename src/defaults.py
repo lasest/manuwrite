@@ -80,7 +80,8 @@ project_settings = collections.OrderedDict({
 
         # Render section
         "Files to render": {"type": "mapping/str", "value": []},
-        "Style": {"type": "str", "value": "manuwrite_strict"},
+        "Css_style": {"type": "str", "value": "manuwrite_strict"},
+        "Csl_style": {"type": "str", "value": ""},
         "Render to": {"type": "str", "value": "html"},
         "Pandoc command (auto)": {"type": "str", "value": ""},
         "Pandoc command (manual)": {"type": "str", "value": ""},
@@ -267,7 +268,7 @@ application_settings = {
             },
             "Render/Formats/type": "dict",
 
-            "Render/Styles/value": {
+            "Render/Css_styles/value": {
                 "manuwrite_strict": {
                     "name": "Manuwrite strict",
                     "path": "path1"
@@ -281,7 +282,15 @@ application_settings = {
                     "path": "path3"
                 }
             },
-            "Render/Styles/type": "dict",
+            "Render/Css_styles/type": "dict",
+
+            "Render/Csl_styles/value": {
+                "style_identifier": {
+                    "name": "style_name",
+                    "path": "style_path"
+                }
+            },
+            "Render/Csl_styles/type": "dict",
 
             # Projects
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],

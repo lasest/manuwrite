@@ -162,23 +162,32 @@ class ProjectSettingsDialog(QDialog):
                 item = QListWidgetItem(filepath)
             self.ui.FilesToRenderListWidget.addItem(item)
 
-        # Populate StylesCombobox
-        styles = self.SettingsManager.get_setting_value("Render/Styles")
+        # Populate CssStyleCombobox
+        styles = self.SettingsManager.get_setting_value("Render/Css_styles")
         for identifier, style_info in styles.items():
-            self.ui.StyleCombobox.addItem(style_info["name"], userData=identifier)
+            self.ui.CssStyleCombobox.addItem(style_info["name"], userData=identifier)
 
-        current_style_identifier = self.ProjectManager.get_setting_value("Style")
-        index = self.ui.StyleCombobox.findData(current_style_identifier)
-        self.ui.StyleCombobox.setCurrentIndex(index)
+        current_style_identifier = self.ProjectManager.get_setting_value("Css_style")
+        index = self.ui.CssStyleCombobox.findData(current_style_identifier)
+        self.ui.CssStyleCombobox.setCurrentIndex(index)
+
+        # Populate CslStyleCombobox
+        styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
+        for identifier, style_info in styles.items():
+            self.ui.CslStyleCombobox.addItem(style_info["name"], userData=identifier)
+
+        current_csl_identifier = self.ProjectManager.get_setting_value("Csl_style")
+        index = self.ui.CslStyleCombobox.findData(current_csl_identifier)
+        self.ui.CslStyleCombobox.setCurrentIndex(index)
 
         # Populate formats combobox
         formats = self.SettingsManager.get_setting_value("Render/Formats")
         for identifier, format_info in formats.items():
-            self.ui.RenderToCombobox.addItem(format_info["name"], userData=identifier)
+            self.ui.OutputFormatCombobox.addItem(format_info["name"], userData=identifier)
 
         current_output_format_identifier = self.ProjectManager.get_setting_value("Render to")
-        index = self.ui.RenderToCombobox.findData(current_output_format_identifier)
-        self.ui.RenderToCombobox.setCurrentIndex(index)
+        index = self.ui.OutputFormatCombobox.findData(current_output_format_identifier)
+        self.ui.OutputFormatCombobox.setCurrentIndex(index)
 
         # Populate PandocCommandLineEdit
         self.ui.PandocCommandLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (auto)"))
@@ -212,15 +221,24 @@ class ProjectSettingsDialog(QDialog):
                 files_to_render.append(self.ui.FilesToRenderListWidget.item(i).text())
         self.ProjectManager.set_setting_value("Files to render", files_to_render)
 
-        # Update style info
-        style_identifier = self.ui.StyleCombobox.currentData()
-        self.ProjectManager.set_setting_value("Style", style_identifier)
-        styles = self.SettingsManager.get_setting_value("Render/Styles")
+        # Update css style info
+        style_identifier = self.ui.CssStyleCombobox.currentData()
+        self.ProjectManager.set_setting_value("Css_style", style_identifier)
+
+        styles = self.SettingsManager.get_setting_value("Render/Css_styles")
         style_filepath = styles[style_identifier]["path"]
         self.pandoc_kwargs["css"] = style_filepath
 
+        # Update csl style info
+        style_identifier = self.ui.CslStyleCombobox.currentData()
+        self.ProjectManager.set_setting_value("Csl_style", style_identifier)
+
+        styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
+        style_filepath = styles[style_identifier]["path"]
+        self.pandoc_kwargs["csl"] = style_filepath
+
         # Update output format and filename
-        format_identifier = self.ui.RenderToCombobox.currentData()
+        format_identifier = self.ui.OutputFormatCombobox.currentData()
         self.ProjectManager.set_setting_value("Render to", format_identifier)
         formats = self.SettingsManager.get_setting_value("Render/Formats")
         current_format = formats[format_identifier]
@@ -488,13 +506,13 @@ class ProjectSettingsDialog(QDialog):
 
     # Ui consistency slots - enable/disable some elements of the form depending on the state of other elements
     @pyqtSlot(int)
-    def on_NumberSectionsCheckbox_stateChanged(self, state: int):
+    def on_NumberSectionsCheckbox_stateChanged(self, state: int) -> None:
         self.ui.NumberOffsetSpinBox.setEnabled(state)
         if not state:
             self.ui.NumberOffsetSpinBox.setValue(0)
 
     @pyqtSlot(int)
-    def on_PandocXnosCheckbox_stateChanged(self, state: int):
+    def on_PandocXnosCheckbox_stateChanged(self, state: int) -> None:
         self.ui.PandocXnosFrame.setEnabled(not state)
 
         if state:
@@ -504,7 +522,7 @@ class ProjectSettingsDialog(QDialog):
             self.ui.PandocEqnosCheckbox.setChecked(False)
 
     @pyqtSlot(int)
-    def on_PandocCiteProcCheckbox_stateChanged(self, state: int):
+    def on_PandocCiteProcCheckbox_stateChanged(self, state: int) -> None:
         self.ui.PandocCiteProcFrame.setEnabled(state)
 
         if not state:

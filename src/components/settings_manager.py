@@ -1,4 +1,5 @@
 import toml
+import xml.etree.ElementTree as ET
 
 from PyQt5.QtCore import QObject, QSettings, QStandardPaths, QDir, QDirIterator
 from PyQt5.QtGui import QPalette
@@ -30,6 +31,8 @@ class SettingsManager(QObject):
         # Load settigns
         self.settings: QSettings = QSettings("Manuwrite", "Manuwrite Editor")
         self.color_schema = self.get_current_color_schema()
+        self.set_setting_value("Render/Css_styles", self.scan_for_css_styles())
+        self.set_setting_value("Render/Csl_styles", self.scan_for_csl_styles())
 
         # Set settings to defaults if some keys are missing
         for key, value in self.defaults.items():
@@ -73,7 +76,7 @@ class SettingsManager(QObject):
 
         self.settings.setValue(setting, value)
 
-    def get_appdata_path(self) -> None:
+    def get_appdata_path(self) -> str:
         """Returns path to the directory, where app specific data is stored (i.e. styles, colors, templates etc). If the
         directory doesn't exist, creates it"""
         # TODO: exception possible here
@@ -104,6 +107,65 @@ class SettingsManager(QObject):
             color_schemas["Schema names"] = schema_names
 
         return color_schemas
+
+    def scan_for_css_styles(self) -> dict:
+        """Scans <app data>/css_styles subdirectories for css styles. Returns a dictionary with information about the
+         styles that were found"""
+        # TODO: hadnle exceptions
+        # Get the list of all subdirectories
+        path = self.get_appdata_path() + "/css_styles"
+        directory = QDir(path)
+        subdirectories = directory.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
+
+        styles = dict()
+        # Iterate over subdirectories to check if they contain styles
+        for subdirectory in subdirectories:
+            directory.cd(subdirectory)
+            entries = directory.entryList(QDir.Files)
+
+            # Check if necessary files are present
+            if "description.toml" in entries and "style.css" in entries:
+                # Parse description
+                style_info = toml.load(path + "/" + subdirectory + "/" + "description.toml")
+                style_info["path"] = path + "/" + subdirectory + "/" + "style.css"
+                styles[style_info["identifier"]] = style_info
+
+        return styles
+
+    def scan_for_csl_styles(self) -> dict:
+        """Scans <app data>/csl_styles subdirectories for csl styles. Returns a dictionary with information about the
+        styles that were found"""
+
+        def get_namespace(elem) -> str:
+            """Extracts namespace from element tag"""
+            if elem[0] == "{":
+                namespace = elem[:elem.find("}") + 1]
+            else:
+                namespace = ""
+            return namespace
+
+        # TODO: hadnle exceptions
+        # Get all files in the csl_styles directory
+        path = self.get_appdata_path() + "/csl_styles"
+        directory = QDir(path)
+        entries = directory.entryList(QDir.Files)
+
+        # Iterate over files
+        styles = dict()
+        for entry in entries:
+            if entry.endswith(".csl"):
+                # Get root node
+                tree = ET.parse(path + "/" + entry)
+                root = tree.getroot()
+
+                # Check if there is a namespace
+                namespace = get_namespace(root.tag)
+
+                # Get style name
+                title = root.find(namespace + "info").find(namespace + "title").text
+                styles[title] = {"name": title, "path": path + "/" + entry}
+
+        return styles
 
     def get_current_color_schema(self) -> dict:
         """Return current color schema or the default color schema, if failed to get the current one"""

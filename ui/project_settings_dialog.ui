@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>832</width>
-    <height>694</height>
+    <width>875</width>
+    <height>732</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="MetaInfoTab">
       <attribute name="title">
@@ -302,30 +302,44 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="StyleHorizontalLayout">
+          <layout class="QHBoxLayout" name="CssHorizontalLayout">
            <item>
             <widget class="QLabel" name="StyleLabel">
              <property name="text">
-              <string>Style</string>
+              <string>Css style</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="StyleCombobox"/>
+            <widget class="QComboBox" name="CssStyleCombobox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="CslHorizontalLayout">
+           <item>
+            <widget class="QLabel" name="CslStyleLabel">
+             <property name="text">
+              <string>Csl style</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="CslStyleCombobox"/>
            </item>
           </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="RenderToHorizontalLayout">
            <item>
-            <widget class="QLabel" name="RenderToLabel">
+            <widget class="QLabel" name="OutputFormatLabel">
              <property name="text">
-              <string>Render to</string>
+              <string>Output format</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="RenderToCombobox"/>
+            <widget class="QComboBox" name="OutputFormatCombobox"/>
            </item>
           </layout>
          </item>
@@ -632,8 +646,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>779</width>
-            <height>631</height>
+            <width>843</width>
+            <height>632</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
