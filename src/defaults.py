@@ -145,7 +145,8 @@ project_settings = collections.OrderedDict({
             "to": "html",
             "css": "",
             "output": "",
-            "number-offset": ""
+            "number-offset": "",
+            "metadata-file": ""
         }},
 
         # Pandoc non-keyword arguments (i.e. --arg). Added to the comman if the value is True
@@ -175,6 +176,9 @@ application_settings = {
 
             "MainWindow/last_project/value": "",
             "MainWindow/last_project/type": "str",
+
+            "MainWindow/ProjectTabWidget_currentTab/value": 0,
+            "MainWindow/ProjectTabWidget_currentTab/type": "int",
 
             # Settings dialog
             "SettingsDialog/size/value": QSize(400, 600),

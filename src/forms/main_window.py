@@ -87,6 +87,7 @@ class MainWindow(QMainWindow):
         self.ui.FootnoteToolButton.setDefaultAction(self.ui.actionFootnote)
         self.ui.TableToolButton.setDefaultAction(self.ui.actionAddTable)
         self.ui.CrossRefToolButton.setDefaultAction(self.ui.actionCrossRef)
+        self.ui.RenderProjectToolButton.setDefaultAction(self.ui.actionRenderProject)
 
     def set_icons(self) -> None:
         # load common icons
@@ -175,6 +176,7 @@ class MainWindow(QMainWindow):
         self.resize(self.SettingsManager.get_setting_value("MainWindow/size"))
         self.move(self.SettingsManager.get_setting_value("MainWindow/pos"))
         self.ui.splitter.setSizes(self.SettingsManager.get_setting_value("MainWindow/splitter_sizes"))
+        self.ui.ProjectTabWidget.setCurrentIndex(self.SettingsManager.get_setting_value("MainWindow/ProjectTabWidget_currentTab"))
 
         if self.SettingsManager.get_setting_value("MainWindow/last_project"):
             # Catching all exceptions here, because if any unhandled exception at this point would prevent the program
@@ -196,6 +198,8 @@ class MainWindow(QMainWindow):
             self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
+
+        self.SettingsManager.set_setting_value("MainWindow/ProjectTabWidget_currentTab", self.ui.ProjectTabWidget.currentIndex())
 
     def get_current_structure(self, editor: TextEditor) -> dict:
         """Returns a dictionary describing the structure of the currently open document, or the structure of the current
@@ -616,6 +620,22 @@ class MainWindow(QMainWindow):
             if dialog.exec_():
                 editor.insert_text_at_cursor(dialog.tag)
 
+    @pyqtSlot()
+    def on_TableToolButton_triggered(self) -> None:
+
+        editor = self.get_editor()
+        if not editor:
+            return
+
+        dialog = AddTableDialog(self.get_used_identifiers("tables", editor), self.SettingsManager)
+        dialog.show()
+        if dialog.exec_():
+            editor.insert_text_at_empty_paragraph(dialog.table_tag)
+
+    @pyqtSlot()
+    def on_actionRenderProject_triggered(self) -> None:
+        self.ThreadManager.render_project(self.ProjectManager, self.on_project_rendered)
+
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)
     def on_actionProjectTab_triggered(self, checked: bool) -> None:
@@ -837,7 +857,10 @@ class MainWindow(QMainWindow):
             else:
                 self.ui.ProjectStructureTreeWidget.clear()
         else:
-            self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))
+            if self.ProjectManager:
+                self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))
+            else:
+                self.ui.ProjectStructureTreeWidget.clear()
 
     @pyqtSlot()
     def on_ProjectStructureUpdated(self) -> None:
@@ -847,13 +870,11 @@ class MainWindow(QMainWindow):
         if self.ui.ProjectStrucutreCombobox.currentIndex() == 1:
             self.update_structure_tree_widget(self.ProjectManager.get_setting_value("Project structure combined"))
 
-    def on_TableToolButton_triggered(self) -> None:
+    @pyqtSlot()
+    def on_actionCloseProject_triggered(self) -> None:
+        self.ProjectManager = None
+        self.ui.ProjectTreeView.setModel(None)
 
-        editor = self.get_editor()
-        if not editor:
-            return
+    def on_project_rendered(self, result):
+        print("Projected rendered!!!")
 
-        dialog = AddTableDialog(self.get_used_identifiers("tables", editor), self.SettingsManager)
-        dialog.show()
-        if dialog.exec_():
-            editor.insert_text_at_empty_paragraph(dialog.table_tag)

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>915</width>
+    <width>1218</width>
     <height>600</height>
    </rect>
   </property>
@@ -418,14 +418,21 @@
              <item>
               <widget class="QToolButton" name="AddCitationToolButton">
                <property name="text">
-                <string>...</string>
+                <string/>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QToolButton" name="RenderFileToolButton">
                <property name="text">
-                <string>...</string>
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="RenderProjectToolButton">
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -466,7 +473,7 @@
                 <item>
                  <widget class="QTabWidget" name="ProjectTabWidget">
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="ProjectFilesTab">
                    <attribute name="title">
@@ -646,7 +653,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>915</width>
+     <width>1218</width>
      <height>35</height>
     </rect>
    </property>
@@ -658,6 +665,7 @@
     <addaction name="actionNewProject"/>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenProject"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionSettings"/>
@@ -939,6 +947,16 @@
   <action name="actionCrossRef">
    <property name="text">
     <string>Cross reference</string>
+   </property>
+  </action>
+  <action name="actionCloseProject">
+   <property name="text">
+    <string>Close project</string>
+   </property>
+  </action>
+  <action name="actionRenderProject">
+   <property name="text">
+    <string>Render project</string>
    </property>
   </action>
  </widget>

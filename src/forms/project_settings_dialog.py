@@ -142,7 +142,7 @@ class ProjectSettingsDialog(QDialog):
             filepath = dir_iter.next()
             if filepath.endswith(".md"):
                 # Get relative path:
-                filepath = filepath[len(self.ProjectManager.root_path):]
+                filepath = filepath[len(self.ProjectManager.root_path) + 1:]
                 filepaths.append(filepath)
 
         # Get the list of files which should be rendered according to the current project settings
@@ -388,12 +388,6 @@ class ProjectSettingsDialog(QDialog):
         self.update_pandoc_settings()
         self.update_xnos_settings()
 
-        # Set certain settings
-        self.ProjectManager.set_setting_value("YAML_metablock", self.yaml_metablock)
-        self.ProjectManager.set_setting_value("Pandoc_filters", self.pandoc_filters)
-        self.ProjectManager.set_setting_value("Pandoc_kwargs", self.pandoc_kwargs)
-        self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
-
         # Save YAML metablock to file
         yaml_text = self.generate_yaml_metablock()
 
@@ -401,14 +395,28 @@ class ProjectSettingsDialog(QDialog):
         try:
             file_handle = QFile(filepath)
             if file_handle.open(QIODevice.WriteOnly | QIODevice.Text):
+                line = "-" * 3 + "\n"
+                file_handle.write(line.encode())
                 file_handle.write(yaml_text.encode())
+                line = "." * 3
+                file_handle.write(line.encode())
                 file_handle.close()
+
+                self.pandoc_kwargs["metadata-file"] = filepath
+
         except Exception as e:
             QMessageBox.critical(self, "Error saving settings",
                                  f"Some error occured when trying to save the settings. ({str(e)})")
             return
         finally:
             file_handle.close()
+
+        # Set certain settings
+
+        self.ProjectManager.set_setting_value("YAML_metablock", self.yaml_metablock)
+        self.ProjectManager.set_setting_value("Pandoc_filters", self.pandoc_filters)
+        self.ProjectManager.set_setting_value("Pandoc_kwargs", self.pandoc_kwargs)
+        self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
 
         # Write settings to file
         self.ProjectManager.save_project_data()

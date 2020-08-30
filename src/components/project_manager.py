@@ -55,7 +55,7 @@ class ProjectManager():
             # Update project structure
             filenames = []
             for filename in self.get_setting_value("Files to render"):
-                filenames.append(self.get_setting_value("Absolute path") + filename)
+                filenames.append(self.get_setting_value("Absolute path") + "/" + filename)
 
             self.ThreadManager.parse_project(filenames, self.on_MarkdownProjectParserThread_finished)
 

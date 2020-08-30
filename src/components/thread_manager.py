@@ -99,6 +99,18 @@ class ManubotCiteThread(QThread):
         self.result["citation"] = manubot.stdout.decode()
 
 
+class ProjectRenderer(QThread):
+
+    def __init__(self, project_manager):
+        super().__init__()
+        self.ProjectManager = project_manager
+        self.result = ""
+
+    def run(self) -> None:
+        command = self.ProjectManager.get_setting_value("Full_pandoc_command")
+        subprocess.run(command.split(), cwd=self.ProjectManager.get_setting_value("Absolute path"))
+
+
 class PandocThread(QThread):
     """Renders given markdown document to some format using Pandoc"""
 
@@ -213,6 +225,12 @@ class ThreadManager(QObject):
         """Starts MarkdownProjectParser thread to parse a given list of files"""
 
         thread_wrapper = ThreadWrapper(MarkdownProjectParserThread(self, filenames), handler_function)
+        thread_wrapper.thread_finished.connect(self.run_next_thread)
+
+        self.run_thread(thread_wrapper)
+
+    def render_project(self, project_manager, handler_function):
+        thread_wrapper = ThreadWrapper(ProjectRenderer(project_manager), handler_function)
         thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
