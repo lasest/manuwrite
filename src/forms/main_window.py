@@ -877,4 +877,3 @@ class MainWindow(QMainWindow):
 
     def on_project_rendered(self, result):
         print("Projected rendered!!!")
-

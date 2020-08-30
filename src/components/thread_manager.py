@@ -196,6 +196,7 @@ class ThreadManager(QObject):
             self.pending_threads.remove(self.pending_threads[-1])
 
     # Thread-starting methods
+    # TODO: unite them in a single function
     def get_citation(self, citekey: str, handler_function) -> None:
         """Starts manubot thread to get citation info for a given citekey."""
 

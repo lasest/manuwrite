@@ -246,13 +246,6 @@ class ProjectSettingsDialog(QDialog):
         self.pandoc_kwargs["to"] = current_format["pandoc_option"]
         self.pandoc_kwargs["output"] = f"output.{current_format['file_extension']}"
 
-        # Update pandoc command
-        self.ProjectManager.set_setting_value("Pandoc command (auto)", self.get_pandoc_command())
-        self.ProjectManager.set_setting_value("Pandoc command (manual)", self.ui.PandocCommandManualLineEdit.text())
-
-        full_pandoc_command = self.ProjectManager.get_setting_value("Pandoc command (auto)") + " " + self.ProjectManager.get_setting_value("Pandoc command (manual)")
-        self.ProjectManager.set_setting_value("Full_pandoc_command", full_pandoc_command)
-
     def update_pandoc_settings(self) -> None:
         self.pandoc_filters["pandoc-xnos"] = self.ui.PandocXnosCheckbox.isChecked()
         self.pandoc_filters["pandoc-secnos"] = self.ui.PandocSecnosCheckbox.isChecked()
@@ -412,11 +405,31 @@ class ProjectSettingsDialog(QDialog):
             file_handle.close()
 
         # Set certain settings
-
         self.ProjectManager.set_setting_value("YAML_metablock", self.yaml_metablock)
         self.ProjectManager.set_setting_value("Pandoc_filters", self.pandoc_filters)
         self.ProjectManager.set_setting_value("Pandoc_kwargs", self.pandoc_kwargs)
         self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
+
+        # Update pandoc command
+        self.ProjectManager.set_setting_value("Pandoc command (auto)", self.get_pandoc_command())
+        self.ProjectManager.set_setting_value("Pandoc command (manual)", self.ui.PandocCommandManualLineEdit.text())
+
+        full_pandoc_command = self.ProjectManager.get_setting_value("Pandoc command (auto)") + " " + self.ProjectManager.get_setting_value("Pandoc command (manual)")
+        self.ProjectManager.set_setting_value("Full_pandoc_command", full_pandoc_command)
+
+        # Save pandoc command to build.sh
+        filepath = self.ProjectManager.get_setting_value("Absolute path") + "/build.sh"
+        try:
+            file_handle = QFile(filepath)
+            if file_handle.open(QIODevice.WriteOnly | QIODevice.Text):
+                file_handle.write(full_pandoc_command.encode())
+        except Exception as e:
+            QMessageBox.critical(self, "Error saving settings",
+                                 f"Some error occured when trying to save the settings. ({str(e)})")
+            return
+
+        finally:
+            file_handle.close()
 
         # Write settings to file
         self.ProjectManager.save_project_data()
