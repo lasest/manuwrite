@@ -8,11 +8,12 @@ import common
 
 class AddHeadingDialog(QDialog):
 
-    def __init__(self, settings_manager: SettingsManager, heading_level: int, used_identifiers: dict):
-        super().__init__()
+    def __init__(self, settings_manager: SettingsManager, heading_level: int, used_identifiers: dict, parent):
+        super().__init__(parent=parent)
 
         self.ui = Ui_AddHeadingDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Setting attributes
         self.SettingsManager = settings_manager

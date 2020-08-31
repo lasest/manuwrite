@@ -9,10 +9,11 @@ from widgets.color_button import ColorButton
 
 class SettingsDialog(QDialog):
 
-    def __init__(self, settings_manager: SettingsManager):
-        super().__init__()
+    def __init__(self, settings_manager: SettingsManager, parent):
+        super().__init__(parent=parent)
         self.ui = Ui_SettingsDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.SettingsManager = settings_manager

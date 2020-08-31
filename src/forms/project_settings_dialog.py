@@ -14,9 +14,10 @@ class ProjectSettingsDialog(QDialog):
 
     def __init__(self, parent, project_manager: ProjectManager, settings_manager: SettingsManager):
 
-        super().__init__(parent)
+        super().__init__(parent=parent)
         self.ui = Ui_ProjectSettingsDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.ProjectManager = project_manager

@@ -9,11 +9,12 @@ import common
 
 class AddTableDialog(QDialog):
 
-    def __init__(self, used_identifiers: dict, settings_manager):
-        super().__init__()
+    def __init__(self, used_identifiers: dict, settings_manager, parent):
+        super().__init__(parent=parent)
 
         self.ui = Ui_AddTableDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.used_identifiers = used_identifiers

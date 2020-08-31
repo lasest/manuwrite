@@ -8,11 +8,12 @@ from ui_forms.ui_create_project_dialog import Ui_CreateProjectDialog
 
 class CreateProjectDialog(QDialog):
 
-    def __init__(self, project_types: List[str], default_path: str):
-        super().__init__()
+    def __init__(self, project_types: List[str], default_path: str, parent):
+        super().__init__(parent=parent)
 
         self.ui = Ui_CreateProjectDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.project_types: List[str] = project_types

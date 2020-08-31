@@ -10,11 +10,12 @@ import defaults
 
 class AddCrossRefDialog(QDialog):
 
-    def __init__(self, project_structure: dict, is_cursor_in_sentence: bool):
+    def __init__(self, project_structure: dict, is_cursor_in_sentence: bool, parent):
 
-        super().__init__()
+        super().__init__(parent=parent)
         self.ui = Ui_AddCrossRefDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.tag = ""

@@ -8,11 +8,12 @@ import common
 
 class AddFootnoteDialog(QDialog):
 
-    def __init__(self, used_identifiers: dict, settings_manager):
+    def __init__(self, used_identifiers: dict, settings_manager, parent):
 
-        super().__init__()
+        super().__init__(parent=parent)
         self.ui = Ui_AddFootnoteDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set additional attributes
         self.identifier = ""

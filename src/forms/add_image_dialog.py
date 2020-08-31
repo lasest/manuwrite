@@ -8,11 +8,12 @@ import common
 
 class AddImageDialog(QDialog):
 
-    def __init__(self, settings_manager, used_identifiers: dict):
+    def __init__(self, settings_manager, used_identifiers: dict, parent):
 
-        super().__init__()
+        super().__init__(parent=parent)
         self.ui = Ui_AddImageDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.SettingsManager = settings_manager

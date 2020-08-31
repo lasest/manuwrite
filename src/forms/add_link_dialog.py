@@ -6,11 +6,12 @@ from ui_forms.ui_add_link_dialog import Ui_AddLinkDialog
 
 class AddLinkDialog(QDialog):
 
-    def __init__(self):
+    def __init__(self, parent):
 
-        super().__init__()
+        super().__init__(parent=parent)
         self.ui = Ui_AddLinkDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.link: str = ""

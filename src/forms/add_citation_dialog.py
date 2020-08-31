@@ -10,11 +10,12 @@ from components.thread_manager import ThreadManager
 
 class AddCitationDialog(QDialog):
 
-    def __init__(self, thread_manager):
-        super().__init__()
+    def __init__(self, thread_manager, parent):
+        super().__init__(parent=parent)
 
         self.ui = Ui_AddCitationDialog()
         self.ui.setupUi(self)
+        self.setPalette(parent.palette())
 
         # Set attributes
         self.citation_identifier = ""

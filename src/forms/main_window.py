@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
         self.ui.ProjectTabWidget.setCurrentIndex(self.SettingsManager.get_setting_value("MainWindow/ProjectTabWidget_currentTab"))
 
         if self.SettingsManager.get_setting_value("MainWindow/last_project"):
-            # Catching all exceptions here, because if any unhandled exception at this point would prevent the program
+            # Catching all exceptions here, because any unhandled exception at this point would prevent the program
             # from starting again ever
             try:
                 self.load_project(self.SettingsManager.get_setting_value("MainWindow/last_project"))
@@ -187,6 +187,22 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", "An error occured while attempting to open project. " +
                                      f"Error: {str(type(e)) + ' ' + str(e)}")
                 self.ProjectManager = None
+
+        # Read color schema settings for the app
+        app_colors = self.SettingsManager.get_current_color_schema()["Application_colors"]
+        palette = self.palette()
+        palette.setColor(palette.Window, QColor(app_colors["window"]["color"]))
+        palette.setColor(palette.WindowText, QColor(app_colors["window_text"]["color"]))
+        palette.setColor(palette.Base, QColor(app_colors["base"]["color"]))
+        palette.setColor(palette.AlternateBase, QColor(app_colors["alternate_base"]["color"]))
+        palette.setColor(palette.ToolTipBase, QColor(app_colors["tooltip_base"]["color"]))
+        palette.setColor(palette.ToolTipText, QColor(app_colors["tooltip_text"]["color"]))
+        palette.setColor(palette.PlaceholderText, QColor(app_colors["placeholder_text"]["color"]))
+        palette.setColor(palette.Text, QColor(app_colors["text"]["color"]))
+        palette.setColor(palette.Button, QColor(app_colors["button"]["color"]))
+        palette.setColor(palette.ButtonText, QColor(app_colors["button_text"]["color"]))
+        palette.setColor(palette.BrightText, QColor(app_colors["bright_text"]["color"]))
+        self.setPalette(palette)
 
     def write_settings(self) -> None:
         """Write settings to permanent storage"""
@@ -230,7 +246,7 @@ class MainWindow(QMainWindow):
 
         editor = self.get_editor()
         if editor:
-            dialog = AddHeadingDialog(self.SettingsManager, heading_level, self.get_used_identifiers("headings", editor))
+            dialog = AddHeadingDialog(self.SettingsManager, heading_level, self.get_used_identifiers("headings", editor), parent=self)
             dialog.show()
             if dialog.exec_():
                 editor.insert_text_at_empty_paragraph(dialog.heading_tag)
@@ -523,7 +539,7 @@ class MainWindow(QMainWindow):
         if self.ui.EditorTabWidget.count() == 0:
             return
 
-        dialog = AddLinkDialog()
+        dialog = AddLinkDialog(parent=self)
         dialog.show()
         if dialog.exec_():
             self.get_editor().insert_text_at_cursor(dialog.link)
@@ -536,7 +552,7 @@ class MainWindow(QMainWindow):
             return
 
         # TODO: change default application/project folder to the folder of the current project
-        dialog = AddImageDialog(self.SettingsManager, self.get_used_identifiers("figures", editor))
+        dialog = AddImageDialog(self.SettingsManager, self.get_used_identifiers("figures", editor), parent=self)
         dialog.show()
         if dialog.exec_():
 
@@ -564,7 +580,7 @@ class MainWindow(QMainWindow):
         if self.ui.EditorTabWidget.count() == 0:
             return
 
-        dialog = AddCitationDialog(self.ThreadManager)
+        dialog = AddCitationDialog(self.ThreadManager, parent=self)
         dialog.show()
         if dialog.exec_():
             self.get_editor().insert_text_at_cursor("[@{}]".format(dialog.citation_identifier))
@@ -602,7 +618,7 @@ class MainWindow(QMainWindow):
 
         identifiers = self.get_used_identifiers("footnotes", editor)
 
-        dialog = AddFootnoteDialog(identifiers, self.SettingsManager)
+        dialog = AddFootnoteDialog(identifiers, self.SettingsManager, parent=self)
         dialog.show()
         if dialog.exec_():
             identifier = dialog.identifier
@@ -616,7 +632,7 @@ class MainWindow(QMainWindow):
         editor = self.get_editor()
 
         if editor:
-            dialog = AddCrossRefDialog(self.get_current_structure(editor), editor.is_cursor_in_sentence())
+            dialog = AddCrossRefDialog(self.get_current_structure(editor), editor.is_cursor_in_sentence(), parent=self)
             dialog.show()
             if dialog.exec_():
                 editor.insert_text_at_cursor(dialog.tag)
@@ -628,7 +644,7 @@ class MainWindow(QMainWindow):
         if not editor:
             return
 
-        dialog = AddTableDialog(self.get_used_identifiers("tables", editor), self.SettingsManager)
+        dialog = AddTableDialog(self.get_used_identifiers("tables", editor), self.SettingsManager, parent=self)
         dialog.show()
         if dialog.exec_():
             editor.insert_text_at_empty_paragraph(dialog.table_tag)
@@ -662,7 +678,7 @@ class MainWindow(QMainWindow):
         """Attempts to create a new project at a directory given by the user"""
 
         dialog = CreateProjectDialog(self.SettingsManager.get_setting_value("Projects/Project types"),
-                                     self.SettingsManager.get_setting_value("Application/Project folder"))
+                                     self.SettingsManager.get_setting_value("Application/Project folder"), parent=self)
         dialog.show()
         if dialog.exec_():
             ProjectManager.create_project(dialog.path)
@@ -817,7 +833,7 @@ class MainWindow(QMainWindow):
     def on_actionSettings_triggered(self) -> None:
         """Show settings dialog"""
 
-        dialog = SettingsDialog(self.SettingsManager)
+        dialog = SettingsDialog(self.SettingsManager, parent=self)
         dialog.show()
         dialog.exec_()
 
