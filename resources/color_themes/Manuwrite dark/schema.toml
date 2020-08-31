@@ -1,0 +1,174 @@
+"Data type" = "Manuwrite color schema"
+"Schema name" = "Manuwrite dark"
+
+[Application_colors.window]
+name = "Window background"
+color = "#31363b"
+
+[Application_colors.window_text]
+name = "Window text"
+color = "#eff0f1"
+
+[Application_colors.base]
+name = "Base"
+color = "#232629"
+
+[Application_colors.alternate_base]
+name = "Alternate base"
+color = "#31363b"
+
+[Application_colors.tooltip_base]
+name = "Tooltip base"
+color = "#31363b"
+
+[Application_colors.tooltip_text]
+name = "Tooltip text"
+color = "#eff0f1"
+
+[Application_colors.placeholder_text]
+name = "Placeholder text"
+color = "#eff0f1"
+
+[Application_colors.text]
+name = "Text"
+color = "#eff0f1"
+
+[Application_colors.button]
+name = "Button base"
+color = "#31363b"
+
+[Application_colors.button_text]
+name = "Button text"
+color = "#eff0f1"
+
+[Application_colors.bright_text]
+name = "Bright text"
+color = "#ffffff"
+
+[Editor_colors.background]
+name = "Editor background"
+color = "#232629"
+
+[Editor_colors.text]
+name = "Text"
+color = "#eff0f1"
+
+[Editor_colors.current_line]
+name = "Current line"
+color = "#31363b"
+
+[Editor_colors.linenumber_area]
+name = "Line number area"
+color = "#202427"
+
+[Editor_colors.linenumber_text]
+name = "Line number area text"
+color = "#eff0f1"
+
+[Markdown_colors.heading-1]
+name = "Heading 1"
+color = "#ff0000"
+
+[Markdown_colors.heading-2]
+name = "Heading 2"
+color = "#ff0000"
+
+[Markdown_colors.heading-3]
+name = "Heading 3"
+color = "#ff0000"
+
+[Markdown_colors.heading-4]
+name = "Heading 4"
+color = "#ff0000"
+
+[Markdown_colors.heading-5]
+name = "Heading 5"
+color = "#ff0000"
+
+[Markdown_colors.heading-6]
+name = "Heading 6"
+color = "#ff0000"
+
+[Markdown_colors.line-break]
+name = "Line break"
+color = "#ff8080"
+
+[Markdown_colors.horizontal-rule]
+name = "Horizontal rule"
+color = "#ff8080"
+
+[Markdown_colors.italic]
+name = "Italic"
+color = "#ffff00"
+
+[Markdown_colors.bold]
+name = "Bold"
+color = "#ffff00"
+
+[Markdown_colors.bold-and-italic]
+name = "Bold and italic"
+color = "#ffff00"
+
+[Markdown_colors.blockquote-1]
+name = "Blockquote 1"
+color = "#00ffff"
+
+[Markdown_colors.blockquote-2]
+name = "Blockquote 2"
+color = "#00ffff"
+
+[Markdown_colors.blockquote-3]
+name = "Blockquote 3"
+color = "#00ffff"
+
+[Markdown_colors.blockquote-n]
+name = "Blockquote n"
+color = "#00ffff"
+
+[Markdown_colors.ordered-list]
+name = "Ordered list"
+color = "#ff0000"
+
+[Markdown_colors.unordered-list]
+name = "Unordered list"
+color = "#ff0000"
+
+[Markdown_colors.code]
+name = "Code"
+color = "#00ff00"
+
+[Markdown_colors.link]
+name = "Link"
+color = "#3e95ff"
+
+[Markdown_colors.image]
+name = "Image"
+color = "#3e95ff"
+
+[Markdown_colors.citation]
+name = "Citation"
+color = "#3e95ff"
+
+[Markdown_colors.strikeout]
+name = "Strikeout"
+color = "#777777"
+
+[Markdown_colors.superscript]
+name = "Superscript"
+color = "#4081d1"
+
+[Markdown_colors.subscript]
+name = "Subscript"
+color = "#4081d1"
+
+[Markdown_colors.footnote]
+name = "Footnote"
+color = "#ff0000"
+
+[Markdown_colors.table]
+name = "Table"
+color = "#0000ff"
+
+[Markdown_colors.cross-reference]
+name = "Cross reference"
+color = "#00ff00"
