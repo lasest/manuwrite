@@ -44,11 +44,13 @@ class TextEditor(QPlainTextEdit):
         self.highlighter = MarkdownHighlighter(self.document(), self.SettingsManager)
         self.char_format = QTextCharFormat(self.currentCharFormat())
 
-        self.text_changed = False
+        self.text_changed_since_save = False
+        self.text_changed_since_render = False
         self.setMouseTracking(True)
         self.is_current_editor = False
         self.is_parsing_document = False
         self.filename = ""
+        self.rendered_html = ""
         self.set_filename(filename)
 
         self.document_structure: dict = copy.deepcopy(defaults.document_info_template)
@@ -177,7 +179,8 @@ class TextEditor(QPlainTextEdit):
         """Set text_changed property to True and start InputTimer. When the timer finishes, the document will be
         rendered, if the settings do not say otherwise (disable autorender)"""
 
-        self.text_changed = True
+        self.text_changed_since_save = True
+        self.text_changed_since_render = True
         if self.SettingsManager.get_setting_value("Render/Autorender"):
             self.InputTimer.start(self.SettingsManager.get_setting_value("Render/Autorender delay"))
 
@@ -335,6 +338,10 @@ class TextEditor(QPlainTextEdit):
 
     def render_to_html(self) -> None:
         """Asks thread manager to render document contents to html"""
+        # Load previously rendered output to display widget if text hasn't changed since last render
+        if not self.text_changed_since_render:
+            self.on_pandoc_thread_finished(self.rendered_html)
+
         # Render if current filename is markdown
         if self.is_markdown_file():
             self.ThreadManager.markdown_to_html(self.toPlainText(), self.on_pandoc_thread_finished)
@@ -402,6 +409,8 @@ class TextEditor(QPlainTextEdit):
     def on_pandoc_thread_finished(self, html: str) -> None:
         """Updates document preview when pandoc thread finishes"""
         # TODO: Change to use value from settings
+        self.rendered_html = html
+        self.text_changed_since_render = False
         self.display_widget.setHtml(html, QUrl("file:///home/lasest/Working folder/manuwrite/style.css"))
 
     @pyqtSlot()

@@ -58,6 +58,7 @@ class ProjectManager():
                 filenames.append(self.get_setting_value("Absolute path") + "/" + filename)
 
             self.ThreadManager.parse_project(filenames, self.on_MarkdownProjectParserThread_finished)
+            self.set_setting_value("Absolute path", self.root_path)
 
         else:
             raise ProjectError("Project file doesn't exits")

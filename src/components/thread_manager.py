@@ -104,11 +104,16 @@ class ProjectRenderer(QThread):
     def __init__(self, project_manager):
         super().__init__()
         self.ProjectManager = project_manager
-        self.result = ""
+        self.result = self.ProjectManager.get_setting_value("Output_path")
 
     def run(self) -> None:
         command = self.ProjectManager.get_setting_value("Full_pandoc_command")
-        subprocess.run(command.split(), cwd=self.ProjectManager.get_setting_value("Absolute path"))
+        pandoc = subprocess.run(command.split(), cwd=self.ProjectManager.get_setting_value("Absolute path"))
+        try:
+            pandoc.check_returncode()
+        except subprocess.CalledProcessError as e:
+            print(str(e))
+
 
 
 class PandocThread(QThread):
@@ -235,3 +240,4 @@ class ThreadManager(QObject):
         thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
+        print("Rendering project")

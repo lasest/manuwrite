@@ -163,21 +163,29 @@ class ProjectSettingsDialog(QDialog):
             self.ui.FilesToRenderListWidget.addItem(item)
 
         # Populate CssStyleCombobox
+        self.ui.CssStyleCombobox.addItem("None")
         styles = self.SettingsManager.get_setting_value("Render/Css_styles")
         for identifier, style_info in styles.items():
             self.ui.CssStyleCombobox.addItem(style_info["name"], userData=identifier)
 
         current_style_identifier = self.ProjectManager.get_setting_value("Css_style")
         index = self.ui.CssStyleCombobox.findData(current_style_identifier)
+        if index == -1:
+            index = 0
+
         self.ui.CssStyleCombobox.setCurrentIndex(index)
 
         # Populate CslStyleCombobox
+        self.ui.CslStyleCombobox.addItem("Default")
         styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
         for identifier, style_info in styles.items():
             self.ui.CslStyleCombobox.addItem(style_info["name"], userData=identifier)
 
         current_csl_identifier = self.ProjectManager.get_setting_value("Csl_style")
         index = self.ui.CslStyleCombobox.findData(current_csl_identifier)
+        if index == -1:
+            index = 0
+
         self.ui.CslStyleCombobox.setCurrentIndex(index)
 
         # Populate formats combobox
@@ -222,26 +230,34 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Files to render", files_to_render)
 
         # Update css style info
-        style_identifier = self.ui.CssStyleCombobox.currentData()
-        self.ProjectManager.set_setting_value("Css_style", style_identifier)
+        if self.ui.CssStyleCombobox.currentIndex() == 0:
+            self.ProjectManager.set_setting_value("Css_style", "")
+            self.pandoc_kwargs["css"] = ""
+        else:
+            style_identifier = self.ui.CssStyleCombobox.currentData()
+            self.ProjectManager.set_setting_value("Css_style", style_identifier)
 
-        # Copy css style to project folder
-        styles = self.SettingsManager.get_setting_value("Render/Css_styles")
-        old_path = styles[style_identifier]["path"]
-        new_path = self.ProjectManager.get_setting_value("Absolute path") + "/style.css"
-        QFile.copy(old_path, new_path)
-        self.pandoc_kwargs["css"] = "style.css"
+            # Copy css style to project folder
+            styles = self.SettingsManager.get_setting_value("Render/Css_styles")
+            old_path = styles[style_identifier]["path"]
+            new_path = self.ProjectManager.get_setting_value("Absolute path") + "/style.css"
+            QFile.copy(old_path, new_path)
+            self.pandoc_kwargs["css"] = "style.css"
 
         # Update csl style info
-        style_identifier = self.ui.CslStyleCombobox.currentData()
-        self.ProjectManager.set_setting_value("Csl_style", style_identifier)
+        if self.ui.CslStyleCombobox.currentIndex() == 0:
+            self.ProjectManager.set_setting_value("Csl_style", "")
+            self.pandoc_kwargs["csl"] = ""
+        else:
+            style_identifier = self.ui.CslStyleCombobox.currentData()
+            self.ProjectManager.set_setting_value("Csl_style", style_identifier)
 
-        # Copy csl style to project folder
-        styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
-        old_path = styles[style_identifier]["path"]
-        new_path = self.ProjectManager.get_setting_value("Absolute path") + "/csl_style.csl"
-        QFile.copy(old_path, new_path)
-        self.pandoc_kwargs["csl"] = "csl_style.csl"
+            # Copy csl style to project folder
+            styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
+            old_path = styles[style_identifier]["path"]
+            new_path = self.ProjectManager.get_setting_value("Absolute path") + "/csl_style.csl"
+            QFile.copy(old_path, new_path)
+            self.pandoc_kwargs["csl"] = "csl_style.csl"
 
         # Update output format and filename
         format_identifier = self.ui.OutputFormatCombobox.currentData()
@@ -251,6 +267,8 @@ class ProjectSettingsDialog(QDialog):
 
         self.pandoc_kwargs["to"] = current_format["pandoc_option"]
         self.pandoc_kwargs["output"] = f"output.{current_format['file_extension']}"
+        output_path = self.ProjectManager.get_setting_value("Absolute path") + "/" + self.pandoc_kwargs["output"]
+        self.ProjectManager.set_setting_value("Output_path", output_path)
 
     def update_pandoc_settings(self) -> None:
         self.pandoc_filters["pandoc-xnos"] = self.ui.PandocXnosCheckbox.isChecked()

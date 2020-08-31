@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
         # Create a list of editors with unsaved changes
         for index in range(len(self.OpenedEditors)):
             editor = self.get_editor(index)
-            if editor.text_changed:
+            if editor.text_changed_since_save:
                 unsaved_editors.append((index, self.ui.EditorTabWidget.tabBar().tabText(index)))
                 detailed_text += self.ui.EditorTabWidget.tabBar().tabText(index) + "\n"
 
@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
             editor = self.get_editor()
             editor.appendPlainText(text)
             editor.document().setBaseUrl(QUrl.fromLocalFile(path))
-            editor.text_changed = False
+            editor.text_changed_since_save = False
 
             # Configure new tab
             current_tab_index = self.ui.EditorTabWidget.currentIndex()
@@ -384,7 +384,7 @@ class MainWindow(QMainWindow):
                 file_handle = open(editor.document().baseUrl().url(QUrl.PreferLocalFile), mode="w")
                 file_handle.write(editor.toPlainText())
                 result = True
-                editor.text_changed = False
+                editor.text_changed_since_save = False
             except OSError:
                 filename = self.ui.EditorTabWidget.tabText(index)
                 QMessageBox.critical(self, "Error", f"Failed to save file \"{filename}\"")
@@ -420,7 +420,7 @@ class MainWindow(QMainWindow):
                 file_handle = open(path, mode="w+")
                 file_handle.write(editor.toPlainText())
                 result = True
-                editor.text_changed = False
+                editor.text_changed_since_save = False
             except OSError:
                 filename = self.ui.EditorTabWidget.tabText(index)
                 QMessageBox.critical(self, "Error", f"Failed to save file \"{filename}\"")
@@ -442,7 +442,7 @@ class MainWindow(QMainWindow):
         them"""
 
         remove = True
-        if self.get_editor(index).text_changed:
+        if self.get_editor(index).text_changed_since_save:
             filename = self.ui.EditorTabWidget.tabText(index)
             answer = QMessageBox.warning(self, "Close document - Manuwrite", f"The document \"{filename}\" has been" +
                                          " modified. Do you want to save your changes or discard them?",
@@ -882,4 +882,8 @@ class MainWindow(QMainWindow):
         self.ui.ProjectTreeView.setModel(None)
 
     def on_project_rendered(self, result):
-        print("Projected rendered!!!")
+        filepath = result
+
+        # Try to display output in preview. Works for html files
+        # TODO: for some reason doesn't work with pdfs
+        self.ui.webEngineView.load(QUrl.fromLocalFile(filepath))
