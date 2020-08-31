@@ -117,6 +117,12 @@ class SettingsDialog(QDialog):
         # Populate ColorSchemaCombobox
         self.populate_ColorSchemaCombobox()
 
+        # Populate IconsCombobox
+        self.ui.IconsCombobox.addItems(["Dark", "Light"])
+        icon_theme = self.SettingsManager.get_setting_value("Colors/Icons")
+        index = self.ui.IconsCombobox.findText(icon_theme)
+        self.ui.IconsCombobox.setCurrentIndex(index)
+
     def populate_ColorSchemaCombobox(self):
         """Populates ColorSchemaCombobox with color schemas"""
         self.is_populating_ColorSchemaCombobox = True
@@ -213,6 +219,10 @@ class SettingsDialog(QDialog):
                     color_schema["Markdown_colors"][color_name]["color"] = self.ui.ColorsTable.cellWidget(i, 2).color.name()
 
             self.SettingsManager.save_color_schema(color_schema)
+
+        # Save Icons theme
+        icons_theme = self.ui.IconsCombobox.currentText()
+        self.SettingsManager.set_setting_value("Colors/Icons", icons_theme)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Saves window settings when the window closes"""

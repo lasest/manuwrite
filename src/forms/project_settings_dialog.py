@@ -8,6 +8,7 @@ from PyQt5.QtGui import QIcon, QCloseEvent
 from ui_forms.ui_project_settings_dialog import Ui_ProjectSettingsDialog
 from components.project_manager import ProjectManager
 from components.settings_manager import SettingsManager
+import common
 
 
 class ProjectSettingsDialog(QDialog):
@@ -43,12 +44,15 @@ class ProjectSettingsDialog(QDialog):
         self.on_PandocXnosCheckbox_stateChanged(self.ui.PandocXnosCheckbox.checkState())
 
     def load_icons(self) -> None:
-        self.ui.actionMoveToTheTop.setIcon(QIcon(":/icons_dark/icons_dark/go-up-skip.svg"))
-        self.ui.actionMoveUp.setIcon(QIcon(":/icons_dark/icons_dark/go-up.svg"))
-        self.ui.actionMoveLeft.setIcon(QIcon(":/icons_dark/icons_dark/go-previous.svg"))
-        self.ui.actionMoveRight.setIcon(QIcon(":/icons_dark/icons_dark/go-next.svg"))
-        self.ui.actionMoveDown.setIcon(QIcon(":/icons_dark/icons_dark/go-down.svg"))
-        self.ui.actionMoveToTheBottom.setIcon(QIcon(":/icons_dark/icons_dark/go-down-skip.svg"))
+        icon_type = self.SettingsManager.get_setting_value("Colors/Icons")
+        prefix = f"icons_{icon_type.lower()}"
+
+        common.load_icon("go-up-skip.svg", prefix, self.ui.actionMoveToTheTop)
+        common.load_icon("go-up.svg", prefix, self.ui.actionMoveUp)
+        common.load_icon("go-previous.svg", prefix, self.ui.actionMoveLeft)
+        common.load_icon("go-next.svg", prefix, self.ui.actionMoveRight)
+        common.load_icon("go-down.svg", prefix, self.ui.actionMoveDown)
+        common.load_icon("go-down-skip.svg", prefix, self.ui.actionMoveToTheBottom)
 
     def set_toolbuttons_actions(self) -> None:
         """Set defalult actions for tool buttons"""

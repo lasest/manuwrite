@@ -305,6 +305,8 @@ application_settings = {
             },
             "Colors/Color_schemas/type": "dict",
 
+            "Colors/Icons/value": "Light",
+            "Colors/Icons/type": "str",
 
             # Projects
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
@@ -358,11 +360,11 @@ parser_patterns = {
     }
 
 ProjectStructureIcons = {
-    "citations": {"icon": QIcon(":/icons_dark/icons_dark/citation-yellow.svg")},
-    "figures": {"icon": QIcon(":/icons_dark/icons_dark/image-jpeg.svg")},
-    "tables": {"icon": QIcon(":/icons_dark/icons_dark/table-red.svg")},
-    "footnotes": {"icon": QIcon(":/icons_dark/icons_dark/footnote-blue.svg")},
-    "headings": {"icon": QIcon(":/icons_dark/icons_dark/heading-purple.svg")}
+    "citations": {"icon": QIcon(":/icons_common/icons_common/citation-yellow.svg")},
+    "figures": {"icon": QIcon(":/icons_common/icons_common/image-jpeg.svg")},
+    "tables": {"icon": QIcon(":/icons_common/icons_common/table-red.svg")},
+    "footnotes": {"icon": QIcon(":/icons_common/icons_common/footnote-blue.svg")},
+    "headings": {"icon": QIcon(":/icons_common/icons_common/heading-purple.svg")}
 }
 
 identifier_categories = ["headings", "figures", "citations", "footnotes", "tables"]

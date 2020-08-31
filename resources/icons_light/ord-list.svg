@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 22 22"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="ord-list.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:document-rotation="0"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     id="namedview8"
+     showgrid="false"
+     inkscape:zoom="32.5"
+     inkscape:cx="5.6953271"
+     inkscape:cy="11.703407"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="12.246154,15.753846"
+       orientation="1,0"
+       id="guide2235" />
+    <sodipodi:guide
+       position="9.9692308,12.123077"
+       orientation="1,0"
+       id="guide2237" />
+  </sodipodi:namedview>
+  <defs
+     id="defs3051">
+    <style
+       type="text/css"
+       id="current-color-scheme">
+      .ColorScheme-Text {
+        color:#eff0f1;
+      }
+      </style>
+  </defs>
+  <g
+     aria-label="1."
+     id="text2195"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.6667px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#232629;fill-opacity:1;stroke:none">
+    <path
+       style="fill:#232629;fill-opacity:1"
+       d="M 1.0934719,7.4169268 H 2.7288937 V 1.4741997 L 0.96847146,1.8700342 V 0.91169788 L 2.718477,0.52628 H 3.7705636 V 7.4169268 H 5.3851521 V 8.3023462 H 1.0934719 Z"
+       id="path2257" />
+    <path
+       style="fill:#232629;fill-opacity:1"
+       d="M 8.655996,6.7137995 H 9.9685001 V 8.3023462 H 8.655996 Z"
+       id="path2259" />
+  </g>
+  <path
+     style="fill:none;stroke:#232629;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 12.238614,7.7617301 H 22.285603"
+     id="path2199" />
+  <path
+     style="fill:none;stroke:#232629;stroke-width:0.915882px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="M 12.246154,20.884223 H 22.410192"
+     id="path2201" />
+  <g
+     aria-label="2."
+     id="text2225"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.3333px;line-height:1.25;font-family:monospace;-inkscape-font-specification:monospace;fill:#232629;fill-opacity:1;stroke:none">
+    <path
+       d="m 1.6703118,20.463875 h 3.5729279 v 0.88542 H 0.51926646 v -0.88542 Q 1.4932279,19.43783 2.2223968,18.651369 q 0.729169,-0.78646 1.0052116,-1.109378 0.5208349,-0.635419 0.7031272,-1.026045 0.1822922,-0.395835 0.1822922,-0.807294 0,-0.651044 -0.3854179,-1.020837 -0.3802095,-0.369793 -1.0468783,-0.369793 -0.4739598,0 -0.9947948,0.171876 -0.520835,0.171876 -1.10417014,0.520835 V 13.94823 q 0.53646004,-0.25521 1.05208664,-0.385418 0.520835,-0.130209 1.0260449,-0.130209 1.1406286,0 1.8333392,0.609377 0.6979188,0.604168 0.6979188,1.588547 0,0.500001 -0.2343757,1.000003 -0.2291674,0.500001 -0.7500024,1.10417 -0.2916676,0.338543 -0.848961,0.937503 -0.5520851,0.59896 -1.6875053,1.791672 z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:monospace;-inkscape-font-specification:monospace;fill:#232629;fill-opacity:1"
+       id="path2262" />
+    <path
+       d="M 8.6963758,19.760748 H 10.00888 v 1.588547 H 8.6963758 Z"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:monospace;-inkscape-font-specification:monospace;fill:#232629;fill-opacity:1"
+       id="path2264" />
+  </g>
+</svg>

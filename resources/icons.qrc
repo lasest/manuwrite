@@ -2,6 +2,35 @@
     <qresource prefix="/icons_light">
         <file>icons_light/go-previous.svg</file>
         <file>icons_light/go-next.svg</file>
+        <file>icons_light/format-text-italic.svg</file>
+        <file>icons_light/format-text-bold.svg</file>
+        <file>icons_light/format-text-bold-italic.svg</file> #
+        <file>icons_light/heading1.svg</file> #
+        <file>icons_light/heading2.svg</file> #
+        <file>icons_light/heading3.svg</file> #
+        <file>icons_light/heading4.svg</file> #
+        <file>icons_light/heading5.svg</file> #
+        <file>icons_light/heading6.svg</file> #
+        <file>icons_light/horizontal-rule.svg</file>
+        <file>icons_light/format-text-blockquote.svg</file>
+        <file>icons_light/ord-list.svg</file>
+        <file>icons_light/unord-list.svg</file>
+        <file>icons_light/link.svg</file>
+        <file>icons_light/insert-image.svg</file>
+        <file>icons_light/format-text-code.svg</file>
+        <file>icons_light/document-open.svg</file>
+        <file>icons_light/go-up.svg</file>
+        <file>icons_light/go-up-skip.svg</file>
+        <file>icons_light/go-down.svg</file>
+        <file>icons_light/go-down-skip.svg</file>
+        <file>icons_light/go-previous.svg</file>
+        <file>icons_light/go-next.svg</file>
+        <file>icons_light/format-text-strikethrough.svg</file>
+        <file>icons_light/format-text-superscript.svg</file>
+        <file>icons_light/format-text-subscript.svg</file>
+        <file>icons_light/insert-footnote.svg</file>
+        <file>icons_light/table.svg</file>
+        <file>icons_light/text-frame-link.svg</file>
     </qresource>
 
     <qresource prefix="/icons_dark">
@@ -18,7 +47,6 @@
         <file>icons_dark/heading6.svg</file>
         <file>icons_dark/horizontal-rule.svg</file>
         <file>icons_dark/format-text-blockquote.svg</file>
-        <file>icons_dark/format-list-ordered.svg</file>
         <file>icons_dark/ord-list.svg</file>
         <file>icons_dark/unord-list.svg</file>
         <file>icons_dark/link.svg</file>
@@ -35,11 +63,6 @@
         <file>icons_dark/format-text-superscript.svg</file>
         <file>icons_dark/format-text-subscript.svg</file>
         <file>icons_dark/insert-footnote.svg</file>
-        <file>icons_dark/image-jpeg.svg</file>
-        <file>icons_dark/heading-purple.svg</file>
-        <file>icons_dark/citation-yellow.svg</file>
-        <file>icons_dark/footnote-blue.svg</file>
-        <file>icons_dark/table-red.svg</file>
         <file>icons_dark/table.svg</file>
         <file>icons_dark/text-frame-link.svg</file>
     </qresource>
@@ -52,6 +75,12 @@
         <file>icons_common/account.svg</file>
         <file>icons_common/settings.svg</file>
         <file>icons_common/warning.svg</file>
+
+        <file>icons_common/image-jpeg.svg</file>
+        <file>icons_common/heading-purple.svg</file>
+        <file>icons_common/citation-yellow.svg</file>
+        <file>icons_common/footnote-blue.svg</file>
+        <file>icons_common/table-red.svg</file>
     </qresource>
 
     <qresource prefix="ui">

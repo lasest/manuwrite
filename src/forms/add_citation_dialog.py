@@ -5,7 +5,6 @@ from PyQt5.QtCore import pyqtSlot, QRegExp, Qt
 from manubot.cite.handlers import prefix_to_handler
 
 from ui_forms.ui_add_citation_dialog import Ui_AddCitationDialog
-from components.thread_manager import ThreadManager
 
 
 class AddCitationDialog(QDialog):
@@ -83,7 +82,7 @@ class AddCitationDialog(QDialog):
             self.citation_identifier = self.ui.IdentifierLineEdit.text()
             super().accept()
 
-    @pyqtSlot(str, str)
+    @pyqtSlot(dict)
     def on_thread_finished(self, citation_info: dict) -> None:
         """Prints citation info received from pandoc thread to the ui"""
 

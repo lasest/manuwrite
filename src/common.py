@@ -1,7 +1,8 @@
 from collections import OrderedDict
 import copy
 
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidgetItem, QAction
+from PyQt5.QtGui import QIcon
 
 from resources import icons_rc
 import defaults
@@ -146,3 +147,7 @@ def load_project_structure(project_structure: dict, tree_widget, exclude_categor
 
     tree_widget.expandAll()
     tree_widget.resizeColumnToContents(0)
+
+
+def load_icon(filename: str, prefix: str, action: QAction) -> None:
+    action.setIcon(QIcon(f":/{prefix}/{prefix}/{filename}"))

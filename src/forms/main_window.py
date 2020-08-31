@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTreeWidgetItem)
+                            QMenu, QInputDialog, QTreeWidgetItem, QAction)
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex)
 from PyQt5.QtGui import *
 
@@ -40,10 +40,6 @@ class MainWindow(QMainWindow):
         self.ui.splitter.setStretchFactor(1, 1)
         self.ui.splitter.setStretchFactor(2, 1)
 
-        # Call convenience functions to setup Ui
-        self.set_icons()
-        self.set_toolbar_actions()
-
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager: ProjectManager = None
@@ -51,6 +47,10 @@ class MainWindow(QMainWindow):
         self.SettingsManager: SettingsManager = SettingsManager(self)
         self.OpenedEditors = []
         self.current_editor_index = 0
+
+        # Call convenience functions to setup Ui
+        self.load_icons()
+        self.set_toolbar_actions()
 
         # Connect signals and slots
         self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
         self.ui.CrossRefToolButton.setDefaultAction(self.ui.actionCrossRef)
         self.ui.RenderProjectToolButton.setDefaultAction(self.ui.actionRenderProject)
 
-    def set_icons(self) -> None:
+    def load_icons(self) -> None:
         # load common icons
         self.ui.EditorTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/document-papirus.svg")))
         self.ui.GitTabLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/git-branch.svg")))
@@ -98,31 +98,33 @@ class MainWindow(QMainWindow):
         self.ui.UserAccounLabel.setPixmap(QPixmap.fromImage(QImage(":/icons_common/icons_common/account.svg")))
 
         # load light/dark icons
-        self.ui.actionItalic.setIcon(QIcon(":/icons_dark/icons_dark/format-text-italic.svg"))
-        self.ui.actionBold.setIcon(QIcon(":/icons_dark/icons_dark/format-text-bold.svg"))
-        self.ui.actionBoldItalic.setIcon(QIcon(":/icons_dark/icons_dark/format-text-bold-italic.svg"))
-        self.ui.actionHeading1.setIcon(QIcon(":/icons_dark/icons_dark/heading1.svg"))
-        self.ui.actionHeading2.setIcon(QIcon(":/icons_dark/icons_dark/heading2.svg"))
-        self.ui.actionHeading3.setIcon(QIcon(":/icons_dark/icons_dark/heading3.svg"))
-        self.ui.actionHeading4.setIcon(QIcon(":/icons_dark/icons_dark/heading4.svg"))
-        self.ui.actionHeading5.setIcon(QIcon(":/icons_dark/icons_dark/heading5.svg"))
-        self.ui.actionHeading6.setIcon(QIcon(":/icons_dark/icons_dark/heading6.svg"))
-        self.ui.HeadingToolButton.setIcon(QIcon(":/icons_dark/icons_dark/heading1.svg"))
+        icon_type = self.SettingsManager.get_setting_value("Colors/Icons")
+        prefix = f"icons_{icon_type.lower()}"
 
-        self.ui.actionHorizontalRule.setIcon(QIcon(":/icons_dark/icons_dark/horizontal-rule.svg"))
-        self.ui.actionBlockquote.setIcon(QIcon(":/icons_dark/icons_dark/format-text-blockquote.svg"))
-        self.ui.actionOrdList.setIcon(QIcon(":/icons_dark/icons_dark/ord-list.svg"))
-        self.ui.actionUnordList.setIcon(QIcon(":/icons_dark/icons_dark/unord-list.svg"))
-        self.ui.actionLink.setIcon(QIcon(":/icons_dark/icons_dark/link.svg"))
-        self.ui.actionImage.setIcon(QIcon(":/icons_dark/icons_dark/insert-image.svg"))
-        self.ui.actionCode.setIcon(QIcon(":/icons_dark/icons_dark/format-text-code.svg"))
+        common.load_icon("format-text-italic.svg", prefix, self.ui.actionItalic)
+        common.load_icon("format-text-bold.svg", prefix, self.ui.actionBold)
+        common.load_icon("format-text-bold-italic.svg", prefix, self.ui.actionBoldItalic)
+        common.load_icon("heading1.svg", prefix, self.ui.actionHeading1)
+        common.load_icon("heading2.svg", prefix, self.ui.actionHeading2)
+        common.load_icon("heading3.svg", prefix, self.ui.actionHeading3)
+        common.load_icon("heading4.svg", prefix, self.ui.actionHeading4)
+        common.load_icon("heading5.svg", prefix, self.ui.actionHeading5)
+        common.load_icon("heading6.svg", prefix, self.ui.actionHeading6)
+        common.load_icon("horizontal-rule.svg", prefix, self.ui.actionHorizontalRule)
+        common.load_icon("format-text-blockquote.svg", prefix, self.ui.actionBlockquote)
+        common.load_icon("ord-list", prefix, self.ui.actionOrdList)
+        common.load_icon("unord-list.svg", prefix, self.ui.actionUnordList)
+        common.load_icon("link.svg", prefix, self.ui.actionLink)
+        common.load_icon("insert-image.svg", prefix, self.ui.actionImage)
+        common.load_icon("format-text-code.svg", prefix, self.ui.actionCode)
+        common.load_icon("format-text-strikethrough.svg", prefix, self.ui.actionStrikethrough)
+        common.load_icon("format-text-superscript.svg", prefix, self.ui.actionSuperscript)
+        common.load_icon("format-text-subscript.svg", prefix, self.ui.actionSubscript)
+        common.load_icon("insert-footnote.svg", prefix, self.ui.actionFootnote)
+        common.load_icon("table.svg", prefix, self.ui.actionAddTable)
+        common.load_icon("text-frame-link.svg", prefix, self.ui.actionCrossRef)
 
-        self.ui.actionStrikethrough.setIcon(QIcon(":/icons_dark/icons_dark/format-text-strikethrough.svg"))
-        self.ui.actionSuperscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-superscript.svg"))
-        self.ui.actionSubscript.setIcon(QIcon(":/icons_dark/icons_dark/format-text-subscript.svg"))
-        self.ui.actionFootnote.setIcon(QIcon(":/icons_dark/icons_dark/insert-footnote.svg"))
-        self.ui.actionAddTable.setIcon(QIcon(":/icons_dark/icons_dark/table.svg"))
-        self.ui.actionCrossRef.setIcon(QIcon(":/icons_dark/icons_dark/text-frame-link.svg"))
+        common.load_icon("heading1.svg", prefix, self.ui.HeadingToolButton)
 
     def set_active_tab(self, label: QLabel) -> None:
         """Makes specified label in MainTabsFrame appear selected and deselects all other labels. Switches tab in
