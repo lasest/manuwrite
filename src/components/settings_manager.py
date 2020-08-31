@@ -1,7 +1,7 @@
 import toml
 import xml.etree.ElementTree as ET
 
-from PyQt5.QtCore import QObject, QSettings, QStandardPaths, QDir, QDirIterator
+from PyQt5.QtCore import QObject, QSettings, QStandardPaths, QDir, QFile
 from PyQt5.QtGui import QPalette
 
 import defaults
@@ -33,6 +33,7 @@ class SettingsManager(QObject):
         self.color_schema = self.get_current_color_schema()
         self.set_setting_value("Render/Css_styles", self.scan_for_css_styles())
         self.set_setting_value("Render/Csl_styles", self.scan_for_csl_styles())
+        self.set_setting_value("Colors/Color_schemas", self.scan_for_color_schemas())
 
         # Set settings to defaults if some keys are missing
         for key, value in self.defaults.items():
@@ -86,27 +87,6 @@ class SettingsManager(QObject):
             dir.mkpath(path)
 
         return QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
-
-    def get_color_schemas(self) -> dict:
-        """Return a dict of all color schemes found in the /color_schemas subdirectory of the app data directory"""
-        # TODO: exception possible here
-        path = self.get_appdata_path() + "/color_schemas"
-        dir_iter = QDirIterator(path, QDirIterator.Subdirectories)
-        color_schemas = dict()
-        schema_names = []
-
-        while dir_iter.hasNext():
-            filepath = dir_iter.next()
-
-            if filepath.endswith(".toml"):
-                data = toml.load(filepath)
-                if "Data type" in data and data["Data type"] == "Manuwrite color schema":
-                    color_schemas[data["Schema name"]] = data
-                    schema_names.append(data["Schema name"])
-
-            color_schemas["Schema names"] = schema_names
-
-        return color_schemas
 
     def scan_for_css_styles(self) -> dict:
         """Scans <app data>/css_styles subdirectories for css styles. Returns a dictionary with information about the
@@ -167,12 +147,50 @@ class SettingsManager(QObject):
 
         return styles
 
+    def scan_for_color_schemas(self) -> dict:
+        """Scans <app data>/color_schemes subdirectories for color schemas. Returns a dictionary with information about
+        the color schemes that were found"""
+
+        # TODO: handle exceptions
+        # Get the list of all subdirectories
+        path = self.get_appdata_path() + "/color_schemas"
+        directory = QDir(path)
+        subdirectories = directory.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
+
+        schemas = dict()
+        # Iterate over subdirectories to check if they contain color schemas
+        for subdirectory in subdirectories:
+            directory.cd(subdirectory)
+            entries = directory.entryList(QDir.Files)
+
+            # Check if schema file is present
+            if "schema.toml" in entries:
+                schema_info = dict()
+
+                filepath = path + "/" + subdirectory + "/" + "schema.toml"
+                schema = toml.load(filepath)
+                name = schema["Schema name"]
+
+                schema_info["name"] = name
+                schema_info["path"] = filepath
+
+                schemas[name] = schema_info
+
+        return schemas
+
+    def get_color_schema(self, schema_identifier: str) -> dict:
+        color_schemas = self.get_setting_value("Colors/Color_schemas")
+        schema_filepath = color_schemas[schema_identifier]["path"]
+        schema = toml.load(schema_filepath)
+
+        return schema
+
     def get_current_color_schema(self) -> dict:
         """Return current color schema or the default color schema, if failed to get the current one"""
-        schema_name = self.get_setting_value("Editor/Current color schema")
-        if schema_name != "System colors":
+        schema_identifier = self.get_setting_value("Editor/Current color schema")
+        if schema_identifier != "System colors":
             try:
-                schema = self.get_color_schemas()[schema_name]
+                schema = self.get_color_schema(schema_identifier)
             except (KeyError, OSError):
                 schema = None
         else:
@@ -189,18 +207,77 @@ class SettingsManager(QObject):
 
         return defaults.get_default_color_schema(palette)
 
-    def save_color_schema(self, color_schema):
+    def save_color_schema(self, color_schema: dict) -> None:
+        """Saves given color schema to file"""
         # TODO: exception possible here
-        path = self.get_appdata_path() + "/color_schemas"
-        dir_iter = QDirIterator(path, QDirIterator.Subdirectories)
+        schema_identifier = color_schema["Schema name"]
+        schema_info = self.get_setting_value("Colors/Color_schemas")[schema_identifier]
+        filepath = schema_info["path"]
 
-        while dir_iter.hasNext():
-            filepath = dir_iter.next()
+        file_handle = open(filepath, "w+")
+        toml.dump(color_schema, file_handle)
+        file_handle.close()
 
-            if filepath.endswith(".toml"):
-                data = toml.load(filepath)
-                if "Schema name" in data and data["Schema name"] == color_schema["Schema name"]:
-                    file_handle = open(filepath, "w")
-                    toml.dump(color_schema, file_handle)
-                    file_handle.close()
-                    break
+    def import_color_schema_from_dict(self, schema_name: str, color_schema: dict) -> None:
+        """Imports color schema from a dictionary"""
+        # Set schema name
+        color_schema["Schema name"] = schema_name
+
+        # Create directory for new schema file
+        directory = QDir(self.get_appdata_path() + "/color_schemas")
+        directory.mkdir(schema_name)
+
+        # Add information about schema to settings manager
+        schemas = self.get_setting_value("Colors/Color_schemas")
+        filepath = self.get_appdata_path() + "/color_schemas/" + schema_name + "/schema.toml"
+        schema_info = {"name": schema_name, "path": filepath}
+
+        schemas[schema_name] = schema_info
+
+        # Save schema
+        self.set_setting_value("Colors/Color_schemas", schemas)
+        self.save_color_schema(color_schema)
+
+    def import_color_schema_from_file(self, filepath: str) -> None:
+        """Imports color schema from a file"""
+        # TODO: add exception handling. Can check by "Data type" == "Manuwrite color schema"
+        # Parse schema
+        schema = toml.load(filepath)
+        schema_name = schema["Schema name"]
+        new_path = self.get_appdata_path() + "/color_schemas/" + schema_name + "/schema.toml"
+
+        # Create schema dir
+        directory = QDir(self.get_appdata_path() + "/color_schemas")
+        directory.mkdir(schema_name)
+
+        # Copy schema to its dir and add to SettingsManager
+        schemas = self.get_setting_value("Colors/Color_schemas")
+        schemas[schema_name] = {"name": schema_name, "path": new_path}
+        self.set_setting_value("Colors/Color_schemas", schemas)
+
+        QFile.copy(filepath, new_path)
+
+    def delete_color_scheme(self, scheme_identifier: str) -> None:
+        """Deletes a color scheme files and removes it from SettingsManager"""
+        # Get scheme info
+        scheme_info = self.get_setting_value("Colors/Color_schemas")[scheme_identifier]
+        filepath = scheme_info["path"]
+        directory_path = filepath[:filepath.rfind("/")]
+
+        # Remove scheme directory
+        directory = QDir(directory_path)
+        directory.removeRecursively()
+
+        # Remove scheme from settings manager
+        schemas = self.get_setting_value("Colors/Color_schemas")
+        schemas.pop(scheme_identifier)
+        self.set_setting_value("Colors/Color_schemas", schemas)
+
+    def export_color_scheme_to_file(self, scheme_identifier: str, filepath: str) -> None:
+        """Exports a color scheme to file"""
+        # Get filepath of a scheme
+        schemes = self.get_setting_value("Colors/Color_schemas")
+        scheme_path = schemes[scheme_identifier]["path"]
+
+        # Copy file
+        QFile.copy(scheme_path, filepath)

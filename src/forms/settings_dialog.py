@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QPushButton, QHeaderView, QMessageBox
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QHeaderView, QMessageBox, QInputDialog, QFileDialog
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QCloseEvent, QFont, QColor
 
@@ -16,12 +16,14 @@ class SettingsDialog(QDialog):
 
         # Set attributes
         self.SettingsManager = settings_manager
+        self.is_populating_ColorSchemaCombobox = False
 
         # Prepare ui elements
         self.read_window_settings()
         self.read_general_settings()
         self.read_editor_settings()
         self.read_render_settings()
+        self.read_color_settings()
 
     def load_editor_color_schema(self) -> None:
         """Populates ColorTable on Editor tab with information about the color schema, currently selected in the
@@ -57,23 +59,18 @@ class SettingsDialog(QDialog):
         self.ui.ColorsTable.clear()
         self.ui.ColorsTable.setRowCount(0)
 
-        schemas = self.SettingsManager.get_color_schemas()
         schema_name = self.ui.ColorSchemaComboBox.currentText()
-
         if schema_name == "System colors":
-            schema = self.SettingsManager.get_default_color_schema()
             allow_editing = False
-        elif schema_name in schemas:
-            schema = schemas[schema_name]
-        else:
-            QMessageBox.warning(self, "Error", f'Color schema "{schema_name}" was not found!')
-            return
+
+        schema = self.get_selected_color_schema()
 
         if allow_editing:
             self.ui.ColorsTable.setEnabled(True)
         else:
             self.ui.ColorsTable.setEnabled(False)
 
+        load_section("Application_colors", "Application colors", schema)
         load_section("Editor_colors", "Editor colors", schema)
         load_section("Markdown_colors", "Markdown colors", schema)
 
@@ -110,20 +107,50 @@ class SettingsDialog(QDialog):
             self.ui.ImageToolTipWidthLineEdit.setEnabled(False)
             self.ui.ImageToolTipHeightLineEdit.setEnabled(False)
 
+    def read_color_settings(self) -> None:
+        # ColorTable is populated automatically when ColorSchemaCombobox value changes
+        # Adjust color table
         self.ui.ColorsTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
         self.ui.ColorsTable.setColumnHidden(0, True)
 
-        schemas = self.SettingsManager.get_color_schemas()
-        self.ui.ColorSchemaComboBox.addItems(schemas["Schema names"])
-        self.ui.ColorSchemaComboBox.addItem("System colors")
+        # Populate ColorSchemaCombobox
+        self.populate_ColorSchemaCombobox()
 
-        index = self.ui.ColorSchemaComboBox.findText(self.SettingsManager.get_setting_value("Editor/Current color schema"))
+    def populate_ColorSchemaCombobox(self):
+        """Populates ColorSchemaCombobox with color schemas"""
+        self.is_populating_ColorSchemaCombobox = True
+        self.ui.ColorSchemaComboBox.clear()
+
+        self.ui.ColorSchemaComboBox.addItem("System colors")
+        schemas = self.SettingsManager.get_setting_value("Colors/Color_schemas")
+        for identifier, schema_info in schemas.items():
+            self.ui.ColorSchemaComboBox.addItem(schema_info["name"])
+
+        index = self.ui.ColorSchemaComboBox.findText(
+            self.SettingsManager.get_setting_value("Editor/Current color schema"))
         if index == -1:
             index = 0
-        self.ui.ColorSchemaComboBox.setCurrentIndex(index)
 
-        # ColorTable if populated with colors when the ColorSchemaComboBox value changes, which appears to happen when
-        # the form is created
+        self.ui.ColorSchemaComboBox.setCurrentIndex(index)
+        self.is_populating_ColorSchemaCombobox = False
+        self.on_ColorSchemaComboBox_currentIndexChanged(index)
+
+    def get_selected_color_schema(self) -> dict:
+        """Returns the color schema currently selected in ColorSchemaCombobox"""
+        schemas = self.SettingsManager.get_setting_value("Colors/Color_schemas")
+        schema_identifier = self.ui.ColorSchemaComboBox.currentText()
+
+        # TODO: change to index based detection rather than text (can be translated)
+        if schema_identifier == "System colors":
+            schema = self.SettingsManager.get_default_color_schema()
+        elif schema_identifier in schemas:
+            schema = self.SettingsManager.get_color_schema(schema_identifier)
+        else:
+            schema = self.SettingsManager.get_default_color_schema()
+            self.ui.ColorSchemaComboBox.setCurrentIndex(0)
+            QMessageBox.warning(self, "Error", f'Color schema "{schema_identifier}" was not found!')
+
+        return schema
 
     def read_render_settings(self) -> None:
         """Read settings for the Render settings tab"""
@@ -159,25 +186,32 @@ class SettingsDialog(QDialog):
         self.SettingsManager.set_setting_value("Editor/Show citation tooltips", self.ui.ShowCitationTooltipsCheckBox.checkState())
         self.SettingsManager.set_setting_value("Editor/Show image tooltips", self.ui.ShowImageTooltipsCheckBox.checkState())
 
+    def update_render_settings(self) -> None:
+        """Save settings for the Render settings tab"""
+        self.SettingsManager.set_setting_value("Render/Autorender", self.ui.AllowAutoRenderCheckbox.checkState())
+        self.SettingsManager.set_setting_value("Render/Autorender delay", self.ui.AutorenderDelayLineEdit.text())
+
+    def update_color_settings(self) -> None:
+        """Saves settings from Colors tab"""
+        # Save schema name
         self.SettingsManager.set_setting_value("Editor/Current color schema", self.ui.ColorSchemaComboBox.currentText())
 
+        # Save colors from ColorsTable
         if self.ui.ColorSchemaComboBox.currentText() != "System colors":
             color_schema_name = self.ui.ColorSchemaComboBox.currentText()
-            color_schema = self.SettingsManager.get_color_schemas()[color_schema_name]
+            color_schema = self.SettingsManager.get_color_schema(color_schema_name)
 
             for i in range(self.ui.ColorsTable.rowCount()):
+
                 color_name = self.ui.ColorsTable.item(i, 0).text()
-                if color_name in color_schema["Editor_colors"]:
+                if color_name in color_schema["Application_colors"]:
+                    color_schema["Application_colors"][color_name]["color"] = self.ui.ColorsTable.cellWidget(i, 2).color.name()
+                elif color_name in color_schema["Editor_colors"]:
                     color_schema["Editor_colors"][color_name]["color"] = self.ui.ColorsTable.cellWidget(i, 2).color.name()
                 elif color_name in color_schema["Markdown_colors"]:
                     color_schema["Markdown_colors"][color_name]["color"] = self.ui.ColorsTable.cellWidget(i, 2).color.name()
 
             self.SettingsManager.save_color_schema(color_schema)
-
-    def update_render_settings(self):
-        """Save settings for the Render settings tab"""
-        self.SettingsManager.set_setting_value("Render/Autorender", self.ui.AllowAutoRenderCheckbox.checkState())
-        self.SettingsManager.set_setting_value("Render/Autorender delay", self.ui.AutorenderDelayLineEdit.text())
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Saves window settings when the window closes"""
@@ -195,6 +229,7 @@ class SettingsDialog(QDialog):
         self.update_general_settings()
         self.update_editor_settings()
         self.update_render_settings()
+        self.update_color_settings()
 
         super().accept()
 
@@ -208,10 +243,80 @@ class SettingsDialog(QDialog):
             self.ui.ImageToolTipWidthLineEdit.setEnabled(False)
             self.ui.ImageToolTipHeightLineEdit.setEnabled(False)
 
-    pyqtSlot(int)
+    @pyqtSlot(int)
     def on_ColorSchemaComboBox_currentIndexChanged(self, index: int) -> None:
         """Loads color schema to ColorTable when the value of ColorSchemaComboBox changes"""
-        self.ui.ColorsTable.clear()
-        self.load_editor_color_schema()
+        if not self.is_populating_ColorSchemaCombobox:
+            self.ui.ColorsTable.clear()
+            self.load_editor_color_schema()
 
+    @pyqtSlot()
+    def on_NewColorSchemaButton_clicked(self) -> None:
+        """Creates a new color schema based on the currently selected one"""
 
+        # Get name for new schema
+        result = QInputDialog.getText(self, "Create color schema - Manuwrite", "New schema name:")
+        # Check if user accepted
+        if not result[1]:
+            return
+
+        schema_name = result[0]
+        # Check if schema name is valid
+        if schema_name == "":
+            QMessageBox.warning(self, "Error", "Schema name cannot be empty.")
+            return
+
+        # Create schema directory and file based on the currently selected schema colors
+        self.SettingsManager.import_color_schema_from_dict(schema_name, self.get_selected_color_schema())
+
+        # Repopulate ColorSchemasCombobox
+        self.populate_ColorSchemaCombobox()
+
+        # Select newly created schema
+        index = self.ui.ColorSchemaComboBox.findText(schema_name)
+        self.ui.ColorSchemaComboBox.setCurrentIndex(index)
+
+    @pyqtSlot()
+    def on_DeleteColorSchemaButton_clicked(self) -> None:
+        """Deletes color schema currently selected in ColorSchemaCombobox"""
+        # TODO: disable delete button on item change instead
+        # If system colors are currently selected as a color scheme, do nothing
+        if self.ui.ColorSchemaComboBox.currentIndex() == 0:
+            return
+
+        # Remove scheme
+        scheme_identifier = self.ui.ColorSchemaComboBox.currentText()
+        self.SettingsManager.delete_color_scheme(scheme_identifier)
+
+        # Update ColorSchemeCombobox
+        self.populate_ColorSchemaCombobox()
+
+    @pyqtSlot()
+    def on_ImportColorSchemaButton_clicked(self) -> None:
+        """Imports a new color scheme from file"""
+        # Get filepath
+        filepath = QFileDialog.getOpenFileName(self, "Import color scheme")[0]
+        if not filepath:
+            return
+
+        # Import from file
+        self.SettingsManager.import_color_schema_from_file(filepath)
+
+        # Repopulate ColorSchemasCombobox
+        self.populate_ColorSchemaCombobox()
+
+    @pyqtSlot()
+    def on_ExportColorSchemaButton_clicked(self) -> None:
+        """Exports a color theme to a file"""
+        # Do not export, if default scheme is selected (there is no file to copy)
+        if self.ui.ColorSchemaComboBox.currentIndex() == 0:
+            return
+
+        # Get filepath
+        filepath = QFileDialog.getSaveFileName(self, "Export color scheme")[0]
+        if not filepath:
+            return
+
+        # Export to file
+        selected_scheme_identifier = self.ui.ColorSchemaComboBox.currentText()
+        self.SettingsManager.export_color_scheme_to_file(selected_scheme_identifier, filepath)

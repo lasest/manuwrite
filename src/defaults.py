@@ -2,7 +2,7 @@ import collections
 import copy
 
 from PyQt5.QtCore import QDate, QSize, QPoint, QStandardPaths, Qt
-from PyQt5.QtGui import QColor, QIcon
+from PyQt5.QtGui import QColor, QIcon, QPalette
 
 import components.extractors
 
@@ -297,6 +297,15 @@ application_settings = {
             },
             "Render/Csl_styles/type": "dict",
 
+            "Colors/Color_schemas/value": {
+                "schema_identifier": {
+                    "name": "schema_name",
+                    "path": "schema_path"
+                }
+            },
+            "Colors/Color_schemas/type": "dict",
+
+
             # Projects
             "Projects/Project types/value": ["Article", "Book", "Notes", "Other"],
             "Projects/Project types/type": "list"
@@ -365,11 +374,57 @@ identifier_prefixes = {
 }
 
 
-def get_default_color_schema(palette) -> dict:
+def get_default_color_schema(palette: QPalette) -> dict:
     """Returns a default color schema based on a given palette"""
     default_color_schema = {
         "Data type": "Manuwrite color schema",
         "Schema name": "System colors",
+        "Application_colors": {
+            "window": {
+                "name": "Window background",
+                "color": palette.color(palette.Window).name()
+            },
+            "window_text": {
+                "name": "Window text",
+                "color": palette.color(palette.WindowText).name()
+            },
+            "base": {
+                "name": "Base",
+                "color": palette.color(palette.Base).name()
+            },
+            "alternate_base": {
+                "name": "Alternate base",
+                "color": palette.color(palette.AlternateBase).name()
+            },
+            "tooltip_base": {
+                "name": "Tooltip base",
+                "color": palette.color(palette.ToolTipBase).name()
+            },
+            "tooltip_text": {
+                "name": "Tooltip text",
+                "color": palette.color(palette.ToolTipText).name()
+            },
+            "placeholder_text": {
+                "name": "Placeholder text",
+                "color": palette.color(palette.PlaceholderText).name()
+            },
+            "text": {
+                "name": "Text",
+                "color": palette.color(palette.Text).name()
+            },
+            "button": {
+                "name": "Button base",
+                "color": palette.color(palette.Button).name()
+            },
+            "button_text": {
+                "name": "Button text",
+                "color": palette.color(palette.ButtonText).name()
+            },
+            "bright_text": {
+                "name": "Bright text",
+                "color": palette.color(palette.BrightText).name()
+            },
+        },
         "Editor_colors": {"background": {"name": "Editor background",
                                          "color": palette.color(palette.Base).name()},
                           "text": {"name": "Text",
@@ -379,7 +434,8 @@ def get_default_color_schema(palette) -> dict:
                           "linenumber_area": {"name": "Line number area",
                                               "color": palette.color(palette.AlternateBase).darker(150).name()},
                           "linenumber_text": {"name": "Line number area text",
-                                              "color": palette.color(palette.Text).name()}},
+                                              "color": palette.color(palette.Text).name()}
+                          },
         "Markdown_colors": {"heading-1": {"name": "Heading 1",
                                           "color": QColor(Qt.red).name()},
                             "heading-2": {"name": "Heading 2",

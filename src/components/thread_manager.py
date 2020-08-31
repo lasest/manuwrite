@@ -240,4 +240,3 @@ class ThreadManager(QObject):
         thread_wrapper.thread_finished.connect(self.run_next_thread)
 
         self.run_thread(thread_wrapper)
-        print("Rendering project")
