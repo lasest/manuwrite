@@ -1,9 +1,9 @@
 import copy
 import yaml
 
-from PyQt5.QtWidgets import QDialog, QListWidgetItem, QListWidget, QMessageBox
+from PyQt5.QtWidgets import QDialog, QListWidgetItem, QListWidget, QMessageBox, QFileDialog, QAbstractButton
 from PyQt5.QtCore import QDate, QDirIterator, QDir, Qt, pyqtSlot, QFile, QIODevice
-from PyQt5.QtGui import QIcon, QCloseEvent
+from PyQt5.QtGui import QCloseEvent
 
 from ui_forms.ui_project_settings_dialog import Ui_ProjectSettingsDialog
 from components.project_manager import ProjectManager
@@ -134,7 +134,7 @@ class ProjectSettingsDialog(QDialog):
         self.ui.AuthorsLineEdit.setText(self.yaml_metablock["author"])
         self.ui.ProjectTypeValueLabel.setText(self.ProjectManager.get_setting_value("Project type"))
         self.ui.DescriptionPlainTextEdit.setPlainText(self.yaml_metablock["abstract"])
-        self.ui.AdditionalMetaInfoPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Additional meta " +
+        self.ui.ManualYamlPlainTextEdit.setPlainText(self.ProjectManager.get_setting_value("Additional meta " +
                                                                                                    "information"))
         self.ui.MetaInfoCheckbox.setChecked(self.ProjectManager.get_setting_value("Include_metainfo"))
 
@@ -203,8 +203,8 @@ class ProjectSettingsDialog(QDialog):
         self.ui.OutputFormatCombobox.setCurrentIndex(index)
 
         # Populate PandocCommandLineEdit
-        self.ui.PandocCommandLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (auto)"))
-        self.ui.PandocCommandManualLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc command (manual)"))
+        self.ui.PandocCommandTextBrowser.setText(self.ProjectManager.get_setting_value("Pandoc_command_full"))
+        self.ui.ManualPandocArgsLineEdit.setText(self.ProjectManager.get_setting_value("Pandoc_command_manual"))
 
     # Writing settings
     def update_window_settings(self) -> None:
@@ -222,7 +222,7 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Date created", [date.year(), date.month(), date.day()])
         self.yaml_metablock["author"] = self.ui.AuthorsLineEdit.text()
         self.yaml_metablock["abstract"] = self.ui.DescriptionPlainTextEdit.toPlainText()
-        self.ProjectManager.set_setting_value("Additional meta information", self.ui.AdditionalMetaInfoPlainTextEdit.toPlainText())
+        self.ProjectManager.set_setting_value("Additional meta information", self.ui.ManualYamlPlainTextEdit.toPlainText())
         self.ProjectManager.set_setting_value("Include_metainfo", self.ui.MetaInfoCheckbox.isChecked())
 
     def update_render_settings(self) -> None:
@@ -373,6 +373,11 @@ class ProjectSettingsDialog(QDialog):
             if not (type(value) == str and value == ""):
                 add_arg(f"{key}={value}")
 
+        # Add manual arguments
+        manual_part = self.ProjectManager.get_setting_value("Pandoc_command_manual")
+        if manual_part:
+            command += " " + manual_part.strip() + " "
+
         # Add files to be rendered
         files_to_render = list(self.ProjectManager.get_setting_value("Files to render"))
         for file in files_to_render:
@@ -401,10 +406,8 @@ class ProjectSettingsDialog(QDialog):
 
         return yaml_text
 
-    def accept(self) -> None:
-        """Update project settings in Project manager and save them if the dialog is accepted"""
-        # Update settings
-        self.update_window_settings()
+    def apply_settings(self) -> None:
+        """Updates settings and writes them to file"""
         self.update_meta_information_settings()
         self.update_render_settings()
         self.update_pandoc_settings()
@@ -420,7 +423,11 @@ class ProjectSettingsDialog(QDialog):
                 line = "-" * 3 + "\n"
                 file_handle.write(line.encode())
                 file_handle.write(yaml_text.encode())
-                line = "." * 3
+
+                manual_yaml = "\n" + self.ui.ManualYamlPlainTextEdit.toPlainText()
+                file_handle.write(manual_yaml.encode())
+
+                line = "\n" + "." * 3
                 file_handle.write(line.encode())
                 file_handle.close()
 
@@ -441,11 +448,10 @@ class ProjectSettingsDialog(QDialog):
         self.ProjectManager.set_setting_value("Pandoc_args", self.pandoc_args)
 
         # Update pandoc command
-        self.ProjectManager.set_setting_value("Pandoc command (auto)", self.get_pandoc_command())
-        self.ProjectManager.set_setting_value("Pandoc command (manual)", self.ui.PandocCommandManualLineEdit.text())
-
-        full_pandoc_command = self.ProjectManager.get_setting_value("Pandoc command (auto)") + " " + self.ProjectManager.get_setting_value("Pandoc command (manual)")
-        self.ProjectManager.set_setting_value("Full_pandoc_command", full_pandoc_command)
+        # Do not change order, pandoc_command_manual is should be saved before generating full command
+        self.ProjectManager.set_setting_value("Pandoc_command_manual", self.ui.ManualPandocArgsLineEdit.text())
+        full_pandoc_command = self.get_pandoc_command()
+        self.ProjectManager.set_setting_value("Pandoc_command_full", full_pandoc_command)
 
         # Save pandoc command to build.sh
         filepath = self.ProjectManager.get_setting_value("Absolute path") + "/build.sh"
@@ -463,6 +469,12 @@ class ProjectSettingsDialog(QDialog):
 
         # Write settings to file
         self.ProjectManager.save_project_data()
+
+    def accept(self) -> None:
+        """Applies settings when dialog is accepted"""
+        # Update settings
+        self.update_window_settings()
+        self.apply_settings()
 
         super().accept()
 
@@ -549,12 +561,6 @@ class ProjectSettingsDialog(QDialog):
             ListWidget.insertItem(ListWidget.count() - 1, item)
             ListWidget.setCurrentRow(ListWidget.count() - 1)
 
-    @pyqtSlot()
-    def on_GeneratePandocCommandButton_clicked(self) -> None:
-        """Generate the pandoc command based on the current gui inputs and put it to pandoc command line edit"""
-        command = self.get_pandoc_command()
-        self.ui.PandocCommandLineEdit.setText(command)
-
     # Ui consistency slots - enable/disable some elements of the form depending on the state of other elements
     @pyqtSlot(int)
     def on_NumberSectionsCheckbox_stateChanged(self, state: int) -> None:
@@ -579,3 +585,22 @@ class ProjectSettingsDialog(QDialog):
         if not state:
             self.ui.ManualBibLineEdit.setText("")
             self.ui.ManubotCiteCheckbox.setChecked(False)
+
+    @pyqtSlot()
+    def on_ManualBibToolButton_clicked(self) -> None:
+        """Choose bibliography file"""
+        # TODO: add filters
+        filepath = QFileDialog.getOpenFileName(self, "Choose bibliography file",
+                                               self.ProjectManager.get_setting_value("Absolute path"))
+        if filepath[0]:
+            self.ui.ManualBibLineEdit.setText(filepath[0])
+
+    @pyqtSlot(QAbstractButton)
+    def on_buttonBox_clicked(self, button: QAbstractButton) -> None:
+        """Applies settings when Apply button is clicked"""
+        standard_button = self.ui.buttonBox.standardButton(button)
+        if standard_button == self.ui.buttonBox.Apply:
+            self.apply_settings()
+
+            # Update pandoc command output
+            self.ui.PandocCommandTextBrowser.setText(self.ProjectManager.get_setting_value("Pandoc_command_full"))

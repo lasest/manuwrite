@@ -20,7 +20,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="MetaInfoTab">
       <attribute name="title">
@@ -142,7 +142,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QPlainTextEdit" name="AdditionalMetaInfoPlainTextEdit">
+            <widget class="QPlainTextEdit" name="ManualYamlPlainTextEdit">
              <property name="placeholderText">
               <string>Put additional meta info here. It will be included in YAML metablock without any changes</string>
              </property>
@@ -344,42 +344,41 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="PandocCommandHorizontalLayout">
-           <item>
-            <widget class="QLabel" name="PandocCommandLabel">
-             <property name="text">
-              <string>Pandoc command</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="GeneratePandocCommandButton">
-             <property name="text">
-              <string>Generate pandoc command</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QLabel" name="PandocCommandLabel">
+           <property name="text">
+            <string>Pandoc command</string>
+           </property>
+          </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <widget class="QTextBrowser" name="PandocCommandTextBrowser">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="lineWrapMode">
+            <enum>QTextEdit::FixedColumnWidth</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="ManualPandocArgsLayout">
            <item>
-            <widget class="QLineEdit" name="PandocCommandLineEdit">
-             <property name="toolTip">
-              <string>Auto generated part of the command</string>
-             </property>
-             <property name="placeholderText">
-              <string/>
+            <widget class="QLabel" name="ManualPandocArgsLabel">
+             <property name="text">
+              <string>Manual pandoc arguments</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="PandocCommandManualLineEdit">
-             <property name="toolTip">
-              <string>Manual part of the command</string>
+            <widget class="QLineEdit" name="ManualPandocArgsLineEdit">
+             <property name="text">
+              <string/>
              </property>
              <property name="placeholderText">
-              <string>Add manual arguments here...</string>
+              <string>Add space-separated arguments here...</string>
              </property>
             </widget>
            </item>

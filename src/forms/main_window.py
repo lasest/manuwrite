@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTreeWidgetItem, QAction)
+                            QMenu, QInputDialog, QTreeWidgetItem, QAction, QFrame)
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex)
 from PyQt5.QtGui import *
 
@@ -360,8 +360,10 @@ class MainWindow(QMainWindow):
         if path:
             # Read file
             try:
-                file_handle = open(path, mode="r")
+                file_handle = open(path, mode="rb")
                 text = file_handle.read()
+                text = text.decode(errors="replace")
+
             except OSError:
                 QMessageBox.critical(self, "Error", "Failed to open file. Some error occurred")
                 return
@@ -373,7 +375,6 @@ class MainWindow(QMainWindow):
             editor = self.get_editor()
             editor.appendPlainText(text)
             editor.document().setBaseUrl(QUrl.fromLocalFile(path))
-            editor.text_changed_since_save = False
 
             # Configure new tab
             current_tab_index = self.ui.EditorTabWidget.currentIndex()
@@ -382,6 +383,9 @@ class MainWindow(QMainWindow):
             self.OpenedEditors[current_tab_index] = self.OpenedEditor(filepath=path, in_current_project=False, is_current_editor=True)
             self.ui.EditorTabWidget.setTabToolTip(current_tab_index, path)
             self.ui.EditorTabWidget.setTabText(current_tab_index, editor.filename)
+
+            editor.text_changed_since_save = False
+            editor.text_changed_since_render = True
 
     @pyqtSlot()
     def on_actionSave_triggered(self, index: int = None) -> bool:

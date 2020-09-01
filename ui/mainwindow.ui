@@ -117,7 +117,7 @@
           <bool>true</bool>
          </property>
          <property name="frameShape">
-          <enum>QFrame::Box</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
@@ -736,7 +736,10 @@
   </action>
   <action name="actionBoldItalic">
    <property name="text">
-    <string>BoldItalic</string>
+    <string>Bold and italic</string>
+   </property>
+   <property name="toolTip">
+    <string>Bold and italic</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+B</string>
@@ -744,7 +747,10 @@
   </action>
   <action name="actionHeading1">
    <property name="text">
-    <string>Heading1</string>
+    <string>Heading 1</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 1 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H, H</string>
@@ -752,7 +758,10 @@
   </action>
   <action name="actionHeading2">
    <property name="text">
-    <string>Heading2</string>
+    <string>Heading 2</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 2 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H, Ctrl+H</string>
@@ -760,7 +769,10 @@
   </action>
   <action name="actionHeading3">
    <property name="text">
-    <string>Heading3</string>
+    <string>Heading 3</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 3 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
@@ -768,7 +780,10 @@
   </action>
   <action name="actionHeading4">
    <property name="text">
-    <string>Heading4</string>
+    <string>Heading 4</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 4 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+4</string>
@@ -776,7 +791,10 @@
   </action>
   <action name="actionHeading5">
    <property name="text">
-    <string>Heading5</string>
+    <string>Heading 5</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 5 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+5</string>
@@ -784,7 +802,10 @@
   </action>
   <action name="actionHeading6">
    <property name="text">
-    <string>Heading6</string>
+    <string>Heading 6</string>
+   </property>
+   <property name="toolTip">
+    <string>Level 6 heading</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+6</string>
@@ -792,7 +813,10 @@
   </action>
   <action name="actionHorizontalRule">
    <property name="text">
-    <string>HorizontalRule</string>
+    <string>Horizontal rule</string>
+   </property>
+   <property name="toolTip">
+    <string>Horizontal rule</string>
    </property>
   </action>
   <action name="actionBlockquote">
@@ -802,7 +826,10 @@
   </action>
   <action name="actionOrdList">
    <property name="text">
-    <string>OrdList</string>
+    <string>Ordered list</string>
+   </property>
+   <property name="toolTip">
+    <string>Ordered list</string>
    </property>
    <property name="shortcut">
     <string>F12</string>
@@ -810,7 +837,10 @@
   </action>
   <action name="actionUnordList">
    <property name="text">
-    <string>UnordList</string>
+    <string>Unordered list</string>
+   </property>
+   <property name="toolTip">
+    <string>Unordered list</string>
    </property>
    <property name="shortcut">
     <string>Shift+F12</string>

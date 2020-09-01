@@ -334,7 +334,7 @@
          <item>
           <widget class="QLabel" name="IconsLabel">
            <property name="text">
-            <string>Icons</string>
+            <string>Icon theme</string>
            </property>
           </widget>
          </item>

@@ -84,9 +84,8 @@ project_settings = collections.OrderedDict({
         "Css_style": {"type": "str", "value": "manuwrite_strict"},
         "Csl_style": {"type": "str", "value": ""},
         "Render to": {"type": "str", "value": "html"},
-        "Pandoc command (auto)": {"type": "str", "value": ""},
-        "Pandoc command (manual)": {"type": "str", "value": ""},
-        "Full_pandoc_command": {"type": "str", "value": ""},
+        "Pandoc_command_manual": {"type": "str", "value": ""},
+        "Pandoc_command_full": {"type": "str", "value": ""},
 
         # Pandoc section
         # Pandoc filters. Added to the command as --filter=key if the value is True
@@ -138,7 +137,7 @@ project_settings = collections.OrderedDict({
             "eqnos-star-name": "",
 
             # Pandoc-citeproc
-            "bibliography": "bib.bib"
+            "bibliography": ""
         }},
 
         # Pandoc keyword arguments (i.e. --key=value). Added to the command if the value is not an empty string.

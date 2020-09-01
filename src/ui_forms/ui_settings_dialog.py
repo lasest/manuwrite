@@ -265,7 +265,7 @@ class Ui_SettingsDialog(object):
         self.AllowAutoRenderCheckbox.setText(_translate("SettingsDialog", "Allow autorendering of the current file"))
         self.AutoRenderDelayLabel.setText(_translate("SettingsDialog", "Autorender delay (ms)"))
         self.MainTabWidget.setTabText(self.MainTabWidget.indexOf(self.RenderTab), _translate("SettingsDialog", "Render"))
-        self.IconsLabel.setText(_translate("SettingsDialog", "Icons"))
+        self.IconsLabel.setText(_translate("SettingsDialog", "Icon theme"))
         self.ColorSchemaLabel.setText(_translate("SettingsDialog", "Color Schema"))
         self.NewColorSchemaButton.setText(_translate("SettingsDialog", "New..."))
         self.DeleteColorSchemaButton.setText(_translate("SettingsDialog", "Delete"))
