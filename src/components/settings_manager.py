@@ -81,11 +81,15 @@ class SettingsManager(QObject):
     def get_appdata_path(self) -> str:
         """Returns path to the directory, where app specific data is stored (i.e. styles, colors, templates etc). If the
         directory doesn't exist, creates it"""
-        # TODO: exception possible here
         path = QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
         dir = QDir(path)
+
+        # Create directory if it doesn't exist
         if not dir.exists(path):
-            dir.mkpath(path)
+            try:
+                dir.mkpath(path)
+            except Exception:
+                print(f"Failed to create app data directory at path: {path}")
 
         return QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
 
@@ -93,10 +97,17 @@ class SettingsManager(QObject):
     def scan_for_css_styles(self) -> dict:
         """Scans <app data>/css_styles subdirectories for css styles. Returns a dictionary with information about the
          styles that were found"""
-        # TODO: hadnle exceptions
         # Get the list of all subdirectories
         path = self.get_appdata_path() + "/css_styles"
         directory = QDir(path)
+
+        if not directory.exists():
+            try:
+                directory.mkpath(path)
+            except Exception:
+                print(f"Failed to create path: {path}")
+                return dict()
+
         subdirectories = directory.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
 
         styles = dict()
@@ -108,9 +119,12 @@ class SettingsManager(QObject):
             # Check if necessary files are present
             if "description.toml" in entries and "style.css" in entries:
                 # Parse description
-                style_info = toml.load(path + "/" + subdirectory + "/" + "description.toml")
-                style_info["path"] = path + "/" + subdirectory + "/" + "style.css"
-                styles[style_info["identifier"]] = style_info
+                try:
+                    style_info = toml.load(path + "/" + subdirectory + "/" + "description.toml")
+                    style_info["path"] = path + "/" + subdirectory + "/" + "style.css"
+                    styles[style_info["identifier"]] = style_info
+                except Exception as e:
+                    print(f"Failed to parse css style at path: {path + '/' + subdirectory}. Error: {str(e)}")
 
         return styles
 
@@ -118,10 +132,18 @@ class SettingsManager(QObject):
         """Scans <app data>/csl_styles subdirectories for csl styles. Returns a dictionary with information about the
         styles that were found"""
 
-        # TODO: hadnle exceptions
         # Get all files in the csl_styles directory
         path = self.get_appdata_path() + "/csl_styles"
         directory = QDir(path)
+
+        # Create directory if it doesn't exist
+        if not directory.exists():
+            try:
+                directory.mkpath(path)
+            except Exception:
+                print(f"Failed to create path: {path}")
+                return dict()
+
         entries = directory.entryList(QDir.Files)
 
         # Iterate over files
@@ -130,19 +152,26 @@ class SettingsManager(QObject):
             if entry.endswith(".csl"):
                 filepath = path + "/" + entry
                 title = self.extract_csl_style_name(filepath)
-                # TODO: Use identifier, not the title
-                styles[title] = {"name": title, "path": filepath}
+                identifier = common.generate_identifier(title)
+                if title is not None:
+                    styles[identifier] = {"name": title, "path": filepath}
 
         return styles
 
     def scan_for_color_schemas(self) -> dict:
         """Scans <app data>/color_schemes subdirectories for color schemas. Returns a dictionary with information about
         the color schemes that were found"""
-
-        # TODO: handle exceptions
         # Get the list of all subdirectories
         path = self.get_appdata_path() + "/color_schemas"
         directory = QDir(path)
+
+        # Create directory if it doesn't exist
+        if not directory.exists(path):
+            try:
+                directory.mkpath(path)
+            except Exception:
+                print(f"Failed to create path: {path}")
+
         subdirectories = directory.entryList(QDir.Dirs | QDir.NoDotAndDotDot)
 
         schemas = dict()
@@ -156,13 +185,17 @@ class SettingsManager(QObject):
                 schema_info = dict()
 
                 filepath = path + "/" + subdirectory + "/" + "schema.toml"
-                schema = toml.load(filepath)
-                name = schema["Schema name"]
+                # Try to parse color schema
+                try:
+                    schema = toml.load(filepath)
+                    name = schema["Schema name"]
 
-                schema_info["name"] = name
-                schema_info["path"] = filepath
+                    schema_info["name"] = name
+                    schema_info["path"] = filepath
 
-                schemas[name] = schema_info
+                    schemas[name] = schema_info
+                except Exception as e:
+                    print(f"Failed to parse color schema at path: {filepath}. Error: {str(e)}")
 
         return schemas
 
@@ -177,12 +210,16 @@ class SettingsManager(QObject):
                 namespace = ""
             return namespace
 
-        # TODO: hadnle exceptions
+        # TODO: use exceptions to communicate failure, not return value?
         # Get root node
-        tree = ET.parse(filepath)
-        root = tree.getroot()
+        try:
+            tree = ET.parse(filepath)
+        except Exception as e:
+            print(f"Failed to parse csl file at path: {filepath}. Error: {str(e)}")
+            return None
 
         # Check if there is a namespace
+        root = tree.getroot()
         namespace = get_namespace(root.tag)
 
         # Get style name
@@ -221,14 +258,16 @@ class SettingsManager(QObject):
 
     def save_color_schema(self, color_schema: dict) -> None:
         """Saves given color schema to file"""
-        # TODO: exception possible here
         schema_identifier = color_schema["Schema name"]
         schema_info = self.get_setting_value("Colors/Color_schemas")[schema_identifier]
         filepath = schema_info["path"]
 
-        file_handle = open(filepath, "w+")
-        toml.dump(color_schema, file_handle)
-        file_handle.close()
+        try:
+            file_handle = open(filepath, "w+")
+            toml.dump(color_schema, file_handle)
+            file_handle.close()
+        except Exception as e:
+            print(f"Failed to save color schema to path: {filepath} Error: {str(e)}")
 
     # Color schemes file management
     def import_color_schema_from_dict(self, schema_name: str, color_schema: dict) -> None:
@@ -253,22 +292,36 @@ class SettingsManager(QObject):
 
     def import_color_schema_from_file(self, filepath: str) -> None:
         """Imports color schema from a file"""
-        # TODO: add exception handling. Can check by "Data type" == "Manuwrite color schema"
         # Parse schema
-        schema = toml.load(filepath)
+        try:
+            schema = toml.load(filepath)
+        except Exception as e:
+            print(f"Failed to parse color schema at path: {filepath} Error: {str(e)}")
+            return
+
+        # Assume file is not Manuwrite color schema if it doesn't have this key-value pair
+        try:
+            if not schema["Data type"] == "Manuwrite color schema":
+                raise ValueError
+        except ValueError:
+            return
+
         schema_name = schema["Schema name"]
         new_path = self.get_appdata_path() + "/color_schemas/" + schema_name + "/schema.toml"
 
-        # Create schema dir
-        directory = QDir(self.get_appdata_path() + "/color_schemas")
-        directory.mkdir(schema_name)
+        try:
+            # Create schema dir
+            directory = QDir(self.get_appdata_path() + "/color_schemas")
+            directory.mkdir(schema_name)
 
-        # Copy schema to its dir and add to SettingsManager
-        schemas = self.get_setting_value("Colors/Color_schemas")
-        schemas[schema_name] = {"name": schema_name, "path": new_path}
-        self.set_setting_value("Colors/Color_schemas", schemas)
+            # Copy schema to its dir and add to SettingsManager
+            schemas = self.get_setting_value("Colors/Color_schemas")
+            schemas[schema_name] = {"name": schema_name, "path": new_path}
+            self.set_setting_value("Colors/Color_schemas", schemas)
 
-        QFile.copy(filepath, new_path)
+            QFile.copy(filepath, new_path)
+        except Exception:
+            print(f"Failed to copy color schema files to path: {new_path}")
 
     def delete_color_scheme(self, scheme_identifier: str) -> None:
         """Deletes a color scheme files and removes it from SettingsManager"""
@@ -298,27 +351,38 @@ class SettingsManager(QObject):
     # Css styles file management
     def import_css_style_from_file(self, filepath: str, style_name: str) -> None:
         """Imports a css style from a file"""
-        # TODO: Pass used identifiers
-        style_identifier = common.generate_identifier(style_name)
-        # Create directory for the style and copy it
-        style_path = self.get_appdata_path() + "/css_styles/" + style_identifier
-        directory = QDir(self.get_appdata_path())
-        directory.mkpath(style_path)
+        # Generate style identifier
+        used_identifiers = set(self.get_setting_value("Render/Css_styles").keys())
+        style_identifier = common.generate_identifier(style_name, used_identifiers=used_identifiers,
+                                                      placeholder="Style")
 
-        new_path = style_path + "/style.css"
-        QFile.copy(filepath, new_path)
+        try:
+            # Create directory for the style and copy it
+            style_path = self.get_appdata_path() + "/css_styles/" + style_identifier
+            directory = QDir(self.get_appdata_path())
+            directory.mkpath(style_path)
 
-        # Add style to settings manager
+            new_path = style_path + "/style.css"
+            QFile.copy(filepath, new_path)
+        except Exception:
+            print(f"Failed to copy css style to path: {style_path}")
+            return
+
         styles = self.get_setting_value("Render/Css_styles")
         style_info = {"identifier": style_identifier, "name": style_name, "path": new_path}
+
+        try:
+            # Generate description.toml
+            file_handle = open(style_path + "/description.toml", "w+")
+            toml.dump(style_info, file_handle)
+            file_handle.close()
+        except Exception as e:
+            print(f"Failed to create style description. Error: {str(e)}")
+            return
+
+        # Add style to settings manager
         styles[style_identifier] = style_info
         self.set_setting_value("Render/Css_styles", styles)
-
-        # Generate description.toml
-        # TODO: handle exception
-        file_handle = open(style_path + "/description.toml", "w+")
-        toml.dump(style_info, file_handle)
-        file_handle.close()
 
     def export_css_style_to_file(self, style_identifier: str, filepath: str) -> None:
         """Exports a css style to a file"""
@@ -336,24 +400,27 @@ class SettingsManager(QObject):
 
         # Remove style directory
         directory = QDir(self.get_appdata_path() + "/css_styles/" + style_identifier)
+        print(self.get_appdata_path() + "/css_styles/" + style_identifier)
         directory.removeRecursively()
 
     # Csl styles file management
     def import_csl_style_from_file(self, filepath: str) -> None:
         """Imports a csl style from a file choosen by the user"""
-        # TODO: Exception possible here
         title = self.extract_csl_style_name(filepath)
+        if title is None:
+            return
 
         # Copy csl file to the designated directory
-        # TODO: Exception
-        # TODO: Use identifier here
-        new_path = self.get_appdata_path() + "/csl_styles/" + title + ".csl"
-        QFile.copy(filepath, new_path)
+        try:
+            new_path = self.get_appdata_path() + "/csl_styles/" + title + ".csl"
+            QFile.copy(filepath, new_path)
+        except Exception:
+            print("Failed to copy csl style to designated path while importing")
+            return
 
         # Add style to SettingsManager
         styles = self.get_setting_value("Render/Csl_styles")
         style_info = {"name": title, "path": new_path}
-        # TODO: use identifier
         styles[title] = style_info
         self.set_setting_value("Render/Csl_styles", styles)
 
@@ -362,8 +429,10 @@ class SettingsManager(QObject):
         styles = self.get_setting_value("Render/Csl_styles")
         style_path = styles[style_identifier]["path"]
 
-        # TODO: Exception
-        QFile.copy(style_path, export_path)
+        try:
+            QFile.copy(style_path, export_path)
+        except Exception:
+            print(f"Failed to copy style to path: {export_path}")
 
     def delete_csl_style(self, style_identifier: str) -> None:
         """Deletes a csl style"""

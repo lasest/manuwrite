@@ -557,8 +557,8 @@ class MainWindow(QMainWindow):
         if editor is None:
             return
 
-        # TODO: change default application/project folder to the folder of the current project
-        dialog = AddImageDialog(self.SettingsManager, self.get_used_identifiers("figures", editor), parent=self)
+        dialog = AddImageDialog(self.ProjectManager, self.SettingsManager, self.get_used_identifiers("figures", editor),
+                                parent=self)
         dialog.show()
         if dialog.exec_():
 
@@ -657,7 +657,9 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionRenderProject_triggered(self) -> None:
-        self.ThreadManager.render_project(self.ProjectManager, self.on_project_rendered)
+        if self.ProjectManager:
+            self.ThreadManager.perform_operation("render_project", self.on_project_rendered,
+                                                 project_manager=self.ProjectManager)
 
     # End of TOOLBAR ACTIONS
     @pyqtSlot(bool)
@@ -843,8 +845,6 @@ class MainWindow(QMainWindow):
         dialog.show()
         dialog.exec_()
 
-    # TODO: change contents of structure tree on that event too?
-    # TODO: also change preview contents here?
     @pyqtSlot(int)
     def on_currentEditor_changed(self, index: int) -> None:
         # Mark all editors as not-current

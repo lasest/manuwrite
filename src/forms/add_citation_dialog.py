@@ -99,4 +99,4 @@ class AddCitationDialog(QDialog):
             self.log(f"Type: {identifier_type}")
             self.log(f"Identifier: {identifier}")
             self.log("Retrieving info...\n")
-            self.ThreadManager.get_citation(identifier, self.on_thread_finished)
+            self.ThreadManager.perform_operation("get_citation", self.on_thread_finished, citekey=identifier)

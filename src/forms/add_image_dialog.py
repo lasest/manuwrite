@@ -8,7 +8,7 @@ import common
 
 class AddImageDialog(QDialog):
 
-    def __init__(self, settings_manager, used_identifiers: dict, parent):
+    def __init__(self, project_manager, settings_manager, used_identifiers: dict, parent):
 
         super().__init__(parent=parent)
         self.ui = Ui_AddImageDialog()
@@ -17,11 +17,15 @@ class AddImageDialog(QDialog):
 
         # Set attributes
         self.SettingsManager = settings_manager
+        self.ProjectManager = project_manager
         self.image_text: str = ""
         self.image_path: str = ""
         self.image_width: int = 0
         self.image_height: int = 0
-        self.default_dir: str = self.SettingsManager.get_setting_value("Application/Project folder")
+        if self.ProjectManager:
+            self.default_dir = self.ProjectManager.get_setting_value("Absolute path")
+        else:
+            self.default_dir = self.SettingsManager.get_setting_value("Application/Project folder")
         self.identifier: str = ""
         self.used_identifiers: dict = used_identifiers
         self.has_additional_attributes = False
@@ -31,7 +35,7 @@ class AddImageDialog(QDialog):
         self.read_settings()
 
         # Prepare ui elements
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             self.ui.IdentifierLineEdit.setEnabled(False)
             self.ui.ImageTextLineEdit.setFocus()
         else:
@@ -42,15 +46,15 @@ class AddImageDialog(QDialog):
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
 
     def read_settings(self) -> None:
-        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
-        self.ui.AutonumberCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
+        self.ui.AutogenIdentifierCheckbox.setChecked(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+        self.ui.AutonumberCheckbox.setChecked(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
         self.ui.WidthLineEdit.setText(str(self.SettingsManager.get_setting_value("Editor/Default image width")))
         self.ui.HeightLineEdit.setText(str(self.SettingsManager.get_setting_value("Editor/Default image height")))
 
     def write_settigns(self) -> None:
         self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
-                                               self.ui.AutogenIdentifierCheckbox.checkState())
-        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.checkState())
+                                               self.ui.AutogenIdentifierCheckbox.isChecked())
+        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.isChecked())
 
     def generate_identifier(self, identifier: str) -> str:
         index = 1
@@ -72,11 +76,11 @@ class AddImageDialog(QDialog):
         identifier = ""
         prefix = ""
         # Add prefix to include figure in numbering
-        if self.ui.AutonumberCheckbox.checkState():
+        if self.ui.AutonumberCheckbox.isChecked():
             prefix += "fig:"
 
         # Generate identifier or use one provided by the user
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             identifier = common.generate_identifier(self.ui.ImageTextLineEdit.text(), prefix, self.used_identifiers,
                                                     placeholder="figure")
         else:
@@ -105,9 +109,8 @@ class AddImageDialog(QDialog):
     def on_OpenFileButton_clicked(self) -> None:
         """Calls open file dialog for the user to choose image"""
 
-        # TODO: add filters to the dialog
         path = QFileDialog.getOpenFileName(self, "Choose image", self.default_dir,
-                                           "JPEG image (*.jpg *.jpeg *.jpe *jfif);; PNG image (*.png);;" +
+                                           "JPEG image (*.jpg *.jpeg *.jpe *.jfif);; PNG image (*.png);;" +
                                            "SVG image (*.svg);;GIF image (*.gif);;All files (*.*)")
         if path:
             self.ui.ImagePathLineEdit.setText(path[0])

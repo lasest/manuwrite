@@ -201,34 +201,38 @@ application_settings = {
             "ProjectSettingsDialog/current tab index/type": "int",
 
             # Add heading dialog
-            # TODO: Change stuff like this to bool (use QCheckbox.isChecked() instead of QCheckbox.checkState)
-            "AddHeadingDialog/autonumber/value": 2,
-            "AddHeadingDialog/autonumber/type": "int",
+            "AddHeadingDialog/autonumber/value": True,
+            "AddHeadingDialog/autonumber/type": "bool",
 
+            # TODO: Do we really need 3 radio button in that dialog??
             "AddHeadingDialog/autogen identifier/value": 0,
             "AddHeadingDialog/autogen identifier/type": "int",
 
             # Add image dialog
-            "AddImageDialog/autogen identifier/value": 2,
-            "AddImageDialog/autogen identifier/type": "int",
+            "AddImageDialog/autogen identifier/value": True,
+            "AddImageDialog/autogen identifier/type": "bool",
 
-            "AddImageDialog/autonumber/value": 2,
-            "AddImageDialog/autonumber/type": "int",
+            "AddImageDialog/autonumber/value": True,
+            "AddImageDialog/autonumber/type": "bool",
 
             # Add table dialog
-            "AddTableDialog/autogen identifier/value": 2,
-            "AddTableDialog/autogen identifier/type": "int",
+            "AddTableDialog/autogen identifier/value": True,
+            "AddTableDialog/autogen identifier/type": "bool",
 
-            "AddTableDialog/autonumber/value": 2,
-            "AddTableDialog/autonumber/type": "int",
+            "AddTableDialog/autonumber/value": True,
+            "AddTableDialog/autonumber/type": "bool",
 
             # Add footnote dialog
-            "AddFootnoteDialog/autogen identifier/value": 2,
-            "AddFootnoteDialog/autogen identifier/type": "int",
+            "AddFootnoteDialog/autogen identifier/value": True,
+            "AddFootnoteDialog/autogen identifier/type": "bool",
 
             # Application
             "Application/Project folder/value": QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation),
             "Application/Project folder/type": "str",
+
+            # General
+            "General/Document_parsing_interval/value": 2000,
+            "General/Document_parsing_interval/type": "int",
 
             # Editor
             "Editor/Font name/value": "Hack",

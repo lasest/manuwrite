@@ -16,8 +16,6 @@ class Rule():
 
 class MarkdownHighlighter(QSyntaxHighlighter):
 
-    # TODO: implement alternate heading 1 and heading 2 syntax (requires working with previous line)
-
     def __init__(self, document: QTextDocument, settings_manager):
         super().__init__(document)
 

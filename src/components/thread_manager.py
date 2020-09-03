@@ -9,7 +9,7 @@ import defaults
 from components.document_parsing import parse_document
 
 
-class MarkdownProjectParserThread(QThread):
+class ProjectParserThread(QThread):
     """Parses every file in list that is provided to it one by one. Saves raw project structure in 'project_structure'
     field in the form of a dictionary {filepath: document_info} where 'document_info' is a dictionary provided by
     parse_document() function"""
@@ -42,7 +42,7 @@ class MarkdownProjectParserThread(QThread):
         self.result = self.project_structure
 
 
-class MarkdownDocumentParserThread(QThread):
+class DocumentParserThread(QThread):
     """Parses a QTextDocument using a parse_document() function. Stores parsed data in self.document_info field"""
 
     def __init__(self, parent, document: QTextDocument):
@@ -53,37 +53,12 @@ class MarkdownDocumentParserThread(QThread):
         self.document_info["filepath"] = self.document.baseUrl().toLocalFile()
         self.result = dict()
 
-    def is_setext_heading(self, line_number: int, heading_sybmol: str):
-        current_line = self.document.findBlockByNumber(line_number).text()
-
-        if heading_sybmol == "=":
-            index = self.setext_heading_1.indexIn(current_line)
-        else:
-            index = self.setext_heading_2.indexIn(current_line)
-        if index >= 0:
-            prev_line = ""
-            prevprev_line = ""
-            if line_number == 0:
-                prev_line = ""
-                prevprev_line = ""
-            elif line_number == 1:
-                prev_line = self.document.findBlockByNumber(line_number - 1).text()
-                prevprev_line = ""
-            else:
-                prev_line = self.document.findBlockByNumber(line_number - 1).text()
-                prevprev_line = self.document.findBlockByNumber(line_number - 2).text()
-
-            if prev_line and not prevprev_line:
-                return True
-            else:
-                return False
-
     def run(self) -> None:
         parse_document(self.document, self.document_info)
         self.result = self.document_info
 
 
-class ManubotCiteThread(QThread):
+class CitationRendererThread(QThread):
     """Generates a citation for given citekey using manubot. Citation is stored in self.citation field"""
 
     def __init__(self, parent, citekey: str):
@@ -99,15 +74,15 @@ class ManubotCiteThread(QThread):
         self.result["citation"] = manubot.stdout.decode()
 
 
-class ProjectRenderer(QThread):
+class ProjectRendererThread(QThread):
 
-    def __init__(self, project_manager):
-        super().__init__()
+    def __init__(self, parent, project_manager):
+        super().__init__(parent)
         self.ProjectManager = project_manager
         self.result = self.ProjectManager.get_setting_value("Output_path")
 
     def run(self) -> None:
-        command = self.ProjectManager.get_setting_value("Full_pandoc_command")
+        command = self.ProjectManager.get_setting_value("Pandoc_command_full")
         pandoc = subprocess.run(command.split(), cwd=self.ProjectManager.get_setting_value("Absolute path"))
         try:
             pandoc.check_returncode()
@@ -115,13 +90,12 @@ class ProjectRenderer(QThread):
             print(str(e))
 
 
-
-class PandocThread(QThread):
+class DocumentRendererThread(QThread):
     """Renders given markdown document to some format using Pandoc"""
 
-    def __init__(self, parent, markdown: str):
+    def __init__(self, parent, source: str):
         super().__init__(parent)
-        self.markdown = markdown
+        self.markdown = source
         self.result = ""
 
     def run(self) -> None:
@@ -160,6 +134,14 @@ class ThreadWrapper(QObject):
 class ThreadManager(QObject):
     """Manages threads. Makes sure that the number of threads running at the same time is not too high. Keeps track of
     what threads are currently running and which are waiting in the queue"""
+
+    Operations = {
+        "get_citation": CitationRendererThread,
+        "render_file": DocumentRendererThread,
+        "render_project": ProjectRendererThread,
+        "parse_file": DocumentParserThread,
+        "parse_project": ProjectParserThread
+    }
 
     def __init__(self, max_threads: int = None):
 
@@ -201,42 +183,12 @@ class ThreadManager(QObject):
             self.pending_threads.remove(self.pending_threads[-1])
 
     # Thread-starting methods
-    # TODO: unite them in a single function
-    def get_citation(self, citekey: str, handler_function) -> None:
-        """Starts manubot thread to get citation info for a given citekey."""
+    def perform_operation(self, operation: str, handler_function, disobey_thread_limit: bool = False, **kwargs):
+        """Creates a thread_wrapper for the specified operation. kwargs are passed as arguments to the thread class"""
 
-        thread_wrapper = ThreadWrapper(ManubotCiteThread(self, citekey), handler_function)
+        thread_class = self.Operations[operation]
+        thread = thread_class(parent=self, **kwargs)
+
+        thread_wrapper = ThreadWrapper(thread, handler_function)
         thread_wrapper.thread_finished.connect(self.run_next_thread)
-
-        self.run_thread(thread_wrapper)
-
-    def markdown_to_html(self, markdown: str, handler_function) -> None:
-        """Starts pandoc thread to convert given string from markdown to html."""
-
-        thread_wrapper = ThreadWrapper(PandocThread(self, markdown), handler_function)
-        thread_wrapper.thread_finished.connect(self.run_next_thread)
-
-        self.run_thread(thread_wrapper)
-
-    def parse_markdown_document(self, document: QTextDocument, handler_function) -> None:
-        """Starts a MarkdownDocumentParserThread to parse a given markdown document for document structure."""
-
-        thread_wrapper = ThreadWrapper(MarkdownDocumentParserThread(self, document), handler_function,
-                                       thread_type="document_parser")
-        thread_wrapper.thread_finished.connect(self.run_next_thread)
-
-        self.run_thread(thread_wrapper, disobey_thread_limit=True)
-
-    def parse_project(self, filenames: List[str], handler_function) -> None:
-        """Starts MarkdownProjectParser thread to parse a given list of files"""
-
-        thread_wrapper = ThreadWrapper(MarkdownProjectParserThread(self, filenames), handler_function)
-        thread_wrapper.thread_finished.connect(self.run_next_thread)
-
-        self.run_thread(thread_wrapper)
-
-    def render_project(self, project_manager, handler_function):
-        thread_wrapper = ThreadWrapper(ProjectRenderer(project_manager), handler_function)
-        thread_wrapper.thread_finished.connect(self.run_next_thread)
-
-        self.run_thread(thread_wrapper)
+        self.run_thread(thread_wrapper, disobey_thread_limit=disobey_thread_limit)

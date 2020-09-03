@@ -26,7 +26,7 @@ class AddTableDialog(QDialog):
         self.read_settings()
 
         # Prepare ui
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             self.ui.IdentifierLineEdit.setEnabled(False)
             self.ui.CaptionLineEdit.setFocus()
         else:
@@ -37,13 +37,13 @@ class AddTableDialog(QDialog):
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
 
     def read_settings(self) -> None:
-        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
-        self.ui.AutonumberCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
+        self.ui.AutogenIdentifierCheckbox.setChecked(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+        self.ui.AutonumberCheckbox.setChecked(self.SettingsManager.get_setting_value("AddImageDialog/autonumber"))
 
     def write_settings(self) -> None:
         self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
-                                               self.ui.AutogenIdentifierCheckbox.checkState())
-        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.checkState())
+                                               self.ui.AutogenIdentifierCheckbox.isChecked())
+        self.SettingsManager.set_setting_value("AddImageDialog/autonumber", self.ui.AutonumberCheckbox.isChecked())
 
     def generate_identifier(self, identifier: str) -> str:
         index = 1
@@ -104,11 +104,11 @@ class AddTableDialog(QDialog):
         prefix = ""
 
         # Add prefix to include table in numbering
-        if self.ui.AutonumberCheckbox.checkState():
+        if self.ui.AutonumberCheckbox.isChecked():
             prefix += "tbl:"
 
         # Generate identifier or use one provided by the user
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             identifier = common.generate_identifier(self.ui.CaptionLineEdit.text(), prefix, self.used_identifiers,
                                                     placeholder="table")
         else:

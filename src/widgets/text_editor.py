@@ -8,6 +8,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from components.highlighter import MarkdownHighlighter
 from components.thread_manager import ThreadManager
 import defaults
+import extractors
 
 
 class LineNumberArea(QWidget):
@@ -291,22 +292,21 @@ class TextEditor(QPlainTextEdit):
 
             if show_citation_tooltips and tag[2] == "citation" and is_inside_tag(tag, cursor_pos):
                 # Remove brackets and @ symbol from the tag text
-                tag_text = tag_text[2:-1]
+                citation_identifier = extractors.citation_extractor(tag_text)[0]
 
-                # TODO: use an extractor here?
                 # If the citekey is not in self.document_info["citations"] or doesn't have a citation text yet, show
                 # placeholder
-                if tag_text not in self.document_structure["citations"]:
+                if citation_identifier not in self.document_structure["citations"]:
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
-                elif tag_text in self.document_structure["citations"] and self.document_structure["citations"][tag_text]["citation"] == "":
+                elif citation_identifier in self.document_structure["citations"] and self.document_structure["citations"][citation_identifier]["citation"] == "":
                     QToolTip.showText(display_point, "Fetching citation info...", self, QRect(), 5000)
                     hide_tooltip = False
 
                 # If the citekey is in self.document_info["citations"] and citation show citation info
                 else:
-                    QToolTip.showText(display_point, self.document_structure["citations"][tag_text]["citation"], self, QRect(), 5000)
+                    QToolTip.showText(display_point, self.document_structure["citations"][citation_identifier]["citation"], self, QRect(), 5000)
                     hide_tooltip = False
 
             elif show_image_tooltips and tag[2] == "image" and is_inside_tag(tag, cursor_pos):
@@ -344,7 +344,7 @@ class TextEditor(QPlainTextEdit):
 
         # Render if current filename is markdown
         if self.is_markdown_file():
-            self.ThreadManager.markdown_to_html(self.toPlainText(), self.on_pandoc_thread_finished)
+            self.ThreadManager.perform_operation("render_file", self.on_pandoc_thread_finished, source=self.toPlainText())
         else:
             # Send empty strings to display widget to clear it
             self.on_pandoc_thread_finished("")
@@ -379,7 +379,8 @@ class TextEditor(QPlainTextEdit):
     def parse_document(self) -> None:
         """Asks ThreadManager to parse the document for structure if the document isn't already being parsed"""
         if not self.is_parsing_document:
-            self.ThreadManager.parse_markdown_document(self.document(), self.on_parsing_document_finished)
+            self.ThreadManager.perform_operation("parse_file", self.on_parsing_document_finished,
+                                                 disobey_thread_limit=True, document=self.document())
             self.is_parsing_document = True
 
     def is_cursor_in_sentence(self) -> bool:
@@ -431,9 +432,9 @@ class TextEditor(QPlainTextEdit):
     def on_parsing_document_finished(self, data: dict) -> None:
         """Updates self.document_structure with newly parsed data and emits FileStrucutreUpdated so that the main
         window could update the ProjectManager's information about current project structure or display the structure"""
-        # TODO: add time configuration
         self.is_parsing_document = False
-        self.DocumentParsingTimer.start(5000)
+        parsing_interval = self.SettingsManager.get_setting_value("General/Document_parsing_interval")
+        self.DocumentParsingTimer.start(parsing_interval)
 
         for citation in self.document_structure["citations"].items():
             if citation[0] in data["citations"]:
@@ -441,7 +442,8 @@ class TextEditor(QPlainTextEdit):
 
         for citation in data["citations"].items():
             if citation[1]["citation"] == "":
-                self.ThreadManager.get_citation(citation[0], self.on_manubot_thread_finished)
+                self.ThreadManager.perform_operation("get_citation", self.on_manubot_thread_finished,
+                                                     citekey=citation[0])
 
         self.document_structure = data
 

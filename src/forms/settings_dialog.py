@@ -88,7 +88,7 @@ class SettingsDialog(QDialog):
 
     def read_general_settings(self) -> None:
         """Reads settings for the General settings tab"""
-        pass
+        self.ui.ParsingIntervalSpinBox.setValue(self.SettingsManager.get_setting_value("General/Document_parsing_interval"))
 
     def read_editor_settings(self) -> None:
         """Reads settings for the Editor settings tab"""
@@ -108,7 +108,7 @@ class SettingsDialog(QDialog):
         self.ui.ShowImageTooltipsCheckBox.setChecked(self.SettingsManager.get_setting_value("Editor/Show image tooltips"))
         self.ui.ShowCitationTooltipsCheckBox.setChecked(self.SettingsManager.get_setting_value("Editor/Show citation tooltips"))
 
-        if not self.ui.ShowImageTooltipsCheckBox.checkState():
+        if not self.ui.ShowImageTooltipsCheckBox.isChecked():
             self.ui.ImageToolTipWidthLineEdit.setEnabled(False)
             self.ui.ImageToolTipHeightLineEdit.setEnabled(False)
 
@@ -168,13 +168,13 @@ class SettingsDialog(QDialog):
         self.is_populating_ColorSchemaCombobox = False
         self.on_ColorSchemaComboBox_currentIndexChanged(index)
 
+
     def get_selected_color_schema(self) -> dict:
         """Returns the color schema currently selected in ColorSchemaCombobox"""
         schemas = self.SettingsManager.get_setting_value("Colors/Color_schemas")
         schema_identifier = self.ui.ColorSchemaComboBox.currentText()
 
-        # TODO: change to index based detection rather than text (can be translated)
-        if schema_identifier == "System colors":
+        if self.ui.ColorSchemaComboBox.currentIndex() == 0:
             schema = self.SettingsManager.get_default_color_schema()
         elif schema_identifier in schemas:
             schema = self.SettingsManager.get_color_schema(schema_identifier)
@@ -199,7 +199,8 @@ class SettingsDialog(QDialog):
 
     def update_general_settings(self) -> None:
         """Save settings for the General settings tab"""
-        pass
+        self.SettingsManager.set_setting_value("General/Document_parsing_interval",
+                                               self.ui.ParsingIntervalSpinBox.value())
 
     def update_editor_settings(self) -> None:
         """Save settings for the Editor settings tab"""
@@ -216,12 +217,12 @@ class SettingsDialog(QDialog):
         self.SettingsManager.set_setting_value("Editor/Image tooltip width", width)
         self.SettingsManager.set_setting_value("Editor/Image tooltip height", height)
 
-        self.SettingsManager.set_setting_value("Editor/Show citation tooltips", self.ui.ShowCitationTooltipsCheckBox.checkState())
-        self.SettingsManager.set_setting_value("Editor/Show image tooltips", self.ui.ShowImageTooltipsCheckBox.checkState())
+        self.SettingsManager.set_setting_value("Editor/Show citation tooltips", self.ui.ShowCitationTooltipsCheckBox.isChecked())
+        self.SettingsManager.set_setting_value("Editor/Show image tooltips", self.ui.ShowImageTooltipsCheckBox.isChecked())
 
     def update_render_settings(self) -> None:
         """Save settings for the Render settings tab"""
-        self.SettingsManager.set_setting_value("Render/Autorender", self.ui.AllowAutoRenderCheckbox.checkState())
+        self.SettingsManager.set_setting_value("Render/Autorender", self.ui.AllowAutoRenderCheckbox.isChecked())
         self.SettingsManager.set_setting_value("Render/Autorender delay", self.ui.AutorenderDelayLineEdit.text())
 
     def update_color_settings(self) -> None:
@@ -317,7 +318,6 @@ class SettingsDialog(QDialog):
     @pyqtSlot()
     def on_DeleteColorSchemaButton_clicked(self) -> None:
         """Deletes color schema currently selected in ColorSchemaCombobox"""
-        # TODO: disable delete button on item change instead
         # If system colors are currently selected as a color scheme, do nothing
         if self.ui.ColorSchemaComboBox.currentIndex() == 0:
             return
@@ -363,9 +363,8 @@ class SettingsDialog(QDialog):
     @pyqtSlot()
     def on_ImportCssButton_clicked(self) -> None:
         """Let's user choose a file to import as a css style"""
-        # TODO: add filters
         # Get filepath
-        filepath = QFileDialog.getOpenFileName(self, "Import css style")[0]
+        filepath = QFileDialog.getOpenFileName(self, "Import css style", filter="CSS (*.css);;All files (*.*)")[0]
         if not filepath:
             return
 
@@ -382,8 +381,7 @@ class SettingsDialog(QDialog):
     @pyqtSlot()
     def on_ExportCssButton_clicked(self) -> None:
         """Exports a css style to a path chosen by the user"""
-        # TODO: add filters
-        filepath = QFileDialog.getSaveFileName(self, "Export css style")[0]
+        filepath = QFileDialog.getSaveFileName(self, "Export css style", filter="CSS (*.css);;All files (*.*)")[0]
         identifier = self.ui.CssStylesListWidget.currentItem().data(Qt.UserRole)
         if filepath:
             self.SettingsManager.export_css_style_to_file(identifier, filepath)
@@ -397,6 +395,16 @@ class SettingsDialog(QDialog):
 
         # Repopulate CssStylesListWidget
         self.populate_CssStylesListWidget()
+
+    @pyqtSlot()
+    def on_CssStylesListWidget_itemSelectionChanged(self) -> None:
+        """Enables/disables export/delete buttons based on whether there are any items selected"""
+        if self.ui.CssStylesListWidget.selectedItems():
+            self.ui.ExportCssButton.setEnabled(True)
+            self.ui.DeleteCssButton.setEnabled(True)
+        else:
+            self.ui.ExportCssButton.setEnabled(False)
+            self.ui.DeleteCssButton.setEnabled(False)
 
     # Csl styles
     @pyqtSlot()
@@ -416,8 +424,7 @@ class SettingsDialog(QDialog):
     @pyqtSlot()
     def on_ExportCslButton_clicked(self) -> None:
         """Exports a csl style to a file chosen by the user"""
-        # TODO: add filters
-        filepath = QFileDialog.getSaveFileName(self, "Export csl style")[0]
+        filepath = QFileDialog.getSaveFileName(self, "Export csl style", filter="CSL (*.csl);;All files (*.*)")[0]
         if filepath:
             style_identifier = self.ui.CslStylesListWidget.currentItem().data(Qt.UserRole)
             self.SettingsManager.export_csl_style_to_file(style_identifier, filepath)
@@ -432,3 +439,13 @@ class SettingsDialog(QDialog):
 
         # Update CslStylesListWidget
         self.populate_CslStylesListWidget()
+
+    @pyqtSlot()
+    def on_CslStylesListWidget_itemSelectionChanged(self) -> None:
+        """Enables/disables export/delete buttons based on whether there are any items selected"""
+        if self.ui.CslStylesListWidget.selectedItems():
+            self.ui.ExportCslButton.setEnabled(True)
+            self.ui.DeleteCslButton.setEnabled(True)
+        else:
+            self.ui.ExportCslButton.setEnabled(False)
+            self.ui.DeleteCslButton.setEnabled(False)

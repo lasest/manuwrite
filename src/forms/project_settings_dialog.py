@@ -40,8 +40,8 @@ class ProjectSettingsDialog(QDialog):
         self.set_toolbuttons_actions()
         self.load_icons()
 
-        self.on_NumberSectionsCheckbox_stateChanged(self.ui.NumberSectionsCheckbox.checkState())
-        self.on_PandocXnosCheckbox_stateChanged(self.ui.PandocXnosCheckbox.checkState())
+        self.on_NumberSectionsCheckbox_stateChanged(self.ui.NumberSectionsCheckbox.isChecked())
+        self.on_PandocXnosCheckbox_stateChanged(self.ui.PandocXnosCheckbox.isChecked())
 
     def load_icons(self) -> None:
         icon_type = self.SettingsManager.get_setting_value("Colors/Icons")
@@ -589,9 +589,12 @@ class ProjectSettingsDialog(QDialog):
     @pyqtSlot()
     def on_ManualBibToolButton_clicked(self) -> None:
         """Choose bibliography file"""
-        # TODO: add filters
         filepath = QFileDialog.getOpenFileName(self, "Choose bibliography file",
-                                               self.ProjectManager.get_setting_value("Absolute path"))
+                                               self.ProjectManager.get_setting_value("Absolute path"),
+                                               filter="BibLaTeX (*.bib);;BibTeX (*.bibtex);;Copac (*.copac);;" +
+                                                      "CSL JSON (*.json);;CSL YAML (*.yaml);;EndNote (*.enl);;" +
+                                                      "EndNote XML (*.xml);;ISI (*.wos);;MEDLINE (*.medline);;" +
+                                                      "MODS (*.mods);;NBIB (*.nbib);;RIS (*.ris);;All files (*.*)")
         if filepath[0]:
             self.ui.ManualBibLineEdit.setText(filepath[0])
 

@@ -44,7 +44,7 @@ class AddHeadingDialog(QDialog):
         else:
             self.ui.NoIdentifierRadioButton.setChecked(True)
 
-        self.ui.AutonumberCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddHeadingDialog/autonumber"))
+        self.ui.AutonumberCheckbox.setChecked(self.SettingsManager.get_setting_value("AddHeadingDialog/autonumber"))
 
     def write_settings(self) -> None:
         """Write settings to the SettingsManager"""
@@ -58,7 +58,7 @@ class AddHeadingDialog(QDialog):
             autogen_identifier = 2
 
         self.SettingsManager.set_setting_value("AddHeadingDialog/autogen identifier", autogen_identifier)
-        self.SettingsManager.set_setting_value("AddHeadingDialog/autonumber", self.ui.AutonumberCheckbox.checkState())
+        self.SettingsManager.set_setting_value("AddHeadingDialog/autonumber", self.ui.AutonumberCheckbox.isChecked())
 
     def accept(self) -> None:
         """Generates the heading tag and saves it to the dialogs's attribute before closing"""
@@ -70,7 +70,7 @@ class AddHeadingDialog(QDialog):
 
         # Check if additional attributes need to be specified
         add_attributes = True
-        if self.ui.NoIdentifierRadioButton.isChecked() and self.ui.AutonumberCheckbox.checkState() is False:
+        if self.ui.NoIdentifierRadioButton.isChecked() and self.ui.AutonumberCheckbox.isChecked() is False:
             add_attributes = False
 
         # Add attributes if they are required
@@ -80,7 +80,7 @@ class AddHeadingDialog(QDialog):
             # Generate identifier
             identifier = ""
             prefix = ""
-            if self.ui.AutonumberCheckbox.checkState():
+            if self.ui.AutonumberCheckbox.isChecked():
                 prefix = "sec:"
 
             if self.ui.AutogenIdentifierRadioButton.isChecked():

@@ -26,7 +26,7 @@ class AddFootnoteDialog(QDialog):
         self.read_settings()
 
         # Prepare ui
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             self.ui.IdentifierLineEdit.setEnabled(False)
             self.ui.TextPlainTextEdit.setFocus()
         else:
@@ -37,11 +37,11 @@ class AddFootnoteDialog(QDialog):
         self.AcceptShortcut.activated.connect(self.on_AcceptShortcut_activated)
 
     def read_settings(self) -> None:
-        self.ui.AutogenIdentifierCheckbox.setCheckState(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
+        self.ui.AutogenIdentifierCheckbox.setChecked(self.SettingsManager.get_setting_value("AddImageDialog/autogen identifier"))
 
     def write_settings(self) -> None:
         self.SettingsManager.set_setting_value("AddImageDialog/autogen identifier",
-                                               self.ui.AutogenIdentifierCheckbox.checkState())
+                                               self.ui.AutogenIdentifierCheckbox.isChecked())
 
     def generate_identifier(self) -> str:
         """Automatically generates a unique identifier for the footnote based on the already used identifiers"""
@@ -56,7 +56,7 @@ class AddFootnoteDialog(QDialog):
     def accept(self) -> None:
         """Checks if identifier is valid and unique before accepting the dialog"""
 
-        if self.ui.AutogenIdentifierCheckbox.checkState():
+        if self.ui.AutogenIdentifierCheckbox.isChecked():
             identifier = self.generate_identifier()
         else:
             identifier = self.ui.IdentifierLineEdit.text()

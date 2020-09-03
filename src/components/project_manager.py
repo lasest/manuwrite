@@ -57,7 +57,9 @@ class ProjectManager():
             for filename in self.get_setting_value("Files to render"):
                 filenames.append(self.get_setting_value("Absolute path") + "/" + filename)
 
-            self.ThreadManager.parse_project(filenames, self.on_MarkdownProjectParserThread_finished)
+            #self.ThreadManager.parse_project(filenames, self.on_MarkdownProjectParserThread_finished)
+            self.ThreadManager.perform_operation("parse_project", self.on_MarkdownProjectParserThread_finished,
+                                                 filepaths=filenames)
             self.set_setting_value("Absolute path", self.root_path)
 
         else:

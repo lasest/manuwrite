@@ -20,12 +20,58 @@
    <item>
     <widget class="QTabWidget" name="MainTabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="GeneralTab">
       <attribute name="title">
        <string>General</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="ParsingIntervalLabel">
+           <property name="text">
+            <string>Document parsing interval (ms)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="ParsingIntervalSpinBox">
+           <property name="minimum">
+            <number>100</number>
+           </property>
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="ParsingIntervalCommentLabel">
+         <property name="text">
+          <string>Defines how often document structure would be parsed. Set to 0 to disable parsing of document structure.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="EditorTab">
       <attribute name="title">
@@ -484,6 +530,9 @@
               </item>
               <item>
                <widget class="QPushButton" name="ExportCssButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Export</string>
                 </property>
@@ -491,6 +540,9 @@
               </item>
               <item>
                <widget class="QPushButton" name="DeleteCssButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Delete</string>
                 </property>
@@ -521,6 +573,9 @@
               </item>
               <item>
                <widget class="QPushButton" name="ExportCslButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Export</string>
                 </property>
@@ -528,6 +583,9 @@
               </item>
               <item>
                <widget class="QPushButton" name="DeleteCslButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>Delete</string>
                 </property>
