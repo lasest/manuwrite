@@ -5,6 +5,7 @@ from PyQt5.QtCore import QObject, QSettings, QStandardPaths, QDir, QFile
 from PyQt5.QtGui import QPalette
 
 import defaults
+import common
 
 
 class SettingsManager(QObject):
@@ -88,6 +89,7 @@ class SettingsManager(QObject):
 
         return QStandardPaths.writableLocation(QStandardPaths.AppDataLocation)
 
+    # Scan methods
     def scan_for_css_styles(self) -> dict:
         """Scans <app data>/css_styles subdirectories for css styles. Returns a dictionary with information about the
          styles that were found"""
@@ -116,14 +118,6 @@ class SettingsManager(QObject):
         """Scans <app data>/csl_styles subdirectories for csl styles. Returns a dictionary with information about the
         styles that were found"""
 
-        def get_namespace(elem) -> str:
-            """Extracts namespace from element tag"""
-            if elem[0] == "{":
-                namespace = elem[:elem.find("}") + 1]
-            else:
-                namespace = ""
-            return namespace
-
         # TODO: hadnle exceptions
         # Get all files in the csl_styles directory
         path = self.get_appdata_path() + "/csl_styles"
@@ -134,16 +128,10 @@ class SettingsManager(QObject):
         styles = dict()
         for entry in entries:
             if entry.endswith(".csl"):
-                # Get root node
-                tree = ET.parse(path + "/" + entry)
-                root = tree.getroot()
-
-                # Check if there is a namespace
-                namespace = get_namespace(root.tag)
-
-                # Get style name
-                title = root.find(namespace + "info").find(namespace + "title").text
-                styles[title] = {"name": title, "path": path + "/" + entry}
+                filepath = path + "/" + entry
+                title = self.extract_csl_style_name(filepath)
+                # TODO: Use identifier, not the title
+                styles[title] = {"name": title, "path": filepath}
 
         return styles
 
@@ -178,6 +166,30 @@ class SettingsManager(QObject):
 
         return schemas
 
+    def extract_csl_style_name(self, filepath: str) -> str:
+        """Extracts a csl style name from a *.csl file"""
+
+        def get_namespace(elem) -> str:
+            """Extracts namespace from element tag"""
+            if elem[0] == "{":
+                namespace = elem[:elem.find("}") + 1]
+            else:
+                namespace = ""
+            return namespace
+
+        # TODO: hadnle exceptions
+        # Get root node
+        tree = ET.parse(filepath)
+        root = tree.getroot()
+
+        # Check if there is a namespace
+        namespace = get_namespace(root.tag)
+
+        # Get style name
+        title = root.find(namespace + "info").find(namespace + "title").text
+        return title
+
+    # Get color scheme methods
     def get_color_schema(self, schema_identifier: str) -> dict:
         color_schemas = self.get_setting_value("Colors/Color_schemas")
         schema_filepath = color_schemas[schema_identifier]["path"]
@@ -218,6 +230,7 @@ class SettingsManager(QObject):
         toml.dump(color_schema, file_handle)
         file_handle.close()
 
+    # Color schemes file management
     def import_color_schema_from_dict(self, schema_name: str, color_schema: dict) -> None:
         """Imports color schema from a dictionary"""
         # Set schema name
@@ -281,3 +294,85 @@ class SettingsManager(QObject):
 
         # Copy file
         QFile.copy(scheme_path, filepath)
+
+    # Css styles file management
+    def import_css_style_from_file(self, filepath: str, style_name: str) -> None:
+        """Imports a css style from a file"""
+        # TODO: Pass used identifiers
+        style_identifier = common.generate_identifier(style_name)
+        # Create directory for the style and copy it
+        style_path = self.get_appdata_path() + "/css_styles/" + style_identifier
+        directory = QDir(self.get_appdata_path())
+        directory.mkpath(style_path)
+
+        new_path = style_path + "/style.css"
+        QFile.copy(filepath, new_path)
+
+        # Add style to settings manager
+        styles = self.get_setting_value("Render/Css_styles")
+        style_info = {"identifier": style_identifier, "name": style_name, "path": new_path}
+        styles[style_identifier] = style_info
+        self.set_setting_value("Render/Css_styles", styles)
+
+        # Generate description.toml
+        # TODO: handle exception
+        file_handle = open(style_path + "/description.toml", "w+")
+        toml.dump(style_info, file_handle)
+        file_handle.close()
+
+    def export_css_style_to_file(self, style_identifier: str, filepath: str) -> None:
+        """Exports a css style to a file"""
+        styles = self.get_setting_value("Render/Css_styles")
+        style_path = styles[style_identifier]["path"]
+
+        QFile.copy(style_path, filepath)
+
+    def delete_css_style(self, style_identifier: str) -> None:
+        """Deletes a css style"""
+        # Remove style from SettingsManager
+        styles = self.get_setting_value("Render/Css_styles")
+        styles.pop(style_identifier)
+        self.set_setting_value("Render/Css_styles", styles)
+
+        # Remove style directory
+        directory = QDir(self.get_appdata_path() + "/css_styles/" + style_identifier)
+        directory.removeRecursively()
+
+    # Csl styles file management
+    def import_csl_style_from_file(self, filepath: str) -> None:
+        """Imports a csl style from a file choosen by the user"""
+        # TODO: Exception possible here
+        title = self.extract_csl_style_name(filepath)
+
+        # Copy csl file to the designated directory
+        # TODO: Exception
+        # TODO: Use identifier here
+        new_path = self.get_appdata_path() + "/csl_styles/" + title + ".csl"
+        QFile.copy(filepath, new_path)
+
+        # Add style to SettingsManager
+        styles = self.get_setting_value("Render/Csl_styles")
+        style_info = {"name": title, "path": new_path}
+        # TODO: use identifier
+        styles[title] = style_info
+        self.set_setting_value("Render/Csl_styles", styles)
+
+    def export_csl_style_to_file(self, style_identifier: str, export_path: str) -> None:
+        """Exports a csl style to a file"""
+        styles = self.get_setting_value("Render/Csl_styles")
+        style_path = styles[style_identifier]["path"]
+
+        # TODO: Exception
+        QFile.copy(style_path, export_path)
+
+    def delete_csl_style(self, style_identifier: str) -> None:
+        """Deletes a csl style"""
+        # Remove style path
+        styles = self.get_setting_value("Render/Csl_styles")
+        style_path = styles[style_identifier]["path"]
+
+        QFile.remove(style_path)
+
+        # Remove style from Settings manager
+        styles.pop(style_identifier)
+        self.set_setting_value("Render/Csl_styles", styles)

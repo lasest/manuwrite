@@ -1,10 +1,13 @@
-from PyQt5.QtWidgets import QDialog, QTableWidgetItem, QHeaderView, QMessageBox, QInputDialog, QFileDialog
+from PyQt5.QtWidgets import (QDialog, QTableWidgetItem, QHeaderView, QMessageBox, QInputDialog, QFileDialog,
+                             QListWidgetItem)
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QCloseEvent, QFont, QColor
 
 from components.settings_manager import SettingsManager
 from ui_forms.ui_settings_dialog import Ui_SettingsDialog
 from widgets.color_button import ColorButton
+
+import common
 
 
 class SettingsDialog(QDialog):
@@ -25,6 +28,7 @@ class SettingsDialog(QDialog):
         self.read_editor_settings()
         self.read_render_settings()
         self.read_color_settings()
+        self.read_styles_settings()
 
     def load_editor_color_schema(self) -> None:
         """Populates ColorTable on Editor tab with information about the color schema, currently selected in the
@@ -123,7 +127,29 @@ class SettingsDialog(QDialog):
         index = self.ui.IconsCombobox.findText(icon_theme)
         self.ui.IconsCombobox.setCurrentIndex(index)
 
-    def populate_ColorSchemaCombobox(self):
+    def read_styles_settings(self) -> None:
+        """Reads settings for Styles tab"""
+        # Populate CssStylesListWidget
+        self.populate_CssStylesListWidget()
+
+        # Populate CslStylesListWidget
+        self.populate_CslStylesListWidget()
+
+    def populate_CssStylesListWidget(self) -> None:
+        self.ui.CssStylesListWidget.clear()
+        css_styles = self.SettingsManager.get_setting_value("Render/Css_styles")
+        for style in css_styles.items():
+            item = QListWidgetItem(style[1]["name"], self.ui.CssStylesListWidget)
+            item.setData(Qt.UserRole, style[0])
+
+    def populate_CslStylesListWidget(self) -> None:
+        self.ui.CslStylesListWidget.clear()
+        csl_styles = self.SettingsManager.get_setting_value("Render/Csl_styles")
+        for style in csl_styles.items():
+            item = QListWidgetItem(style[1]["name"], self.ui.CslStylesListWidget)
+            item.setData(Qt.UserRole, style[0])
+
+    def populate_ColorSchemaCombobox(self) -> None:
         """Populates ColorSchemaCombobox with color schemas"""
         self.is_populating_ColorSchemaCombobox = True
         self.ui.ColorSchemaComboBox.clear()
@@ -254,6 +280,7 @@ class SettingsDialog(QDialog):
             self.ui.ImageToolTipWidthLineEdit.setEnabled(False)
             self.ui.ImageToolTipHeightLineEdit.setEnabled(False)
 
+    # Color schemes
     @pyqtSlot(int)
     def on_ColorSchemaComboBox_currentIndexChanged(self, index: int) -> None:
         """Loads color schema to ColorTable when the value of ColorSchemaComboBox changes"""
@@ -331,3 +358,77 @@ class SettingsDialog(QDialog):
         # Export to file
         selected_scheme_identifier = self.ui.ColorSchemaComboBox.currentText()
         self.SettingsManager.export_color_scheme_to_file(selected_scheme_identifier, filepath)
+
+    # Css styles
+    @pyqtSlot()
+    def on_ImportCssButton_clicked(self) -> None:
+        """Let's user choose a file to import as a css style"""
+        # TODO: add filters
+        # Get filepath
+        filepath = QFileDialog.getOpenFileName(self, "Import css style")[0]
+        if not filepath:
+            return
+
+        # Get name for the style
+        style_name = QInputDialog.getText(self, "Style name", "Enter style name")[0]
+        if not style_name:
+            return
+
+        self.SettingsManager.import_css_style_from_file(filepath, style_name)
+
+        # Repopulate CssStylesListWidget
+        self.populate_CssStylesListWidget()
+
+    @pyqtSlot()
+    def on_ExportCssButton_clicked(self) -> None:
+        """Exports a css style to a path chosen by the user"""
+        # TODO: add filters
+        filepath = QFileDialog.getSaveFileName(self, "Export css style")[0]
+        identifier = self.ui.CssStylesListWidget.currentItem().data(Qt.UserRole)
+        if filepath:
+            self.SettingsManager.export_css_style_to_file(identifier, filepath)
+
+    @pyqtSlot()
+    def on_DeleteCssButton_clicked(self) -> None:
+        """Deletes a css style chosen by the user"""
+        # Delete style
+        identifier = self.ui.CssStylesListWidget.currentItem().data(Qt.UserRole)
+        self.SettingsManager.delete_css_style(identifier)
+
+        # Repopulate CssStylesListWidget
+        self.populate_CssStylesListWidget()
+
+    # Csl styles
+    @pyqtSlot()
+    def on_ImportCslButton_clicked(self) -> None:
+        """Imports a csl style from a file chosen by the user"""
+        # Get filepath
+        filepath = QFileDialog.getOpenFileName(self, "Import csl style")[0]
+        if not filepath:
+            return
+
+        # Import style
+        self.SettingsManager.import_csl_style_from_file(filepath)
+
+        # Populate CslStylesListWidget
+        self.populate_CslStylesListWidget()
+
+    @pyqtSlot()
+    def on_ExportCslButton_clicked(self) -> None:
+        """Exports a csl style to a file chosen by the user"""
+        # TODO: add filters
+        filepath = QFileDialog.getSaveFileName(self, "Export csl style")[0]
+        if filepath:
+            style_identifier = self.ui.CslStylesListWidget.currentItem().data(Qt.UserRole)
+            self.SettingsManager.export_csl_style_to_file(style_identifier, filepath)
+
+    @pyqtSlot()
+    def on_DeleteCslButton_clicked(self) -> None:
+        """Deletes a csl style chosen by the user"""
+
+        # Remove style
+        style_identifier = self.ui.CslStylesListWidget.currentItem().data(Qt.UserRole)
+        self.SettingsManager.delete_csl_style(style_identifier)
+
+        # Update CslStylesListWidget
+        self.populate_CslStylesListWidget()

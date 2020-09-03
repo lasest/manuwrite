@@ -273,17 +273,9 @@ application_settings = {
             "Render/Formats/type": "dict",
 
             "Render/Css_styles/value": {
-                "manuwrite_strict": {
-                    "name": "Manuwrite strict",
-                    "path": "path1"
-                },
-                "manuwrite_modern": {
-                    "name": "Manuwrite modern",
-                    "path": "path2"
-                },
-                "manubot_classic": {
-                    "name": "Manubot classic",
-                    "path": "path3"
+                "style_identifier": {
+                    "name": "style_name",
+                    "path": "style_path"
                 }
             },
             "Render/Css_styles/type": "dict",
