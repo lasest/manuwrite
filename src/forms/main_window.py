@@ -211,7 +211,16 @@ class MainWindow(QMainWindow):
 
         self.SettingsManager.set_setting_value("MainWindow/size", self.size())
         self.SettingsManager.set_setting_value("MainWindow/pos", self.pos())
-        self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", self.ui.splitter.sizes())
+
+        # Remember splitter sizes if currernt file is not html
+        editor = self.get_editor()
+        remember_splitter_sizes = True
+        if editor:
+            if editor.is_html_file():
+                remember_splitter_sizes = False
+        if remember_splitter_sizes:
+            self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", self.ui.splitter.sizes())
+
         if self.ProjectManager is not None:
             self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
         else:
@@ -871,8 +880,18 @@ class MainWindow(QMainWindow):
     @pyqtSlot(int)
     def on_currentEditor_changed(self, index: int) -> None:
         # Mark all editors as not-current
+        previous_editor = None
         for i in range(self.ui.EditorTabWidget.count()):
-            self.get_editor(i).is_current_editor = False
+            editor = self.get_editor(i)
+            if editor.is_current_editor:
+                previous_editor = editor
+                editor.is_current_editor = False
+
+        # Remember splitter sizes
+        if previous_editor:
+            sizes = self.ui.splitter.sizes()
+            if not previous_editor.is_html_file():
+                self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", sizes)
 
         # Get editor at index and set it current
         editor = self.get_editor(index)

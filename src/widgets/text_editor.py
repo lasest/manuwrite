@@ -8,7 +8,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from components.highlighter import MarkdownHighlighter
 from components.thread_manager import ThreadManager
 import defaults
-import extractors
+import components.extractors
 
 
 class LineNumberArea(QWidget):
@@ -304,7 +304,7 @@ class TextEditor(QPlainTextEdit):
 
             if show_citation_tooltips and tag[2] == "citation" and is_inside_tag(tag, cursor_pos):
                 # Remove brackets and @ symbol from the tag text
-                citation_identifier = extractors.citation_extractor(tag_text)[0]
+                citation_identifier = components.extractors.citation_extractor(tag_text)[0]
 
                 # If the citekey is not in self.document_info["citations"] or doesn't have a citation text yet, show
                 # placeholder
