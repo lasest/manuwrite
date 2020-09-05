@@ -2,6 +2,8 @@
 
 **NOTICE:** Manuwrite is still in the very early phase of development. Some features have not been implemented yet and some major bugs may be present. No backward compatability is guaranteed. Please be careful when using the program and take adequate precautions to ensure the safety of your manuscripts.
 
+!(Manuwrite screenshot)[media/screenshot_2020-09-06.png]
+
 ## What is Manuwrite?
 
 Manuwrite is a text editor designed specifically for writing scientific texts using Markdown. It provieds an intuitive graphical user interface which allows the users to write the text of the manuscript without the need to bother themselves with any of the technical details of how the manuscript will be prossessed in the future to produce the output.
