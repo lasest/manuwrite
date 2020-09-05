@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ProjectSettingsDialog(object):
     def setupUi(self, ProjectSettingsDialog):
         ProjectSettingsDialog.setObjectName("ProjectSettingsDialog")
-        ProjectSettingsDialog.resize(875, 732)
+        ProjectSettingsDialog.resize(875, 770)
         self.verticalLayout = QtWidgets.QVBoxLayout(ProjectSettingsDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.MainTabWidget = QtWidgets.QTabWidget(ProjectSettingsDialog)
@@ -180,7 +180,7 @@ class Ui_ProjectSettingsDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.PandocCommandTextBrowser.sizePolicy().hasHeightForWidth())
         self.PandocCommandTextBrowser.setSizePolicy(sizePolicy)
-        self.PandocCommandTextBrowser.setLineWrapMode(QtWidgets.QTextEdit.FixedColumnWidth)
+        self.PandocCommandTextBrowser.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.PandocCommandTextBrowser.setObjectName("PandocCommandTextBrowser")
         self.MetaInfoVerticalLayout.addWidget(self.PandocCommandTextBrowser)
         self.ManualPandocArgsLayout = QtWidgets.QHBoxLayout()
@@ -314,7 +314,7 @@ class Ui_ProjectSettingsDialog(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 843, 632))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 843, 670))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_10.setObjectName("verticalLayout_10")
@@ -556,7 +556,7 @@ class Ui_ProjectSettingsDialog(object):
         self.actionMoveToTheBottom.setObjectName("actionMoveToTheBottom")
 
         self.retranslateUi(ProjectSettingsDialog)
-        self.MainTabWidget.setCurrentIndex(0)
+        self.MainTabWidget.setCurrentIndex(3)
         self.buttonBox.accepted.connect(ProjectSettingsDialog.accept)
         self.buttonBox.rejected.connect(ProjectSettingsDialog.reject)
         QtCore.QMetaObject.connectSlotsByName(ProjectSettingsDialog)

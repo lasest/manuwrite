@@ -201,6 +201,13 @@ class TextEditor(QPlainTextEdit):
         else:
             return False
 
+    def is_html_file(self) -> bool:
+        """Determines if current file can or cannot be treated as html based on the file extension"""
+        if self.filename.endswith((".html", ".htm")):
+            return True
+        else:
+            return False
+
     def insert_text_at_cursor(self, text: str, move_center=False) -> None:
         """Inserts text at current cursor position. If move_center is set to True, moves cursor to the center of
         inserted string after insertion"""
@@ -271,6 +278,11 @@ class TextEditor(QPlainTextEdit):
             self.insert_text_at_cursor(tag * 2, move_center=True)
         else:
             self.insert_text_at_selection_bound(tag)
+
+    def move_cursor_to_block(self, block_number: int) -> None:
+        """Moves cursor to specified block_number"""
+        cursor = QTextCursor(self.document().findBlockByNumber(block_number))
+        self.setTextCursor(cursor)
 
     def display_tooltips_for_cursor(self, cursor: QTextCursor, display_point: QPoint) -> None:
         """Displays a tooltip at current cursor position if a citation tag or an image tag is under cursor. Hides
@@ -345,6 +357,10 @@ class TextEditor(QPlainTextEdit):
         # Render if current filename is markdown
         if self.is_markdown_file():
             self.ThreadManager.perform_operation("render_file", self.on_pandoc_thread_finished, source=self.toPlainText())
+        # Just load text in preview if filename is html
+        elif self.is_html_file():
+            self.on_pandoc_thread_finished(self.toPlainText())
+        # Clear preview othrewise
         else:
             # Send empty strings to display widget to clear it
             self.on_pandoc_thread_finished("")

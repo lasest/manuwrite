@@ -400,7 +400,6 @@ class SettingsManager(QObject):
 
         # Remove style directory
         directory = QDir(self.get_appdata_path() + "/css_styles/" + style_identifier)
-        print(self.get_appdata_path() + "/css_styles/" + style_identifier)
         directory.removeRecursively()
 
     # Csl styles file management

@@ -2,7 +2,7 @@ import subprocess
 import copy
 from typing import List
 
-from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, QUrl
 from PyQt5.QtGui import QTextDocument
 
 import defaults
@@ -31,7 +31,8 @@ class ProjectParserThread(QThread):
                 file_contents = f.read()
 
             document = QTextDocument(file_contents, self)
-            # TODO: set base url of a document to filepath here
+            # Base url will be used to keep track of the filepath later
+            document.setBaseUrl(QUrl.fromLocalFile(filepath))
             document_info = copy.deepcopy(defaults.document_info_template)
             parse_document(document, document_info)
             self.project_structure[filepath] = document_info

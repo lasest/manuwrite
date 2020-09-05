@@ -57,7 +57,6 @@ class ProjectManager():
             for filename in self.get_setting_value("Files to render"):
                 filenames.append(self.get_setting_value("Absolute path") + "/" + filename)
 
-            #self.ThreadManager.parse_project(filenames, self.on_MarkdownProjectParserThread_finished)
             self.ThreadManager.perform_operation("parse_project", self.on_MarkdownProjectParserThread_finished,
                                                  filepaths=filenames)
             self.set_setting_value("Absolute path", self.root_path)
@@ -192,7 +191,7 @@ class ProjectManager():
     def is_file_to_be_rendered(self, filepath: str) -> bool:
         files_to_render = self.get_setting_value("Files to render").copy()
         for i in range(len(files_to_render)):
-            files_to_render[i] = self.get_setting_value("Absolute path") + files_to_render[i]
+            files_to_render[i] = self.get_setting_value("Absolute path") + "/" + files_to_render[i]
 
         # Check if filepath is to be rendered, otherwise do not include it in project structure
         if filepath in files_to_render:

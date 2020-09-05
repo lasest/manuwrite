@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTreeWidgetItem, QAction, QFrame)
+                            QMenu, QInputDialog, QTreeWidgetItem)
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex)
 from PyQt5.QtGui import *
 
@@ -253,6 +253,25 @@ class MainWindow(QMainWindow):
             if dialog.exec_():
                 editor.insert_text_at_empty_paragraph(dialog.heading_tag)
 
+    def maximize_preview(self) -> None:
+        """Maximizes webEngineView. Used when opening html files or other files which are not supposed to be edited here
+        but can be displayed in preview"""
+        sizes = self.ui.splitter.sizes()
+        self.ui.splitter.setSizes([sizes[0], 0, sizes[1] + sizes[2]])
+
+    def restore_splitter_sizes(self) -> None:
+        """Sets splitter sizes to the values stored in the SettingsManager"""
+        sizes = list(self.SettingsManager.get_setting_value("MainWindow/splitter_sizes"))
+        self.ui.splitter.setSizes(sizes)
+
+    def resize_splitter(self, filename: str) -> None:
+        """Resizes self.ui.splitter based on the file extension of the filename. Maximizes the preview size for certain
+        filetypes or restores it to normal values otherwise"""
+        if filename.endswith((".html", ".htm")):
+            self.maximize_preview()
+        else:
+            self.restore_splitter_sizes()
+
     # TODO: maintain the state of the tree before update (i.e. which entry is selected and which entries are expanded
     def update_structure_tree_widget(self, project_structure: dict) -> None:
         """Loads given structure into structure tree widget"""
@@ -358,6 +377,14 @@ class MainWindow(QMainWindow):
             path = QFileDialog.getOpenFileName()[0]
 
         if path:
+            # Check if file is already opened in some editor
+            for i in range(len(self.OpenedEditors)):
+
+                if path == self.OpenedEditors[i].filepath:
+                    self.ui.EditorTabWidget.setCurrentIndex(i)
+                    return
+
+            # If it isn't open it in a new editor
             # Read file
             try:
                 file_handle = open(path, mode="rb")
@@ -386,6 +413,9 @@ class MainWindow(QMainWindow):
 
             editor.text_changed_since_save = False
             editor.text_changed_since_render = True
+
+            # Maximize preview tab, if the file is html or set to normal values if it is not
+            self.resize_splitter(path)
 
     @pyqtSlot()
     def on_actionSave_triggered(self, index: int = None) -> bool:
@@ -815,13 +845,6 @@ class MainWindow(QMainWindow):
 
         if not self.ProjectManager.FsModel.isDir(index):
             filepath = self.ProjectManager.FsModel.filePath(index)
-
-            for i in range(len(self.OpenedEditors)):
-
-                if filepath == self.OpenedEditors[i].filepath:
-                    self.ui.EditorTabWidget.setCurrentIndex(i)
-                    return
-
             self.on_actionOpen_triggered(filepath)
 
     @pyqtSlot(bool)
@@ -855,9 +878,14 @@ class MainWindow(QMainWindow):
         editor = self.get_editor(index)
         if editor:
             editor.is_current_editor = True
+
+            # Parse and render new document
             editor.parse_document()
             if self.SettingsManager.get_setting_value("Render/Autorender"):
                 editor.render_to_html()
+
+            # Resize splitter
+            self.resize_splitter(editor.filename)
 
     @pyqtSlot(dict)
     def on_fileStructureUpdated(self, file_structure: dict) -> None:
@@ -902,6 +930,15 @@ class MainWindow(QMainWindow):
     def on_actionCloseProject_triggered(self) -> None:
         self.ProjectManager = None
         self.ui.ProjectTreeView.setModel(None)
+
+    @pyqtSlot(QTreeWidgetItem, int)
+    def on_ProjectStructureTreeWidget_itemDoubleClicked(self, item: QTreeWidgetItem, column: int):
+        """Opens the item clicked by the user in the editor (i.e. opens a file with that item and scrolls to it"""
+        filepath = item.text(3)
+        block_number = int(item.text(2))
+
+        self.on_actionOpen_triggered(filepath)
+        self.get_editor().move_cursor_to_block(block_number)
 
     def on_project_rendered(self, result):
         filepath = result

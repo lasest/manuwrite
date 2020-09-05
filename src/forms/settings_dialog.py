@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QDialog, QTableWidgetItem, QHeaderView, QMessageBox, QInputDialog, QFileDialog,
                              QListWidgetItem)
-from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtGui import QCloseEvent, QFont, QColor
+from PyQt5.QtCore import Qt, pyqtSlot, QUrl
+from PyQt5.QtGui import QCloseEvent, QFont, QColor, QDesktopServices
 
 from components.settings_manager import SettingsManager
 from ui_forms.ui_settings_dialog import Ui_SettingsDialog
@@ -167,7 +167,6 @@ class SettingsDialog(QDialog):
         self.ui.ColorSchemaComboBox.setCurrentIndex(index)
         self.is_populating_ColorSchemaCombobox = False
         self.on_ColorSchemaComboBox_currentIndexChanged(index)
-
 
     def get_selected_color_schema(self) -> dict:
         """Returns the color schema currently selected in ColorSchemaCombobox"""
@@ -449,3 +448,8 @@ class SettingsDialog(QDialog):
         else:
             self.ui.ExportCslButton.setEnabled(False)
             self.ui.DeleteCslButton.setEnabled(False)
+
+    @pyqtSlot(str)
+    def on_GetMoreCslStylesLabel_linkActivated(self, link: str) -> None:
+        """Opens 'Get more styles' link in the system browser"""
+        QDesktopServices.openUrl(QUrl(link))
