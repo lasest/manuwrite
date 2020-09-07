@@ -1,8 +1,8 @@
 from collections import namedtuple
 
 from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLabel, QMessageBox,
-                            QMenu, QInputDialog, QTreeWidgetItem)
-from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex)
+                            QMenu, QInputDialog, QTreeWidgetItem, QMdiSubWindow)
+from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex, Qt)
 from PyQt5.QtGui import *
 
 from ui_forms.ui_main_window import Ui_MainWindow
@@ -17,6 +17,7 @@ from forms.add_footnote_dialog import AddFootnoteDialog
 from forms.add_table_dialog import AddTableDialog
 from forms.add_heading_dialog import AddHeadingDialog
 from forms.add_crossref_dialog import AddCrossRefDialog
+from mdi_widgets.git_mdi_area_placeholder_widget import GitMdiAreaPlaceholderWidget
 from resources import icons_rc
 import common
 from components.project_manager import ProjectManager
@@ -51,6 +52,15 @@ class MainWindow(QMainWindow):
         # Call convenience functions to setup Ui
         self.load_icons()
         self.set_toolbar_actions()
+
+        # Prepare GitMdiAreaPlaceholder
+        window = QMdiSubWindow(self, Qt.FramelessWindowHint)
+        window.setWindowState(Qt.WindowMaximized)
+        widget = GitMdiAreaPlaceholderWidget(parent=window)
+        window.setWidget(widget)
+
+        self.ui.GitMdiArea.addSubWindow(window)
+        window.show()
 
         # Connect signals and slots
         self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
@@ -363,12 +373,12 @@ class MainWindow(QMainWindow):
         widget.layout().setContentsMargins(0, 2, 0, 0)
 
         # Create editor
+        self.ui.EditorTabWidget.untitled_docs_counter += 1
         filename = f"Untitled {self.ui.EditorTabWidget.untitled_docs_counter}"
         editor = TextEditor(widget, self.ui.webEngineView, self.SettingsManager, self.ThreadManager, filename)
         editor.FileStrucutreUpdated.connect(self.on_fileStructureUpdated)
 
         self.OpenedEditors.append(self.OpenedEditor(filepath=None, in_current_project=False, is_current_editor=True))
-        self.ui.EditorTabWidget.untitled_docs_counter += 1
         widget.layout().addWidget(editor)
 
         # Create new tab
@@ -951,7 +961,7 @@ class MainWindow(QMainWindow):
         self.ui.ProjectTreeView.setModel(None)
 
     @pyqtSlot(QTreeWidgetItem, int)
-    def on_ProjectStructureTreeWidget_itemDoubleClicked(self, item: QTreeWidgetItem, column: int):
+    def on_ProjectStructureTreeWidget_itemDoubleClicked(self, item: QTreeWidgetItem, column: int) -> None:
         """Opens the item clicked by the user in the editor (i.e. opens a file with that item and scrolls to it"""
         filepath = item.text(3)
         block_number = int(item.text(2))
@@ -959,7 +969,7 @@ class MainWindow(QMainWindow):
         self.on_actionOpen_triggered(filepath)
         self.get_editor().move_cursor_to_block(block_number)
 
-    def on_project_rendered(self, result):
+    def on_project_rendered(self, result) -> None:
         filepath = result
 
         # Try to display output in preview. Works for html files

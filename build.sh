@@ -26,6 +26,11 @@ pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_table_dialog.ui -o src/ui_forms/ui_add_table_dialog.py
 pyuic5 ui/add_heading_dialog.ui -o src/ui_forms/ui_add_heading_dialog.py
 pyuic5 ui/add_crossref_dialog.ui -o src/ui_forms/ui_add_crossref_dialog.py
+pyuic5 ui/git_mdi_area_placeholder_widget.ui -o src/ui_mdi_widgets/ui_git_mdi_area_placeholder_widget.py
+pyuic5 ui/git_status_widget.ui -o src/ui_mdi_widgets/ui_git_status_widget.py
+pyuic5 ui/git_commit_widget.ui -o src/ui_mdi_widgets/ui_git_commit_widget.py
+pyuic5 ui/git_branches_widget.ui -o src/ui_mdi_widgets/ui_git_branches_widget.py
+pyuic5 ui/git_diff_widget.ui -o src/ui_mdi_widgets/ui_git_diff_widget.py
 
 # Run main script
 python3 src/main.py&

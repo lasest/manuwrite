@@ -152,7 +152,7 @@
       <item>
        <widget class="QStackedWidget" name="MainStackedWidget">
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="WelcomePage">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -631,14 +631,7 @@
         <widget class="QWidget" name="GitPage">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Git tab</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
+           <widget class="QMdiArea" name="GitMdiArea"/>
           </item>
          </layout>
         </widget>
