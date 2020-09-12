@@ -28,7 +28,7 @@ class AddCrossRefDialog(QDialog):
 
         # Prepare ui
         common.load_project_structure(self.project_structure, self.ui.StructureTreeWidget, ["footnotes", "citations"])
-        self.ui.StructureTreeWidget.setHeaderLabels(("Identifier", "Text"))
+        self.ui.StructureTreeWidget.setHeaderLabels(("Text", "Identifier"))
 
         if is_cursor_in_sentence:
             self.ui.LCCleverRefRadioButton.setChecked(True)
@@ -38,7 +38,7 @@ class AddCrossRefDialog(QDialog):
     def get_identifier_list(self) -> list:
         """Returns a list of all identifiers in project structure"""
 
-        del self.project_structure["filepath"]
+        #del self.project_structure["filepath"]
         identifiers = list()
 
         for item1 in self.project_structure.items():
@@ -97,4 +97,4 @@ class AddCrossRefDialog(QDialog):
     @pyqtSlot(QTreeWidgetItem, int)
     def on_StructureTreeWidget_itemClicked(self, item, column_number) -> None:
         """Fills IdentifierLineEdit with identifier, which was clicked on in the StructureTreeWidget"""
-        self.ui.IdentiferLineEdit.setText(item.text(0))
+        self.ui.IdentiferLineEdit.setText(item.text(1))

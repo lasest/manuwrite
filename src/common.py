@@ -101,8 +101,8 @@ def load_project_structure(project_structure: dict, tree_widget, exclude_categor
     def get_entry_info(entry) -> list:
         """Returns a list of value, each for the corresponding column of the tree"""
         info = [
-            entry[0],
             entry[1]["text"],
+            entry[0],
             str(entry[1]["block_number"]),
             entry[1]["project_filepath"]
         ]
@@ -125,7 +125,7 @@ def load_project_structure(project_structure: dict, tree_widget, exclude_categor
             item = QTreeWidgetItem(get_entry_info(entry))
             top_level_items.append(item)
 
-        item.setIcon(0, defaults.ProjectStructureIcons[entry_category]["icon"])
+        item.setIcon(1, defaults.ProjectStructureIcons[entry_category]["icon"])
 
     tree_widget.clear()
 

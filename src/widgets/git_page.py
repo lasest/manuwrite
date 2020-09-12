@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QMdiSubWindow
+from PyQt5.QtGui import QIcon, QPixmap
 
 from ui_widgets.ui_git_page_widget import Ui_GitPageWidget
 from mdi_widgets.git_mdi_area_placeholder_widget import GitMdiAreaPlaceholderWidget
@@ -53,8 +54,13 @@ class GitPage(QWidget):
                            "status_window": GitStatusWidget
                            }
 
+        no_icon = QPixmap(8, 8)
+        no_icon.fill(Qt.transparent)
+        no_icon = QIcon(no_icon)
+
         def create_window(window_name: str):
-            window = MdiSubWindow_custom(self, Qt.WindowTitleHint | Qt.CustomizeWindowHint)
+            window = MdiSubWindow_custom(self, Qt.WindowTitleHint | Qt.WindowCloseButtonHint |Qt.CustomizeWindowHint)
+            window.setWindowIcon(no_icon)
             window.setOption(QMdiSubWindow.RubberBandMove)
             window.setOption(QMdiSubWindow.RubberBandResize)
             widget_class = widget_classes[window_name]
@@ -74,14 +80,12 @@ class GitPage(QWidget):
 
     def on_GitSingal(self):
         """Handles signals emitted by mdi subwindows of the GitMdiArea"""
-        print("Git signal emitted")
         self.ui.GitMdiArea.closeAllSubWindows()
 
         self.create_windows()
 
     def on_MdiSubwindowSignal(self):
         if not self.is_tiling_windows:
-            print("Moved")
             self.is_tiling_windows = True
             self.ui.GitMdiArea.tileSubWindows()
             self.is_tiling_windows = False

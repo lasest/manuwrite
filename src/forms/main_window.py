@@ -41,6 +41,10 @@ class MainWindow(QMainWindow):
         self.ui.splitter.setStretchFactor(1, 1)
         self.ui.splitter.setStretchFactor(2, 1)
 
+        self.ui.ProjectStructureTreeWidget.hideColumn(1)
+        self.ui.ProjectStructureTreeWidget.hideColumn(2)
+        self.ui.ProjectStructureTreeWidget.hideColumn(3)
+
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
         self.ProjectManager = components.managers.ProjectManager
