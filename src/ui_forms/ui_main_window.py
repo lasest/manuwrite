@@ -269,13 +269,10 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.verticalLayout_6.addLayout(self.gridLayout)
         self.MainStackedWidget.addWidget(self.EdtiorPage)
-        self.GitPage = QtWidgets.QWidget()
+        self.GitPage = GitPage()
         self.GitPage.setObjectName("GitPage")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.GitPage)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.GitMdiArea = QtWidgets.QMdiArea(self.GitPage)
-        self.GitMdiArea.setObjectName("GitMdiArea")
-        self.horizontalLayout_2.addWidget(self.GitMdiArea)
         self.MainStackedWidget.addWidget(self.GitPage)
         self.MainVerticalLayout.addWidget(self.MainStackedWidget)
         self.horizontalLayout.addLayout(self.MainVerticalLayout)
@@ -499,5 +496,6 @@ class Ui_MainWindow(object):
         self.actionCloseProject.setText(_translate("MainWindow", "Close project"))
         self.actionRenderProject.setText(_translate("MainWindow", "Render project"))
 from PyQt5 import QtWebEngineWidgets
+from widgets.git_page import GitPage
 from widgets.qlabel_clickable import QLabelClickable
 from widgets.qtabwidget_custom import QTabWidgetCustom

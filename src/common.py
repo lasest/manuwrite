@@ -1,11 +1,23 @@
-from collections import OrderedDict
 import copy
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QTreeWidgetItem, QAction
 from PyQt5.QtGui import QIcon
 
 from resources import icons_rc
 import defaults
+
+
+class Communicator(QObject):
+
+    GitSignal = pyqtSignal()
+    MdiSubwindowSignal = pyqtSignal()
+
+    def __init__(self):
+        super(Communicator, self).__init__()
+
+
+communicator = Communicator()
 
 
 class ProjectError(Exception):

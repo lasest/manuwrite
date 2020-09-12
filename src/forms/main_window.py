@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import (QMainWindow, QFileDialog, QWidget, QVBoxLayout, QLa
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, QUrl, QPoint, QVariant, QModelIndex, Qt)
 from PyQt5.QtGui import *
 
+import components.managers
+import components.project_manager
+
 from ui_forms.ui_main_window import Ui_MainWindow
 from widgets.text_editor import TextEditor
 from forms.add_link_dialog import AddLinkDialog
@@ -17,12 +20,8 @@ from forms.add_footnote_dialog import AddFootnoteDialog
 from forms.add_table_dialog import AddTableDialog
 from forms.add_heading_dialog import AddHeadingDialog
 from forms.add_crossref_dialog import AddCrossRefDialog
-from mdi_widgets.git_mdi_area_placeholder_widget import GitMdiAreaPlaceholderWidget
 from resources import icons_rc
 import common
-from components.project_manager import ProjectManager
-from components.settings_manager import SettingsManager
-from components.thread_manager import ThreadManager
 
 
 class MainWindow(QMainWindow):
@@ -30,6 +29,7 @@ class MainWindow(QMainWindow):
     OpenedEditor = namedtuple("OpenedEditor", ["filepath", "in_current_project", "is_current_editor"])
 
     def __init__(self) -> None:
+
         super().__init__()
 
         # Prepare Ui
@@ -43,24 +43,18 @@ class MainWindow(QMainWindow):
 
         # Set additional class attributes
         self.tabs = (self.ui.EditorTabLabel, self.ui.GitTabLabel, self.ui.ProjectTabLabel)
-        self.ProjectManager: ProjectManager = None
-        self.ThreadManager: ThreadManager = ThreadManager()
-        self.SettingsManager: SettingsManager = SettingsManager(self)
+        self.ProjectManager = components.managers.ProjectManager
+        self.ThreadManager = components.managers.ThreadManager
+        self.SettingsManager = components.managers.SettingsManager
+        self.SettingsManager.parent = self
+        self.GitManager = components.managers.GitManager
+
         self.OpenedEditors = []
         self.current_editor_index = 0
 
         # Call convenience functions to setup Ui
         self.load_icons()
         self.set_toolbar_actions()
-
-        # Prepare GitMdiAreaPlaceholder
-        window = QMdiSubWindow(self, Qt.FramelessWindowHint)
-        window.setWindowState(Qt.WindowMaximized)
-        widget = GitMdiAreaPlaceholderWidget(parent=window)
-        window.setWidget(widget)
-
-        self.ui.GitMdiArea.addSubWindow(window)
-        window.show()
 
         # Connect signals and slots
         self.ui.EditorTabWidget.tabBar().currentChanged.connect(self.on_currentEditor_changed)
@@ -164,9 +158,9 @@ class MainWindow(QMainWindow):
 
         # Create project manager for current project
         try:
-            self.ProjectManager = ProjectManager(path, self.ThreadManager)
+            components.managers.ProjectManager.load_project(path)
         except common.ProjectError as e:
-            self.ProjectManager = None
+            components.managers.ProjectManager.close_project()
             QMessageBox.critical(self, "Error", "Failed to load project: " + e.message.lower())
             return
 
@@ -198,7 +192,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Error", "An error occured while attempting to open project. " +
                                      f"Error: {str(type(e)) + ' ' + str(e)}")
-                self.ProjectManager = None
+                self.ProjectManager.close_project()
 
         # Read color schema settings for the app
         app_colors = self.SettingsManager.get_current_color_schema()["Application_colors"]
@@ -231,7 +225,7 @@ class MainWindow(QMainWindow):
         if remember_splitter_sizes:
             self.SettingsManager.set_setting_value("MainWindow/splitter_sizes", self.ui.splitter.sizes())
 
-        if self.ProjectManager is not None:
+        if self.ProjectManager.is_project_loaded():
             self.SettingsManager.set_setting_value("MainWindow/last_project", self.ProjectManager.root_path)
         else:
             self.SettingsManager.set_setting_value("MainWindow/last_project", "")
@@ -242,7 +236,7 @@ class MainWindow(QMainWindow):
         """Returns a dictionary describing the structure of the currently open document, or the structure of the current
         project if current file is to be rendered"""
         use_project_structure = False
-        if self.ProjectManager:
+        if self.ProjectManager.is_project_loaded():
             if self.ProjectManager.is_file_to_be_rendered(editor.document().baseUrl().toLocalFile()):
                 use_project_structure = True
 
@@ -353,7 +347,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_ProjectTabLabel_clicked(self) -> None:
         """Opens project settings dialog"""
-        if self.ProjectManager is not None:
+        if self.ProjectManager.is_project_loaded():
             dialog = ProjectSettingsDialog(self, self.ProjectManager, self.SettingsManager)
             dialog.show()
             dialog.exec_()
@@ -706,7 +700,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_actionRenderProject_triggered(self) -> None:
-        if self.ProjectManager:
+        if self.ProjectManager.is_project_loaded():
             self.ThreadManager.perform_operation("render_project", self.on_project_rendered,
                                                  project_manager=self.ProjectManager)
 
@@ -754,7 +748,7 @@ class MainWindow(QMainWindow):
     def on_ProjectTreeView_customContextMenuRequested(self, point: QPoint) -> None:
         """Displays context menu for the ProjectWidget to create/delete/rename files in the project tree"""
 
-        if self.ProjectManager is None:
+        if not self.ProjectManager.is_project_loaded():
             return
 
         menu = QMenu()

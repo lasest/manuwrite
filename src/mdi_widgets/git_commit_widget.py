@@ -5,7 +5,7 @@ from ui_mdi_widgets.ui_git_commit_widget import Ui_GitCommitWidget
 
 class GitCommitWidget(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, project_manager, git_manager, handler_function):
         super(GitCommitWidget, self).__init__(parent)
 
         self.ui = Ui_GitCommitWidget()

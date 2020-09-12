@@ -22,7 +22,7 @@ class AddImageDialog(QDialog):
         self.image_path: str = ""
         self.image_width: int = 0
         self.image_height: int = 0
-        if self.ProjectManager:
+        if self.ProjectManager.is_project_loaded():
             self.default_dir = self.ProjectManager.get_setting_value("Absolute path")
         else:
             self.default_dir = self.SettingsManager.get_setting_value("Application/Project folder")

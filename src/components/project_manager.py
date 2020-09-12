@@ -8,6 +8,7 @@ from PyQt5.QtCore import QModelIndex, QDir, QFile, pyqtSlot, pyqtSignal, QObject
 from common import ProjectError
 import defaults
 from components.thread_manager import ThreadManager
+import components.managers
 
 
 class Communicator(QObject):
@@ -21,18 +22,30 @@ class Communicator(QObject):
 
 class ProjectManager():
 
-    def __init__(self, directory_path: str, thread_manager: ThreadManager):
+    def __init__(self, thread_manager):
 
         # Set attributes
         self.defaults = copy.deepcopy(defaults.project_settings)
-        self.root_path = directory_path
         self.project_info = dict()
         self.FsModel = QFileSystemModel()
         self.ThreadManager = thread_manager
         self.Communicator = Communicator()
+        self.root_path = ""
+        self.project_loaded = False
 
+    def close_project(self):
+        self.root_path = ""
+        self.project_loaded = False
+        self.project_info = dict()
+
+    def load_project(self, directory_path: str):
+        self.root_path = directory_path
         self.FsModel.setRootPath(directory_path)
         self.read_project_info()
+        self.project_loaded = True
+
+    def is_project_loaded(self) -> bool:
+        return self.project_loaded
 
     def read_project_info(self) -> None:
         """Reads project configuration data from default storage location"""

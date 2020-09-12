@@ -10,10 +10,10 @@ import common
 
 class SettingsManager(QObject):
 
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
 
-        self.parent = parent
+        self.parent = None
 
         # Maps datatype names read from config to functions
         self.datatypes = {
@@ -252,7 +252,11 @@ class SettingsManager(QObject):
 
     def get_default_color_schema(self) -> dict:
         """Return the color scheme based on the system colors"""
-        palette = QPalette(self.parent.palette())
+
+        if self.parent:
+            palette = QPalette(self.parent.palette())
+        else:
+            palette = QPalette()
 
         return defaults.get_default_color_schema(palette)
 

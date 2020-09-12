@@ -5,7 +5,7 @@ from ui_mdi_widgets.ui_git_commit_history_widget import Ui_GitCommitHistoryWidge
 
 class GitCommitHistoryWidget(QWidget):
 
-    def __init__(self, parent):
+    def __init__(self, parent, project_manager, git_manager, handler_function):
         super(GitCommitHistoryWidget, self).__init__(parent)
 
         self.ui = Ui_GitCommitHistoryWidget()

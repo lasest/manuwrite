@@ -628,12 +628,8 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="GitPage">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QMdiArea" name="GitMdiArea"/>
-          </item>
-         </layout>
+        <widget class="GitPage" name="GitPage">
+         <layout class="QHBoxLayout" name="horizontalLayout_2"/>
         </widget>
        </widget>
       </item>
@@ -998,6 +994,12 @@
    <class>QTabWidgetCustom</class>
    <extends>QTabWidget</extends>
    <header>widgets.qtabwidget_custom</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GitPage</class>
+   <extends>QWidget</extends>
+   <header>widgets.git_page</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

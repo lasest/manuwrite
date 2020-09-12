@@ -6,7 +6,7 @@
 
 ## What is Manuwrite?
 
-Manuwrite is a text editor designed specifically for writing scientific texts using Markdown. It provieds an intuitive graphical user interface which allows the users to write the text of the manuscript without the need to bother themselves with any of the technical details of how the manuscript will be prossessed in the future to produce the output.
+Manuwrite is a text editor designed specifically for writing scientific texts using Markdown. It provides an intuitive graphical user interface which allows the users to write the text of the manuscript without the need to bother themselves with any of the technical details of how the manuscript will be prossessed in the future to produce the output.
 
 Manuwrite's main purpose is to make modern open source document processing tools such as Pandoc and Manubot accessible to a wider audience of users, not familiar with the command line. Manuwrite prioritizes ease of use and tries to do everyting possible to free the researchers writing the manuscripts from the need to learn above mentioned technologies, while trying to provide them with the benefits of using such technologies.
 
@@ -22,8 +22,11 @@ Manuwrite's main purpose is to make modern open source document processing tools
 
 ## How to run
 
-1. Clone the repo:
+1. Install dependencies: python 3, git, pandoc, pandoc-cite.
+
+2. Clone the repo:
 
 ```git clone https://github.com/lasest/manuwrite.git```
 
-2. Run ```build.sh```.
+3. Run ```build.sh```. It will create the virtual environment, install necessary python modules and convert *.ui files to *.py. After that the program will be run.
+
