@@ -54,11 +54,13 @@ class GitPage(QWidget):
                            "status_window": GitStatusWidget
                            }
 
+        # Create an empty icon for the subwindows
         no_icon = QPixmap(8, 8)
         no_icon.fill(Qt.transparent)
         no_icon = QIcon(no_icon)
 
-        def create_window(window_name: str):
+        def create_window(window_name: str) -> None:
+            """Creates a single Mdi subwindow"""
             window = MdiSubWindow_custom(self, Qt.WindowTitleHint | Qt.WindowCloseButtonHint |Qt.CustomizeWindowHint)
             window.setWindowIcon(no_icon)
             window.setOption(QMdiSubWindow.RubberBandMove)

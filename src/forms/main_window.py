@@ -41,7 +41,8 @@ class MainWindow(QMainWindow):
         self.ui.splitter.setStretchFactor(1, 1)
         self.ui.splitter.setStretchFactor(2, 1)
 
-        self.ui.ProjectStructureTreeWidget.hideColumn(1)
+        self.ui.ProjectStructureTreeWidget.setHeaderLabels(["Text", "Identifier"])
+        self.ui.ProjectStructureTreeWidget.setHeaderHidden(False)
         self.ui.ProjectStructureTreeWidget.hideColumn(2)
         self.ui.ProjectStructureTreeWidget.hideColumn(3)
 

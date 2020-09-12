@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMdiSubWindow
-from PyQt5.QtGui import QMoveEvent
+from PyQt5.QtGui import QMoveEvent, QCloseEvent
 
 import common
 

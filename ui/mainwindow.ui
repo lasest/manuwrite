@@ -152,7 +152,7 @@
       <item>
        <widget class="QStackedWidget" name="MainStackedWidget">
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="WelcomePage">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -473,7 +473,7 @@
                 <item>
                  <widget class="QTabWidget" name="ProjectTabWidget">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>1</number>
                   </property>
                   <widget class="QWidget" name="ProjectFilesTab">
                    <attribute name="title">
@@ -538,7 +538,7 @@
                        <number>10</number>
                       </property>
                       <property name="headerHidden">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                       <property name="columnCount">
                        <number>4</number>
