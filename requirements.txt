@@ -10,7 +10,7 @@ GitPython==3.1.8
 idna==2.10
 isbnlib==3.10.3
 isort==4.3.21
-Jinja2==2.11.2
+Jinja2==2.11.3
 jsonschema==3.2.0
 lazy-object-proxy==1.4.3
 manubot==0.4.0
