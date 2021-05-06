@@ -1,0 +1,216 @@
+/*////////////////////////////////////////*/
+/* APPLICATION WIDE STYLES */
+/*////////////////////////////////////////*/
+
+/* QWIDGET */
+
+QWidget{
+    color: {{ WindowText }};
+    background-color: {{ Window }};    
+}
+
+QWidget#Spacer{
+    background: transparent;
+}
+
+/* QMENUBAR */
+
+QMenuBar{
+    border-bottom: 1px solid {{ Border }};
+}
+
+QMenuBar::item:selected {
+    background: {{ Highlight }};
+}
+
+QMenuBar::item:pressed {
+    background: {{ Highlight }};
+}
+
+/* QMENU */
+
+QMenu{
+    border: 1px solid {{ Border }};
+}
+
+QMenu::item:selected { /* when user selects item using mouse or keyboard */
+    background-color: {{ Highlight }};
+}
+
+QMenu::separator{
+    height: 1px;
+    background-color: {{ Border }};
+}
+
+/* QTOOLBAR */
+
+QToolBar::separator{
+    width: 2px;    
+    background-color: {{ Border }};
+}
+
+/* QTOOLBUTTON */
+
+QToolButton:checked{
+    background-color: {{ WindowLighter }};
+}
+
+/* QCOMBOBOX */
+
+QComboBox {
+    selection-background-color: {{ Highlight }};    
+    padding: 0px 5px 0px 0px;    
+}
+
+QComboBox::down-arrow {
+    image: url(icons_dark:go-down.svg);    
+}
+
+QComboBox::drop-down 
+{
+    border: 0px;
+    subcontrol-origin: content;    
+}
+
+QComboBox QAbstractItemView{
+    border: 1px solid {{ Border }};
+}
+
+/* QTREEVIEW */
+
+QTreeView{
+    background-color: {{ WindowDarker }};
+}
+
+/* QLISTVIEW */
+
+QListView{
+    background-color: {{ WindowDarker }};
+}
+
+/* QPLAINTEXTEDIT */
+
+QPlainTextEdit{
+    background-color: {{ WindowDarker }};
+}
+
+/* QLABEL */
+
+QLabel{
+    background: transparent;
+}
+
+/* QSCROLLBAR */
+
+QScrollBar{
+    background: {{ WindowDarker }};
+}
+
+QScrollBar::handle{
+    background: {{ WindowLighter }};
+}
+
+QScrollBar::add-line{
+    height: 0px;
+    width: 0px;
+}
+
+QScrollBar::sub-line{
+    height: 0px;
+    width: 0px;
+}
+
+/*////////////////////////////////////////*/
+/* MAIN WINDOW STYLES */
+/*////////////////////////////////////////*/
+
+/* SIDEBAR */
+
+QToolBar#MainWindow_SideBar{
+    border-right: 1px solid {{ Border }};
+    border-top: 1px solid {{ Border }};
+}
+
+/* STATUSBAR */
+
+QStatusBar#MainWindow_StatusBar{
+    border-top: 1px solid {{ Border }};
+}
+
+/* WELCOME PAGE */
+
+QLabel#WelcomePage_Title{
+    font-size: 24pt;
+    font-weight: bold;
+}
+
+QLabel#WelcomePage_Subtitle{
+    font-size: 20pt;
+    font-weight: bold;
+}
+
+QLabel#WelcomePage_Heading2{
+    font-size: 20pt;
+    margin-bottom: 0.25em;
+    margin-top: 0.75em;
+    
+}
+
+QWidget#WelcomePage_ContainerWidget{
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+}
+
+WelcomePageInfoBlock{
+    background-color: {{ WindowDarker }};
+}
+
+WelcomePageInfoBlock:hover{
+    background-color: {{ WindowLighter }};
+    qproperty-cursor: PointingHandCursor;
+}
+
+/* EDITOR PAGE */
+
+QTabWidget#MainWindow_EditorsTabWidget::pane{
+    background-color: {{ Window }};
+    border-width: 0px;
+}
+
+/*////////////////////////////////////////*/
+/* DOCK WIDGETS STYLES */
+/*////////////////////////////////////////*/
+
+/* Title bar of a dock */
+QFrame#DockTitleBar {
+    background-color: {{ WindowLighter }};
+    border: 1px solid {{ Border }};
+}
+
+/* Main widget of a dock */
+QWidget#DockMainWidget {
+    background: {{ Window }};
+    border: 1px solid {{ Border }};
+}
+
+/* The separator at the border of the dock which is used to change its size by dragging */
+QMainWindow::separator {
+    width: 1px;
+    height: 1px;
+}
+
+/* Close button of the Dock title bar */
+QPushButton#DockTitleBar_CloseButton {
+    color: white;
+    background: red;
+    border-width: 1px;
+    border-color: beige;    
+}
+
+/* ComboBox of the Dock title bar (used as title widgets in some title bars */
+QComboBox#DockTitleBar_TitleWidget {
+    border-radius: 3px;
+    background-color: {{ WindowLighter }};
+    min-width: 1em;    
+}
